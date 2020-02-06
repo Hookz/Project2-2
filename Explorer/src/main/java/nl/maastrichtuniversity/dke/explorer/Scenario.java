@@ -66,7 +66,6 @@ public class Scenario {
         }
         catch(Exception e)
         {
-            System.out.println("ReadMap failed");
         }
     }
     

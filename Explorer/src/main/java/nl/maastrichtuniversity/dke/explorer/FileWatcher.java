@@ -18,7 +18,6 @@ public abstract class FileWatcher
 {
     private Path folderPath;
     private String watchFile;
-    private final IllegalArgumentException illegalArgumentException = new IllegalArgumentException();
 
     public FileWatcher(String watchFile)
     {
@@ -29,7 +28,7 @@ public abstract class FileWatcher
         if (!isRegularFile)
         {
             // Do not allow this to be a folder since we want to watch files
-            throw illegalArgumentException;
+            throw new IllegalArgumentException(watchFile + " is not a regular file");
         }
 
         // This is always a folder

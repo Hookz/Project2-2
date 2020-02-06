@@ -1,5 +1,5 @@
 name = test scenario
-gameFile = /Users/joel/Documents/gamefile.txt
+gameFile = /Users/camillebouvy/Project2-2/Explorer/src/main/gamefile.txt
 gameMode = 0
 height = 80
 width = 120
