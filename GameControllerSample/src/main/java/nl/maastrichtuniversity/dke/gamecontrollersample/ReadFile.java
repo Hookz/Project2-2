@@ -1,3 +1,5 @@
+package nl.maastrichtuniversity.dke.gamecontrollersample;
+
 import javax.swing.*;
 import java.awt.*;
 import java.io.BufferedReader;
@@ -7,8 +9,8 @@ import java.util.Scanner;
 
 public class ReadFile{
 	static String desktop = System.getProperty("user.home") + "/Desktop/";
-
-	static File file = new File(desktop + "Assign2Test1.txt");
+	//you have to save the TestFile.txt in the Desktop
+	static File file = new File(desktop + "TestFile.txt");
 	private static Rectangle[] rec;
 
 	public static void main(final String[] args) {
