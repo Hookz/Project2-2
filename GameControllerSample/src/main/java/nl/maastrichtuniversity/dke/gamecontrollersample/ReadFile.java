@@ -1,4 +1,3 @@
-package nl.maastrichtuniversity.dke.gamecontrollersample;
 
 import javax.swing.*;
 import java.awt.*;
