@@ -5,6 +5,8 @@
  */
 package nl.maastrichtuniversity.dke.gamecontrollersample;
 
+import nl.maastrichtuniversity.dke.explorer.Explorer;
+
 import java.io.FileWriter;
 import java.io.PrintWriter;
         
@@ -22,10 +24,10 @@ public class GameRunner {
     
     public static void main(String[] args){
         // the mapscenario should be passed as a parameter
-        String mapD = args[0]; // testmap.txt
+        String mapD = Explorer.class.getResource("/testmap.txt").toString(); // testmap.txt
         GameRunner game = new GameRunner(mapD);
         game.p.setup();
-        //game.writeGameFile();
+        game.p.writeGameFile();
         game.p.start();
     }
 

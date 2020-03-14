@@ -18,15 +18,16 @@ public class Explorer {
     
     public static void main(String[] args){
         // the mapscenario should be passed as a parameter
-        String mapD = args[0]; // path to testmap.txt
+        String mapD = Explorer.class.getResource("/testmap.txt").toString(); // path to testmap.txt
         Explorer game = new Explorer(mapD);
-        //game.writeGameFile();
-        game.p.start();
+        //game.p.writeGameFile();
+        //game.p.start();
     }
 
     public Explorer(String scn){
+        System.out.println();
         mapDoc=scn;
         scenario = new Scenario(mapDoc);
-        p = new ExGamePlayer(scenario);
+        //p = new ExGamePlayer(scenario);
     }
 }

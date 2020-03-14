@@ -46,7 +46,6 @@ public class Scenario {
     public Scenario(String mapFile){
         // set parameters
         mapDoc=mapFile;
-                
         // initialize variables
          walls = new ArrayList<>(); // create list of walls
          shaded = new ArrayList<>(); // create list of low-visability areas
@@ -58,7 +57,7 @@ public class Scenario {
         readMap();
     }
     
-    public void readMap(){ 
+    public void readMap(){
         try (Scanner scanner =  new Scanner(filePath, ENCODING.name())){
             while (scanner.hasNextLine()){
                 parseLine(scanner.nextLine());
@@ -66,6 +65,7 @@ public class Scenario {
         }
         catch(Exception e)
         {
+            System.out.println("PROBLEM");
         }
     }
     
