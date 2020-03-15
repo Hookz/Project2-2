@@ -1,52 +1,85 @@
 package Group2;
-import java.awt.Rectangle;
-public class ReadFile{
-  private int gameMode;
-  private int height;
-  private int width;
-  private int numGuards;
-  private int numIntruders;
-  private double captureDistance;
-  private int winConditionIntruderRounds;
-  private double maxRotationAngle;
-  private double maxMoveDistanceIntruder;
-  private double maxSprintDistanceIntruder;
-  private double maxMoveDistanceGuard;
-  private int sprintCooldown;
-  private int pheromoneCooldown;
-  private double radiusPheromone;
-  private double slowDownModifierWindow;
-  private double slowDownModifierDoor;
-  private double slowDownModifierSentryTower;
-  private double viewAngle;
-  private int viewRays;
-  private double viewRangeIntruderNormal;
-  private double viewRangeIntruderShaded;
-  private double viewRangeGuardNormal;
-  private double viewRangeGuardShaded;
-  private double yellSoundRadius;
-  private double maxMoveSoundRadius;
-  private double windowSoundRadius;
-  private double doorSoundRadius;
-  private Rectangle targetArea;
-  private Rectangle spawnAreaIntruders;
-  private Rectangle spawnAreaGuards;
-  private List<Rectangle> wall = new ArrayList<Rectangle>();
-  private List<Teleport> teleport = new ArrayList<Teleport>();
-  private List<Rectangle> shaded = new ArrayList<Rectangle>();
-  private List<Rectangle> door = new ArrayList<Rectangle>();
-  private List<Rectangle> window = new ArrayList<Rectangle>();
-  private List<Rectangle> sentry = new ArrayList<Rectangle>();
+import java.awt.*;
+import java.io.*;
+import java.util.*;
+import java.util.List;
 
-  public static void main(String[] args){
+public class ReadFile{
+  private static int gameMode;
+  private static int height;
+  private static int width;
+  private static int numGuards;
+  private static int numIntruders;
+  private static double captureDistance;
+  private static int winConditionIntruderRounds;
+  private static double maxRotationAngle;
+  private static double maxMoveDistanceIntruder;
+  private static double maxSprintDistanceIntruder;
+  private static double maxMoveDistanceGuard;
+  private static int sprintCooldown;
+  private static int pheromoneCooldown;
+  private static double radiusPheromone;
+  private static double slowDownModifierWindow;
+  private static double slowDownModifierDoor;
+  private static double slowDownModifierSentryTower;
+  private static double viewAngle;
+  private static int viewRays;
+  private static double viewRangeIntruderNormal;
+  private static double viewRangeIntruderShaded;
+  private static double viewRangeGuardNormal;
+  private static double viewRangeGuardShaded;
+  private static double yellSoundRadius;
+  private static double maxMoveSoundRadius;
+  private static double windowSoundRadius;
+  private static double doorSoundRadius;
+  private static Rectangle targetArea;
+  private static Rectangle spawnAreaIntruders;
+  private static Rectangle spawnAreaGuards;
+  private static List<Rectangle> wall = new ArrayList<Rectangle>();
+  private static List<Teleport> teleport = new ArrayList<Teleport>();
+  private static List<Rectangle> shaded = new ArrayList<Rectangle>();
+  private static List<Rectangle> door = new ArrayList<Rectangle>();
+  private static List<Rectangle> window = new ArrayList<Rectangle>();
+  private static List<Rectangle> sentry = new ArrayList<Rectangle>();
+
+  public static void main(String[] args) {
     readFile();
+    System.out.println(gameMode);
+    System.out.println(height);
+    System.out.println(width);
+    System.out.println(numGuards);
+    System.out.println(numIntruders);
+    System.out.println(captureDistance);
+    System.out.println(winConditionIntruderRounds);
+    System.out.println(maxRotationAngle);
+    System.out.println(maxMoveDistanceIntruder);
+    System.out.println(maxSprintDistanceIntruder);
+    System.out.println(maxMoveDistanceGuard);
+    System.out.println(sprintCooldown);
+    System.out.println(pheromoneCooldown);
+    System.out.println(radiusPheromone);
+    System.out.println(slowDownModifierWindow);
+    System.out.println(slowDownModifierDoor);
+    System.out.println(slowDownModifierSentryTower);
+    System.out.println(viewAngle);
+    System.out.println(viewRays);
+    System.out.println(viewRangeIntruderNormal);
+    System.out.println(viewRangeIntruderShaded);
+    System.out.println(viewRangeGuardNormal);
+    System.out.println(viewRangeGuardShaded);
+    System.out.println(yellSoundRadius);
+    System.out.println(maxMoveSoundRadius);
+    System.out.println(windowSoundRadius);
+    System.out.println(doorSoundRadius);
   }
   public static void readFile(){
   try{
-    final BufferedReader r = new BufferedReader(new FileReader(new File()));
+    final BufferedReader r = new BufferedReader(new FileReader(new File(System.getProperty("java.class.path")+"/config.txt")));
     String nextline;
-    while(nextline = r.readLine() != null){
-      String linesplit = nextline.split(" = ");
+    int[] area;
+    int x,y,areaWidth,areaHeight;
+    while((nextline = r.readLine()) != null){
+      String[] linesplit = nextline.split(" = ");
       switch(linesplit[0]){
         case "gameMode":
           gameMode = Integer.parseInt(linesplit[1]);
@@ -111,10 +144,10 @@ public class ReadFile{
           viewRangeIntruderShaded = Double.parseDouble(linesplit[1]);
           break;
         case "viewRangeGuardNormal":
-          viewRangeIntruderNormal = Double.parseDouble(linesplit[1]);
+          viewRangeGuardNormal = Double.parseDouble(linesplit[1]);
           break;
         case "viewRangeGuardShaded":
-          viewRangeIntruderShaded = Double.parseDouble(linesplit[1]);
+          viewRangeGuardShaded = Double.parseDouble(linesplit[1]);
           break;
         case "yellSoundRadius":
           yellSoundRadius = Double.parseDouble(linesplit[1]);
@@ -129,46 +162,82 @@ public class ReadFile{
           doorSoundRadius = Double.parseDouble(linesplit[1]);
           break;
         case "targetArea":
-          int[] area = Arrays.stream(linesplit.split(",")).mapToInt(Integer::parseInt).toArray();
-          targetArea = new Reactangle(Math.min(area[0],area[2]),Math.min(area[1],area[3]),Math.abs(area[2]-area[0]),Math.abs(area[3]-area[1]));
+          area = Arrays.stream(linesplit[1].split(",")).mapToInt(Integer::parseInt).toArray();
+          x = Math.min(Math.min(area[0],area[2]),Math.min(area[4],area[6]));
+          y = Math.min(Math.min(area[1],area[3]),Math.min(area[5],area[7]));
+          areaWidth = Math.max(Math.max(area[0],area[2]),Math.max(area[4],area[6])) - x;
+          areaHeight = Math.max(Math.max(area[1],area[3]),Math.max(area[5],area[7])) - y;
+          targetArea = new Rectangle(x,y,areaWidth,areaHeight);
           break;
         case "spawnAreaIntruders":
-          int[] area = Arrays.stream(linesplit.split(",")).mapToInt(Integer::parseInt).toArray();
-          spawnAreaIntruders = new Reactangle(Math.min(area[0],area[2]),Math.min(area[1],area[3]),Math.abs(area[2]-area[0]),Math.abs(area[3]-area[1]));
+          area = Arrays.stream(linesplit[1].split(",")).mapToInt(Integer::parseInt).toArray();
+          x = Math.min(Math.min(area[0],area[2]),Math.min(area[4],area[6]));
+          y = Math.min(Math.min(area[1],area[3]),Math.min(area[5],area[7]));
+          areaWidth = Math.max(Math.max(area[0],area[2]),Math.max(area[4],area[6])) - x;
+          areaHeight = Math.max(Math.max(area[1],area[3]),Math.max(area[5],area[7])) - y;
+          spawnAreaIntruders = new Rectangle(x,y,areaWidth,areaHeight);
           break;
         case "spawnAreaGuards":
-          int[] area = Arrays.stream(linesplit.split(",")).mapToInt(Integer::parseInt).toArray();
-          spawnAreaGuards = new Reactangle(Math.min(area[0],area[2]),Math.min(area[1],area[3]),Math.abs(area[2]-area[0]),Math.abs(area[3]-area[1]));
+          area = Arrays.stream(linesplit[1].split(",")).mapToInt(Integer::parseInt).toArray();
+          x = Math.min(Math.min(area[0],area[2]),Math.min(area[4],area[6]));
+          y = Math.min(Math.min(area[1],area[3]),Math.min(area[5],area[7]));
+          areaWidth = Math.max(Math.max(area[0],area[2]),Math.max(area[4],area[6])) - x;
+          areaHeight = Math.max(Math.max(area[1],area[3]),Math.max(area[5],area[7])) - y;
+          spawnAreaGuards = new Rectangle(x,y,areaWidth,areaHeight);
           break;
         case "wall":
-          int[] area = Arrays.stream(linesplit.split(",")).mapToInt(Integer::parseInt).toArray();
-          wall.add(new Reactangle(Math.min(area[0],area[2]),Math.min(area[1],area[3]),Math.abs(area[2]-area[0]),Math.abs(area[3]-area[1])));
+          area = Arrays.stream(linesplit[1].split(",")).mapToInt(Integer::parseInt).toArray();
+          x = Math.min(Math.min(area[0],area[2]),Math.min(area[4],area[6]));
+          y = Math.min(Math.min(area[1],area[3]),Math.min(area[5],area[7]));
+          areaWidth = Math.max(Math.max(area[0],area[2]),Math.max(area[4],area[6])) - x;
+          areaHeight = Math.max(Math.max(area[1],area[3]),Math.max(area[5],area[7])) - y;
+          wall.add(new Rectangle(x,y,areaWidth,areaHeight));
           break;
         case "teleport":
-          int[] area = Arrays.stream(linesplit.split(",")).mapToInt(Integer::parseInt).toArray();
-          teleport.add(new Teleport(new Rectangle(Math.min(area[0],area[2]),Math.min(area[1],area[3]),Math.abs(area[2]-area[0]),Math.abs(area[3]-area[1])),new Point(area[4],area[5])));
+          area = Arrays.stream(linesplit[1].split(",")).mapToInt(Integer::parseInt).toArray();
+          x = Math.min(Math.min(area[0],area[2]),Math.min(area[4],area[6]));
+          y = Math.min(Math.min(area[1],area[3]),Math.min(area[5],area[7]));
+          areaWidth = Math.max(Math.max(area[0],area[2]),Math.max(area[4],area[6])) - x;
+          areaHeight = Math.max(Math.max(area[1],area[3]),Math.max(area[5],area[7])) - y;
+          teleport.add(new Teleport(new Rectangle(x,y,areaWidth,areaHeight),new Point(area[4],area[5])));
           break;
         case "shaded":
-          int[] area = Arrays.stream(linesplit.split(",")).mapToInt(Integer::parseInt).toArray();
-          shaded.add(new Reactangle(Math.min(area[0],area[2]),Math.min(area[1],area[3]),Math.abs(area[2]-area[0]),Math.abs(area[3]-area[1])));
+          area = Arrays.stream(linesplit[1].split(",")).mapToInt(Integer::parseInt).toArray();
+          x = Math.min(Math.min(area[0],area[2]),Math.min(area[4],area[6]));
+          y = Math.min(Math.min(area[1],area[3]),Math.min(area[5],area[7]));
+          areaWidth = Math.max(Math.max(area[0],area[2]),Math.max(area[4],area[6])) - x;
+          areaHeight = Math.max(Math.max(area[1],area[3]),Math.max(area[5],area[7])) - y;
+          shaded.add(new Rectangle(x,y,areaWidth,areaHeight));
           break;
         case "door":
-          int[] area = Arrays.stream(linesplit.split(",")).mapToInt(Integer::parseInt).toArray();
-          door.add(new Reactangle(Math.min(area[0],area[2]),Math.min(area[1],area[3]),Math.abs(area[2]-area[0]),Math.abs(area[3]-area[1])));
+          area = Arrays.stream(linesplit[1].split(",")).mapToInt(Integer::parseInt).toArray();
+          x = Math.min(Math.min(area[0],area[2]),Math.min(area[4],area[6]));
+          y = Math.min(Math.min(area[1],area[3]),Math.min(area[5],area[7]));
+          areaWidth = Math.max(Math.max(area[0],area[2]),Math.max(area[4],area[6])) - x;
+          areaHeight = Math.max(Math.max(area[1],area[3]),Math.max(area[5],area[7])) - y;
+          door.add(new Rectangle(x,y,areaWidth,areaHeight));
           break;
         case "window":
-          int[] area = Arrays.stream(linesplit.split(",")).mapToInt(Integer::parseInt).toArray();
-          window.add(new Reactangle(Math.min(area[0],area[2]),Math.min(area[1],area[3]),Math.abs(area[2]-area[0]),Math.abs(area[3]-area[1])));
+          area = Arrays.stream(linesplit[1].split(",")).mapToInt(Integer::parseInt).toArray();
+          x = Math.min(Math.min(area[0],area[2]),Math.min(area[4],area[6]));
+          y = Math.min(Math.min(area[1],area[3]),Math.min(area[5],area[7]));
+          areaWidth = Math.max(Math.max(area[0],area[2]),Math.max(area[4],area[6])) - x;
+          areaHeight = Math.max(Math.max(area[1],area[3]),Math.max(area[5],area[7])) - y;
+          window.add(new Rectangle(x,y,areaWidth,areaHeight));
           break;
         case "sentry":
-          int[] area = Arrays.stream(linesplit.split(",")).mapToInt(Integer::parseInt).toArray();
-          sentry.add(new Reactangle(Math.min(area[0],area[2]),Math.min(area[1],area[3]),Math.abs(area[2]-area[0]),Math.abs(area[3]-area[1])));
+          area = Arrays.stream(linesplit[1].split(",")).mapToInt(Integer::parseInt).toArray();
+          x = Math.min(Math.min(area[0],area[2]),Math.min(area[4],area[6]));
+          y = Math.min(Math.min(area[1],area[3]),Math.min(area[5],area[7]));
+          areaWidth = Math.max(Math.max(area[0],area[2]),Math.max(area[4],area[6])) - x;
+          areaHeight = Math.max(Math.max(area[1],area[3]),Math.max(area[5],area[7])) - y;
+          sentry.add(new Rectangle(x,y,areaWidth,areaHeight));
           break;
       }
     }
   }
-  catch(FileNotFoundException e){
+  catch(IOException e){
     e.printStackTrace();
   }
-}
+  }
 }

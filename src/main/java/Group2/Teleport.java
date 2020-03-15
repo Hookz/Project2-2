@@ -1,7 +1,8 @@
 package Group2;
-import java.awt.Rectangle;
+import java.awt.*;
+
 public class Teleport{
-  public Teleport(Rectangle area,Point goal){
+  public Teleport(Rectangle area, Point goal){
       this.area = area;
       this.goal = goal;
     }
