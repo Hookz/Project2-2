@@ -1,4 +1,5 @@
 package Group2;
+import java.awt.Rectangle;
 public class ReadFile{
   private int gameMode;
   private int height;
