@@ -1,6 +1,7 @@
 package Group2;
 import java.awt.*;
 import java.io.*;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.List;
 
@@ -42,35 +43,12 @@ public class ReadFile{
   private static List<Rectangle> window = new ArrayList<Rectangle>();
   private static List<Rectangle> sentry = new ArrayList<Rectangle>();
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IllegalAccessException {
     readFile();
-    System.out.println(gameMode);
-    System.out.println(height);
-    System.out.println(width);
-    System.out.println(numGuards);
-    System.out.println(numIntruders);
-    System.out.println(captureDistance);
-    System.out.println(winConditionIntruderRounds);
-    System.out.println(maxRotationAngle);
-    System.out.println(maxMoveDistanceIntruder);
-    System.out.println(maxSprintDistanceIntruder);
-    System.out.println(maxMoveDistanceGuard);
-    System.out.println(sprintCooldown);
-    System.out.println(pheromoneCooldown);
-    System.out.println(radiusPheromone);
-    System.out.println(slowDownModifierWindow);
-    System.out.println(slowDownModifierDoor);
-    System.out.println(slowDownModifierSentryTower);
-    System.out.println(viewAngle);
-    System.out.println(viewRays);
-    System.out.println(viewRangeIntruderNormal);
-    System.out.println(viewRangeIntruderShaded);
-    System.out.println(viewRangeGuardNormal);
-    System.out.println(viewRangeGuardShaded);
-    System.out.println(yellSoundRadius);
-    System.out.println(maxMoveSoundRadius);
-    System.out.println(windowSoundRadius);
-    System.out.println(doorSoundRadius);
+    Field[] fields = Group2.ReadFile.class.getDeclaredFields();
+    for(Field f: fields){
+        System.out.println(f.getName()+": "+f.get(f).toString());
+    }
   }
   public static void readFile(){
   try{
