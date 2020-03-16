@@ -74,11 +74,13 @@ public class ReadFile{
   }
   public static void readFile(){
   try{
+    int lineNumber = 0;
     final BufferedReader r = new BufferedReader(new FileReader(new File(System.getProperty("java.class.path")+"/config.txt")));
     String nextline;
     int[] area;
     int x,y,areaWidth,areaHeight;
     while((nextline = r.readLine()) != null){
+      ++lineNumber;
       String[] linesplit = nextline.split(" = ");
       switch(linesplit[0]){
         case "gameMode":
@@ -232,6 +234,9 @@ public class ReadFile{
           areaWidth = Math.max(Math.max(area[0],area[2]),Math.max(area[4],area[6])) - x;
           areaHeight = Math.max(Math.max(area[1],area[3]),Math.max(area[5],area[7])) - y;
           sentry.add(new Rectangle(x,y,areaWidth,areaHeight));
+          break;
+        default:
+          System.out.println("Invalid input sequence in config.txt on line "+lineNumber);
           break;
       }
     }
