@@ -15,10 +15,8 @@ import java.util.List;
  * Agents must not hold ANY references to common objects or references to each other.
  */
 public class AgentsFactory {
-    static public List<Intruder> createIntruders(int number) {
-        return Collections.emptyList();
-    }
+    static public List<Intruder> createIntruders(int number) { return Collections.nCopies(number,new IntruderAgent()); }
     static public List<Guard> createGuards(int number) {
-        return Collections.emptyList();
+        return Collections.nCopies(number,new GuardAgent());
     }
 }
