@@ -22,6 +22,8 @@ import Interop.Percept.Sound.SoundPerceptType;
 
 import java.awt.Rectangle;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.util.*;
 
 public class GameController{
@@ -85,8 +87,10 @@ public class GameController{
     private HashMap<Intruder,Integer> intruderSprintCooldowns = new HashMap<>();
     private HashMap<Intruder,Integer> intruderPheromoneCooldowns = new HashMap<>();
     private HashMap<Guard,Integer> guardPheromoneCooldowns = new HashMap<>();
-    private HashMap<Intruder, Distance> intruderViewRange;
-    private HashMap<Guard, Distance> guardViewRange;
+    private HashMap<Intruder,Boolean> intruderTeleportFlag = new HashMap<>();
+    private HashMap<Guard,Boolean> guardTeleportFlag = new HashMap<>();
+    private HashMap<Intruder, Distance> intruderViewRange = new HashMap<>();
+    private HashMap<Guard, Distance> guardViewRange = new HashMap<>();
 
     private List<Intruder> intruders;
     private List<Guard> guards;
@@ -106,6 +110,10 @@ public class GameController{
                               double doorSoundRadius, List<Rectangle> targetArea, List<Rectangle> spawnAreaIntruders, List<Rectangle> spawnAreaGuards, List<Rectangle> walls, List<Teleport> teleports,
                               List<Rectangle> shaded, List<Rectangle> doors, List<Rectangle> windows, List<Rectangle> sentries)
     {
+//        this.scenarioPercept = new ScenarioPercepts(gamemode, new Distance(captureDistance), Angle.fromDegrees(maxRotationAngle), new SlowDownModifiers(slowDownModifierWindow, slowDownModifierDoor,
+//                        slowDownModifierSentryTower), new Distance(radiusPheromone), pheromoneCooldown);
+//        this.scenarioIntruderPercepts = new ScenarioIntruderPercepts(this.scenarioPercept, winConditionIntruderRounds, new Distance(maxMoveDistanceIntruder), new Distance(maxSprintDistanceIntruder), sprintCooldown);
+//        this.scenarioGuardPercepts = new ScenarioGuardPercepts(this.scenarioPercept, new Distance(maxMoveDistanceGuard));
 
         this.gameMode = GameMode.values()[gameMode];
         this.height = height;
@@ -225,6 +233,7 @@ public class GameController{
                 case GuardTurn:
                     if(!guards.isEmpty()) {
                         for (Guard guard : guards) {
+                            guardPheromoneCooldownDecay(guard);
                             GuardPercepts percept = guardPercept(guard);
                             Action action = guard.getAction(percept);
                             guardAct(action, percept, guard);
@@ -234,6 +243,9 @@ public class GameController{
                 case IntruderTurn:
                     if(!intruders.isEmpty()) {
                         for (Intruder intruder : intruders) {
+                            System.out.println("Intruder Location: x "+intruderLocations.get(intruder).getX()+" y "+intruderLocations.get(intruder).getY());
+                            sprintCooldownDecay(intruder);
+                            intruderPheromoneCooldownDecay(intruder);
                             IntruderPercepts percept = intruderPercept(intruder);
                             Action action = intruder.getAction(percept);
                             intruderAct(action, percept, intruder);
@@ -281,6 +293,17 @@ public class GameController{
             double newY = guardLocation.getY() + Math.sin(guardDirection.getDegrees()) * ((Move) action).getDistance().getValue();
             Ellipse2D newGuardLocation = new Ellipse2D.Double(newX,newY,guardLocation.getWidth(),guardLocation.getHeight());
             if(checkIfLegalMove(guardLocation,newGuardLocation)) {
+                //Teleporting functionality and limitation
+                for(Teleport teleport:teleports) {
+                    //Leaving a teleporter area, remove flag
+                    if(teleport.getArea().contains(guardLocation.getX(),guardLocation.getY()) && !teleport.getArea().contains(newX, newY)){
+                        guardTeleportFlag.replace(guard,false);
+                    }else if(teleport.getArea().contains(newX, newY) && !guardTeleportFlag.get(guard)) { //Entering a teleporter without flag, teleport
+                        newX = teleport.getGoal().getX();
+                        newY = teleport.getGoal().getY();
+                        guardTeleportFlag.replace(guard,true);
+                    }
+                }
                 guardLocations.put(guard, newGuardLocation);
                 soundLocations.put(stepSound,stepSoundLocation);
             }
@@ -326,6 +349,17 @@ public class GameController{
             double newY = intruderLocation.getY() + Math.sin(intruderDirection.getDegrees()) * ((Move) action).getDistance().getValue();
             Ellipse2D newintruderLocation = new Ellipse2D.Double(newX,newY,intruderLocation.getWidth(),intruderLocation.getHeight());
             if(checkIfLegalMove(intruderLocation,newintruderLocation)) {
+                //Teleporting functionality and limitation
+                for(Teleport teleport:teleports) {
+                    //Leaving a teleporter area, remove flag
+                    if(teleport.getArea().contains(intruderLocation.getX(),intruderLocation.getY()) && !teleport.getArea().contains(newX, newY)){
+                        intruderTeleportFlag.replace(intruder,false);
+                    }else if(teleport.getArea().contains(newX, newY) && !intruderTeleportFlag.get(intruder)) { //Entering a teleporter without flag, teleport
+                        newX = teleport.getGoal().getX();
+                        newY = teleport.getGoal().getY();
+                        intruderTeleportFlag.replace(intruder,true);
+                    }
+                }
                 intruderLocations.put(intruder, newintruderLocation);
                 soundLocations.put(stepSound,stepSoundLocation);
             }
@@ -346,9 +380,24 @@ public class GameController{
                 double newX = intruderLocation.getX() + Math.cos(intruderDirection.getDegrees()) * ((Move) action).getDistance().getValue();
                 double newY = intruderLocation.getY() + Math.sin(intruderDirection.getDegrees()) * ((Move) action).getDistance().getValue();
                 Ellipse2D newintruderLocation = new Ellipse2D.Double(newX, newY, intruderLocation.getWidth(), intruderLocation.getHeight());
+
                 if (checkIfLegalMove(intruderLocation, newintruderLocation)) {
+                    //Teleporting functionality and limitation
+                    for(Teleport teleport:teleports) {
+                        //Leaving a teleporter area, remove flag
+                        if(teleport.getArea().contains(intruderLocation.getX(),intruderLocation.getY()) && !teleport.getArea().contains(newX, newY)){
+                            intruderTeleportFlag.replace(intruder,false);
+                        }else if(teleport.getArea().contains(newX, newY) && !intruderTeleportFlag.get(intruder)) { //Entering a teleporter without flag, teleport
+                            newX = teleport.getGoal().getX();
+                            newY = teleport.getGoal().getY();
+                            intruderTeleportFlag.replace(intruder,true);
+                        }
+                    }
+
                     intruderLocations.put(intruder, newintruderLocation);
                     soundLocations.put(stepSound, stepSoundLocation);
+                    intruderSprintCooldowns.replace(intruder,sprintCooldown);
+
                 }else{
                     System.out.println("Illegal move attempted");
                 }
@@ -375,21 +424,47 @@ public class GameController{
         }
     }
 
+	private boolean checkIfLegalMove(Ellipse2D initialLocation,
+			Ellipse2D newLocation) {
+		// Check for collisions. If collision occurs, return false and skip turn
+		double startX = initialLocation.getX();
+		double startY = initialLocation.getY();
+		double goalX = initialLocation.getX();
+		double goalY = initialLocation.getY();
+		//boolean legal = true;
+		List<Point2D> points = new ArrayList<Point2D>();
+		List<Ellipse2D> temp_agents = new ArrayList<Ellipse2D>();
+		Line2D line = new Line2D.Double(startX, startY, goalX, goalY);
+		Point2D current;
+		Ellipse2D temp_agent;
 
+		for (Iterator<Point2D> it = new LineIterator(line); it.hasNext();) {
+			current = it.next();
+			points.add(current);
+			temp_agent = new Ellipse2D.Double(current.getX(), current.getY(),
+					1.0, 1.0);
+			temp_agents.add(temp_agent);
 
-    private boolean checkIfLegalMove(Ellipse2D initialLocation, Ellipse2D newLocation){
-        //Check for collisions. If collision occurs, return false and skip turn
+		}
 
-        boolean legal = true;
+		for (int i = 0; i < temp_agents.size(); i++) {
+			for (int j = 0; j < walls.size(); j++) {
+				if (temp_agents.get(i).intersects(walls.get(j))) {
+					return false;
+				}
+			}
+		}
 
-        //If at some point during checking collision is detected, change legal to false
+		// If at some point during checking collision is detected, change legal
+		// to false
 
-        return legal;
-    }
+		return true;
+	}
 
     //Smell radius decreases in size each turn
     private void smellDecay(){
         if (!intruderSmellLocations.isEmpty()) {
+            ArrayList<Smell> remove = new ArrayList<>();
             for (Smell smell : intruderSmellLocations.keySet()) {
                 Distance previousSmellRadius = smell.getRadius();
                 Distance newSmellRadius = new Distance(previousSmellRadius.getValue() - (radiusPheromone / pheromoneDuration));
@@ -397,23 +472,47 @@ public class GameController{
                     Smell updatedSmell = new Smell(smell.getType(), newSmellRadius);
                     Ellipse2D location = intruderSmellLocations.get(smell);
                     Ellipse2D updatedLocation = new Ellipse2D.Double(location.getX(), location.getY(), newSmellRadius.getValue(), newSmellRadius.getValue());
-                    intruderSmellLocations.remove(smell);
+                    remove.add(smell);
                     intruderSmellLocations.put(updatedSmell, updatedLocation);
                 } else {
-                    intruderSmellLocations.remove(smell);
+                    remove.add(smell);
                 }
             }
+            intruderSmellLocations.remove(remove);
         }
     }
 
     private void soundDecay(){
         if(!soundLocations.isEmpty()){
+            ArrayList<Sound> remove = new ArrayList<>();
             for (Sound sound:soundLocations.keySet()){
                 sound.decaySound();
                 if (sound.getDuration()<=0){
-                    soundLocations.remove(sound);
+                    remove.add(sound);
                 }
             }
+            soundLocations.remove(remove);
+        }
+    }
+
+    private void sprintCooldownDecay(Intruder intruder){
+        int old = intruderSprintCooldowns.get(intruder);
+        if(old>0) {
+            intruderSprintCooldowns.replace(intruder, old--);
+        }
+    }
+
+    private void intruderPheromoneCooldownDecay(Intruder intruder) {
+        int old = intruderPheromoneCooldowns.get(intruder);
+        if (old > 0) {
+            intruderPheromoneCooldowns.replace(intruder, old--);
+        }
+    }
+
+    private void guardPheromoneCooldownDecay(Guard guard) {
+        int old = guardPheromoneCooldowns.get(guard);
+        if (old > 0) {
+            guardPheromoneCooldowns.replace(guard, old--);
         }
     }
 
