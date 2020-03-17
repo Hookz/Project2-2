@@ -2,15 +2,19 @@ package Interop;
 
 import Group2.AgentsFactory;
 import Group2.Teleport;
+import Interop.Action.*;
 import Interop.Agent.Guard;
 import Interop.Agent.Intruder;
+import Interop.Percept.GuardPercepts;
+import Interop.Percept.IntruderPercepts;
+import Interop.Percept.Percepts;
 import Interop.Percept.Scenario.*;
 import Interop.Geometry.*;
+import Interop.Percept.Smell.SmellPercept;
+
 import java.awt.Rectangle;
 import java.awt.geom.Ellipse2D;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class GameController{
 
@@ -49,9 +53,13 @@ public class GameController{
     private HashMap<Guard,Ellipse2D> guardLocations;
     private HashMap<Intruder,Direction> intruderDirections;
     private HashMap<Guard,Direction> guardDirections;
+    private List<SmellPercept> smells;
+    private HashMap<SmellPercept,Point> smellLocations;
 
-    List<Intruder> intruders;
-    List<Guard> guards;
+    private List<Intruder> intruders;
+    private List<Guard> guards;
+
+    private Turn turn = Turn.GuardTurn;
 
     public GameController(int gameMode, int height, int width, int numGuards, int numIntruders, double captureDistance, int winConditionIntruderRounds, double maxRotationAngle, double maxMoveDistanceIntruder,
                               double maxSprintDistanceIntruder, double maxMoveDistanceGuard, int sprintCooldown, int pheromoneCooldown, double radiusPheromone, double slowDownModifierWindow,
@@ -135,10 +143,114 @@ public class GameController{
         //Run the UI construction
         //UI.createUI(<all the walls etc above here>)
 
+        boolean intruderStart = random.nextBoolean();
+        if(intruderStart){
+            turn = Turn.IntruderTurn;
+        }
 
+        runGame();
 
     }
 
+    private void runGame(){
+
+        switch(turn){
+            case GuardTurn:
+                for(Guard guard:guards){
+                    GuardPercepts percept = guardPercept(guard);
+                    Action action = guard.getAction(percept);
+                    guardAct(action, percept, guard);
+                }
+                break;
+            case IntruderTurn:
+                for(Intruder intruder:intruders){
+                    IntruderPercepts percept = intruderPercept(intruder);
+                    Action action = intruder.getAction(percept);
+                    intruderAct(action, percept, intruder);
+                }
+                break;
+        }
+
+        //Check Victory Conditions
 
 
+        //Switch turn
+        if(turn.equals(Turn.GuardTurn)){
+            turn = Turn.IntruderTurn;
+        }else{
+            turn = Turn.GuardTurn;
+        }
+    }
+
+    private GuardPercepts guardPercept(Guard guard){
+
+        return null;
+    }
+
+    private IntruderPercepts intruderPercept(Intruder intruder){
+
+        return null;
+    }
+
+    private void guardAct(Action action, GuardPercepts percept, Guard guard){
+        if(action instanceof Move){
+            Ellipse2D guardLocation = guardLocations.get(guard);
+            Direction guardDirection = guardDirections.get(guard);
+            double newX = guardLocation.getX() + Math.cos(guardDirection.getDegrees()) * ((Move) action).getDistance().getValue();
+            double newY = guardLocation.getY() + Math.sin(guardDirection.getDegrees()) * ((Move) action).getDistance().getValue();
+            Ellipse2D newGuardLocation = new Ellipse2D.Double(newX,newY,guardLocation.getWidth(),guardLocation.getHeight());
+            if(checkIfLegalMove(guardLocation,newGuardLocation)) {
+                guardLocations.put(guard, newGuardLocation);
+            }
+        }else if(action instanceof Rotate){
+            Direction guardDirection = guardDirections.get(guard);
+            double newGuardAngle = guardDirection.getDegrees() + ((Rotate) action).getAngle().getDegrees();
+            guardDirections.put(guard,Direction.fromDegrees(newGuardAngle));
+        }else if(action instanceof Yell){
+
+        }else if(action instanceof DropPheromone){
+            SmellPercept smell = new SmellPercept(((DropPheromone) action).getType(),scenarioPercept.getRadiusPheromone());
+
+        }else if(action instanceof NoAction){
+
+        }else{
+            System.out.println("No action picked...");
+        }
+
+    }
+
+    private void intruderAct(Action action, IntruderPercepts percept, Intruder intruder){
+        if(action instanceof Move){
+            Ellipse2D intruderLocation = intruderLocations.get(intruder);
+            Direction intruderDirection = intruderDirections.get(intruder);
+            double newX = intruderLocation.getX() + Math.cos(intruderDirection.getDegrees()) * ((Move) action).getDistance().getValue();
+            double newY = intruderLocation.getY() + Math.sin(intruderDirection.getDegrees()) * ((Move) action).getDistance().getValue();
+            Ellipse2D newintruderLocation = new Ellipse2D.Double(newX,newY,intruderLocation.getWidth(),intruderLocation.getHeight());
+            if(checkIfLegalMove(intruderLocation,newintruderLocation)) {
+                intruderLocations.put(intruder, newintruderLocation);
+            }
+        }else if(action instanceof Rotate){
+            Direction intruderDirection = intruderDirections.get(intruder);
+            double newintruderAngle = intruderDirection.getDegrees() + ((Rotate) action).getAngle().getDegrees();
+            intruderDirections.put(intruder,Direction.fromDegrees(newintruderAngle));
+        }else if(action instanceof Sprint){
+
+        }else if(action instanceof DropPheromone){
+
+        }else if(action instanceof NoAction){
+
+        }else{
+            System.out.println("No action picked...");
+        }
+    }
+
+    private boolean checkIfLegalMove(Ellipse2D initialLocation, Ellipse2D newLocation){
+        //Check for collisions. If collision occurs, return false and skip turn
+
+        boolean legal = true;
+
+        //If at some point during checking collision is detected, change legal to false
+
+        return legal;
+    }
 }
