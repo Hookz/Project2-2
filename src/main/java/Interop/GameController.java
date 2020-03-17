@@ -222,8 +222,7 @@ public class GameController{
                     break;
             }
 
-            //Check Victory Conditions
-
+            gameOver = checkVictory();
 
             //Switch turn
             if (turn.equals(Turn.GuardTurn)) {
@@ -380,5 +379,13 @@ public class GameController{
                 }
             }
         }
+    }
+
+    private boolean checkVictory(){
+        //Check if game is over and victory is achieved
+        boolean gameOver = false;
+
+        //If victory condition is met, set gameOver to true
+        return gameOver;
     }
 }
