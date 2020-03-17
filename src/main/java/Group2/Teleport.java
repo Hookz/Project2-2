@@ -6,14 +6,6 @@ public class Teleport{
       this.area = area;
       this.goal = goal;
     }
-    private Rectangle area;
-    private Point goal;
-
-    public Rectangle getArea() {
-        return area;
-    }
-
-    public Point getGoal() {
-        return goal;
-    }
+    public Rectangle area;
+    public Point goal;
 }
