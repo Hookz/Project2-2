@@ -396,12 +396,14 @@ public class GameController{
 		//boolean legal = true;
 		List<Point2D> points = new ArrayList<Point2D>();
 		List<Ellipse2D> temp_agents = new ArrayList<Ellipse2D>();
-		Line2D line = new Line2D.Double(startX, startY, goalX, goalY);
+		Line2DExtended line = new Line2DExtended(startX, startY, goalX, goalY);
 		Point2D current;
-		Ellipse2D temp_agent;
-
-		for (Iterator<Point2D> it = new LineIterator(line); it.hasNext();) {
-			current = it.next();
+		Ellipse2D temp_agent = initialLocation;
+		int counter = 0;
+		double stepSize = 0.05;
+		while (temp_agent.getX()<newLocation.getX()&&temp_agent.getY()<newLocation.getY()) {
+		    ++counter;
+			current = line.evalAtX(initialLocation.getX()+stepSize*counter);
 			points.add(current);
 			temp_agent = new Ellipse2D.Double(current.getX(), current.getY(),
 					1.0, 1.0);
