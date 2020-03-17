@@ -8,4 +8,13 @@ public class Teleport{
     }
     public Rectangle area;
     public Point goal;
+
+    public Rectangle getArea() {
+        return area;
+    }
+
+    public Point getGoal() {
+        return goal;
+    }
 }
+
