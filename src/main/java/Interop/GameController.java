@@ -577,6 +577,7 @@ public class GameController{
     private void setViewRangeIntruder(Intruder intruder) {
         AreaPercepts areaPercepts = intruderAreaPercepts.get(intruder);
         if(areaPercepts.isInSentryTower()) {
+            //Right now only setting it to the long view range, need to also reduce short vision later
             intruderViewRange.put(intruder, new Distance(viewRangeSentry[1]));
         }
         if(areaPercepts.isInDoor()) {
