@@ -40,6 +40,8 @@ public class GameController{
     private double windowSoundRadius;
     private double doorSoundRadius;
 
+    private double pheromoneDuration = 10; //SHOULD BE IN SCENARIO FILE BUT ISN'T SO WE SET IT MANUALLY HERE
+
     private List<Rectangle> targetArea;
     private List<Rectangle> spawnAreaIntruders;
     private List<Rectangle> spawnAreaGuards;
@@ -53,8 +55,9 @@ public class GameController{
     private HashMap<Guard,Ellipse2D> guardLocations;
     private HashMap<Intruder,Direction> intruderDirections;
     private HashMap<Guard,Direction> guardDirections;
-    private List<SmellPercept> smells;
-    private HashMap<SmellPercept,Point> smellLocations;
+    private HashMap<SmellPercept,Ellipse2D> guardSmellLocations;
+    private HashMap<SmellPercept,Ellipse2D> intruderSmellLocations;
+
 
     private List<Intruder> intruders;
     private List<Guard> guards;
@@ -153,32 +156,35 @@ public class GameController{
     }
 
     private void runGame(){
+        boolean gameOver = false;
+        while(!gameOver) {
+            smellDecay();
+            switch (turn) {
+                case GuardTurn:
+                    for (Guard guard : guards) {
+                        GuardPercepts percept = guardPercept(guard);
+                        Action action = guard.getAction(percept);
+                        guardAct(action, percept, guard);
+                    }
+                    break;
+                case IntruderTurn:
+                    for (Intruder intruder : intruders) {
+                        IntruderPercepts percept = intruderPercept(intruder);
+                        Action action = intruder.getAction(percept);
+                        intruderAct(action, percept, intruder);
+                    }
+                    break;
+            }
 
-        switch(turn){
-            case GuardTurn:
-                for(Guard guard:guards){
-                    GuardPercepts percept = guardPercept(guard);
-                    Action action = guard.getAction(percept);
-                    guardAct(action, percept, guard);
-                }
-                break;
-            case IntruderTurn:
-                for(Intruder intruder:intruders){
-                    IntruderPercepts percept = intruderPercept(intruder);
-                    Action action = intruder.getAction(percept);
-                    intruderAct(action, percept, intruder);
-                }
-                break;
-        }
-
-        //Check Victory Conditions
+            //Check Victory Conditions
 
 
-        //Switch turn
-        if(turn.equals(Turn.GuardTurn)){
-            turn = Turn.IntruderTurn;
-        }else{
-            turn = Turn.GuardTurn;
+            //Switch turn
+            if (turn.equals(Turn.GuardTurn)) {
+                turn = Turn.IntruderTurn;
+            } else {
+                turn = Turn.GuardTurn;
+            }
         }
     }
 
@@ -210,7 +216,9 @@ public class GameController{
 
         }else if(action instanceof DropPheromone){
             SmellPercept smell = new SmellPercept(((DropPheromone) action).getType(),scenarioPercept.getRadiusPheromone());
-
+            Ellipse2D smellLocation = new Ellipse2D.Double(guardLocations.get(guard).getX(),guardLocations.get(guard).getY(),
+                    smell.getDistance().getValue(),smell.getDistance().getValue());
+            guardSmellLocations.put(smell, smellLocation);
         }else if(action instanceof NoAction){
 
         }else{
@@ -236,7 +244,10 @@ public class GameController{
         }else if(action instanceof Sprint){
 
         }else if(action instanceof DropPheromone){
-
+            SmellPercept smell = new SmellPercept(((DropPheromone) action).getType(),scenarioPercept.getRadiusPheromone());
+            Ellipse2D smellLocation = new Ellipse2D.Double(intruderLocations.get(intruder).getX(),intruderLocations.get(intruder).getY(),
+                    smell.getDistance().getValue(),smell.getDistance().getValue());
+            intruderSmellLocations.put(smell, smellLocation);
         }else if(action instanceof NoAction){
 
         }else{
@@ -252,5 +263,17 @@ public class GameController{
         //If at some point during checking collision is detected, change legal to false
 
         return legal;
+    }
+
+    private void smellDecay(){
+        for (SmellPercept smell:intruderSmellLocations.keySet()){
+            Distance previousSmellRadius = smell.getDistance();
+            Distance newSmellRadius = new Distance(previousSmellRadius.getValue() - (scenarioPercept.getRadiusPheromone().getValue()/pheromoneDuration));
+            SmellPercept updatedSmell = new SmellPercept(smell.getType(),newSmellRadius);
+            Ellipse2D location = intruderSmellLocations.get(smell);
+            Ellipse2D updatedLocation = new Ellipse2D.Double(location.getX(),location.getY(),newSmellRadius.getValue(),newSmellRadius.getValue());
+            intruderSmellLocations.remove(smell);
+            intruderSmellLocations.put(updatedSmell,updatedLocation);
+        }
     }
 }
