@@ -365,7 +365,7 @@ public class GameController{
                     System.out.println("Illegal move attempted");
                 }
             }else{
-                System.out.println("Still on cooldown, turn skipped");
+                System.out.println("Intruder till on cooldown, turn skipped");
             }
 
         }else if(action instanceof DropPheromone){
