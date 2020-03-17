@@ -208,6 +208,7 @@ public class GameController{
                 case GuardTurn:
                     if(!guards.isEmpty()) {
                         for (Guard guard : guards) {
+                            guardPheromoneCooldownDecay(guard);
                             GuardPercepts percept = guardPercept(guard);
                             Action action = guard.getAction(percept);
                             guardAct(action, percept, guard);
@@ -218,6 +219,8 @@ public class GameController{
                     if(!intruders.isEmpty()) {
                         for (Intruder intruder : intruders) {
                             System.out.println("Intruder Location: x "+intruderLocations.get(intruder).getX()+" y "+intruderLocations.get(intruder).getY());
+                            sprintCooldownDecay(intruder);
+                            intruderPheromoneCooldownDecay(intruder);
                             IntruderPercepts percept = intruderPercept(intruder);
                             Action action = intruder.getAction(percept);
                             intruderAct(action, percept, intruder);
@@ -356,6 +359,7 @@ public class GameController{
 
                     intruderLocations.put(intruder, newintruderLocation);
                     soundLocations.put(stepSound, stepSoundLocation);
+                    intruderSprintCooldowns.replace(intruder,sprintCooldown);
 
                 }else{
                     System.out.println("Illegal move attempted");
@@ -422,6 +426,27 @@ public class GameController{
                 }
             }
             soundLocations.remove(remove);
+        }
+    }
+
+    private void sprintCooldownDecay(Intruder intruder){
+        int old = intruderSprintCooldowns.get(intruder);
+        if(old>0) {
+            intruderSprintCooldowns.replace(intruder, old--);
+        }
+    }
+
+    private void intruderPheromoneCooldownDecay(Intruder intruder) {
+        int old = intruderPheromoneCooldowns.get(intruder);
+        if (old > 0) {
+            intruderPheromoneCooldowns.replace(intruder, old--);
+        }
+    }
+
+    private void guardPheromoneCooldownDecay(Guard guard) {
+        int old = guardPheromoneCooldowns.get(guard);
+        if (old > 0) {
+            guardPheromoneCooldowns.replace(guard, old--);
         }
     }
 
