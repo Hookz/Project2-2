@@ -5,12 +5,18 @@ import Group2.Teleport;
 import Interop.Action.*;
 import Interop.Agent.Guard;
 import Interop.Agent.Intruder;
+import Interop.Percept.AreaPercepts;
 import Interop.Percept.GuardPercepts;
 import Interop.Percept.IntruderPercepts;
 import Interop.Percept.Percepts;
 import Interop.Percept.Scenario.*;
 import Interop.Geometry.*;
 import Interop.Percept.Smell.SmellPercept;
+import Interop.Percept.Smell.SmellPercepts;
+import Interop.Percept.Sound.SoundPercepts;
+import Interop.Percept.Vision.FieldOfView;
+import Interop.Percept.Vision.ObjectPercepts;
+import Interop.Percept.Vision.VisionPrecepts;
 import Interop.Percept.Sound.SoundPercept;
 import Interop.Percept.Sound.SoundPerceptType;
 
@@ -83,11 +89,19 @@ public class GameController{
     private HashMap<Guard,Integer> guardPheromoneCooldowns = new HashMap<>();
     private HashMap<Intruder,Boolean> intruderTeleportFlag = new HashMap<>();
     private HashMap<Guard,Boolean> guardTeleportFlag = new HashMap<>();
+    private HashMap<Intruder, Distance> intruderViewRange = new HashMap<>();
+    private HashMap<Guard, Distance> guardViewRange = new HashMap<>();
 
     private List<Intruder> intruders;
     private List<Guard> guards;
 
     private Turn turn = Turn.GuardTurn;
+
+    private ScenarioPercepts scenarioPercepts;
+    private ScenarioIntruderPercepts scenarioIntruderPercepts;
+    private ScenarioGuardPercepts scenarioGuardPercepts;
+    private HashMap<Guard, AreaPercepts> guardsAreaPercepts;
+    private HashMap<Intruder, AreaPercepts> intruderAreaPercepts;
 
     public GameController(int gameMode, int height, int width, int numGuards, int numIntruders, double captureDistance, int winConditionIntruderRounds, double maxRotationAngle, double maxMoveDistanceIntruder,
                               double maxSprintDistanceIntruder, double maxMoveDistanceGuard, int sprintCooldown, int pheromoneCooldown, double radiusPheromone, double slowDownModifierWindow,
@@ -145,6 +159,11 @@ public class GameController{
         this.windows = windows;
         this.sentries = sentries;
 
+        this.scenarioPercepts = new ScenarioPercepts(this.gameMode, new Distance(captureDistance), Angle.fromDegrees(maxRotationAngle), new SlowDownModifiers(slowDownModifierWindow, slowDownModifierDoor,
+                        slowDownModifierSentryTower), new Distance(radiusPheromone), pheromoneCooldown);
+        this.scenarioIntruderPercepts = new ScenarioIntruderPercepts(this.scenarioPercepts, winConditionIntruderRounds, new Distance(maxMoveDistanceIntruder), new Distance(maxSprintDistanceIntruder), sprintCooldown);
+        this.scenarioGuardPercepts = new ScenarioGuardPercepts(this.scenarioPercepts, new Distance(maxMoveDistanceGuard));
+
         /* THIS IS FOR PERIOD 1 AS WE ONLY NEED AN EXPLORATION AGENT
         Later there needs to be a functionality, such that we can choose which groups intruder, and which groups guard
         to use in the game.
@@ -168,6 +187,8 @@ public class GameController{
 
                 intruderSprintCooldowns.put(intruder,0);
                 intruderPheromoneCooldowns.put(intruder,0);
+                setAreaPerceptsIntruder(intruder);
+                setViewRangeIntruder(intruder);
             }
         }
 
@@ -185,6 +206,9 @@ public class GameController{
                 guardDirections.put(guard,direction);
 
                 guardPheromoneCooldowns.put(guard,0);
+
+                setAreaPerceptsGuard(guard);
+                setViewRangeGuard(guard);
             }
         }
 
@@ -247,7 +271,15 @@ public class GameController{
     }
 
     private IntruderPercepts intruderPercept(Intruder intruder){
+        Direction targetDirection = intruderDirections.get(intruder);
+        FieldOfView field = new FieldOfView(intruderViewRange.get(intruder), Angle.fromDegrees(viewAngle));
+        //ObjectPercepts objects = ;
+        //VisionPrecepts vision = ;
+        //SoundPercepts sounds = ;
+        //SmellPercepts smells = ;
+        AreaPercepts areaPercepts = intruderAreaPercepts.get(intruder);
 
+        //return new IntruderPercepts(targetDirection, vision, sounds, smells, areaPercepts, this.scenarioIntruderPercepts);
         return null;
     }
 
@@ -275,6 +307,8 @@ public class GameController{
                 guardLocations.put(guard, newGuardLocation);
                 soundLocations.put(stepSound,stepSoundLocation);
             }
+            setAreaPerceptsGuard(guard);
+            setViewRangeGuard(guard);
 
         }else if(action instanceof Rotate){
             Direction guardDirection = guardDirections.get(guard);
@@ -329,6 +363,8 @@ public class GameController{
                 intruderLocations.put(intruder, newintruderLocation);
                 soundLocations.put(stepSound,stepSoundLocation);
             }
+            setAreaPerceptsIntruder(intruder);
+            setViewRangeIntruder(intruder);
 
         }else if(action instanceof Rotate){
             Direction intruderDirection = intruderDirections.get(intruder);
@@ -366,8 +402,10 @@ public class GameController{
                     System.out.println("Illegal move attempted");
                 }
             }else{
-                System.out.println("Intruder till on cooldown, turn skipped");
+                System.out.println("Still on cooldown, turn skipped");
             }
+            setAreaPerceptsIntruder(intruder);
+            setViewRangeIntruder(intruder);
 
         }else if(action instanceof DropPheromone){
             if(intruderPheromoneCooldowns.get(intruder)==0) {
@@ -415,7 +453,7 @@ public class GameController{
 			for (int j = 0; j < walls.size(); j++) {
 				if (temp_agents.get(i).intersects(walls.get(j))) {
 					return false;
-				} 
+				}
 			}
 		}
 
@@ -487,4 +525,77 @@ public class GameController{
         //If victory condition is met, set gameOver to true
         return gameOver;
     }
+
+    private void setAreaPerceptsIntruder(Intruder intruder) {
+        Iterator it = intruderLocations.entrySet().iterator();
+        while (it.hasNext()) {
+            boolean inWindow = false;
+            boolean inDoor = false;
+            boolean inSentryTower = false;
+            boolean justTeleported = false;
+            Map.Entry pair = (Map.Entry)it.next();
+            Ellipse2D location = (Ellipse2D) pair.getValue();
+            for(Rectangle window: windows) {
+                if(location.intersects(window)) inWindow = true;
+            }
+            for(Rectangle door: doors) {
+                if(location.intersects(door)) inDoor = true;
+            }
+            for(Rectangle sentry: sentries) {
+                if(location.intersects(sentry)) inSentryTower = true;
+            }
+
+            //Add the setting for justTeleported once we have the teleport flag
+            this.intruderAreaPercepts.put(intruder, new AreaPercepts(inWindow, inDoor, inSentryTower, justTeleported));
+            it.remove();
+        }
+    }
+
+    private void setAreaPerceptsGuard(Guard guard) {
+        Iterator it = guardLocations.entrySet().iterator();
+        while (it.hasNext()) {
+            boolean inWindow = false;
+            boolean inDoor = false;
+            boolean inSentryTower = false;
+            boolean justTeleported = false;
+            Map.Entry pair = (Map.Entry)it.next();
+            Ellipse2D location = (Ellipse2D) pair.getValue();
+            for(Rectangle window: windows) {
+                if(location.intersects(window)) inWindow = true;
+            }
+            for(Rectangle door: doors) {
+                if(location.intersects(door)) inDoor = true;
+            }
+            for(Rectangle sentry: sentries) {
+                if(location.intersects(sentry)) inSentryTower = true;
+            }
+
+            //Add the setting for justTeleported once we have the teleport flag
+            this.guardsAreaPercepts.put(guard, new AreaPercepts(inWindow, inDoor, inSentryTower, justTeleported));
+            it.remove();
+        }
+    }
+
+    private void setViewRangeIntruder(Intruder intruder) {
+        AreaPercepts areaPercepts = intruderAreaPercepts.get(intruder);
+        if(areaPercepts.isInSentryTower()) {
+            //Right now only setting it to the long view range, need to also reduce short vision later
+            intruderViewRange.put(intruder, new Distance(viewRangeSentry[1]));
+        }
+        if(areaPercepts.isInDoor()) {
+            intruderViewRange.put(intruder, new Distance(viewRangeIntruderShaded));
+        }
+    }
+
+    private void setViewRangeGuard(Guard guard) {
+        AreaPercepts areaPercepts = guardsAreaPercepts.get(guard);
+        if(areaPercepts.isInSentryTower()) {
+            guardViewRange.put(guard, new Distance(viewRangeSentry[1]));
+        }
+        if(areaPercepts.isInDoor()) {
+            guardViewRange.put(guard, new Distance(viewRangeGuardShaded));
+        }
+    }
+
+
 }
