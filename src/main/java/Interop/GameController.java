@@ -427,39 +427,29 @@ public class GameController{
 	private boolean checkIfLegalMove(Ellipse2D initialLocation,
 			Ellipse2D newLocation) {
 		// Check for collisions. If collision occurs, return false and skip turn
-        int numChecks = 100;
 		double startX = initialLocation.getX();
 		double startY = initialLocation.getY();
 		double goalX = initialLocation.getX();
 		double goalY = initialLocation.getY();
 		//boolean legal = true;
-		List<Point> points = new ArrayList<Point>();
+		List<Point2D> points = new ArrayList<Point2D>();
 		List<Ellipse2D> temp_agents = new ArrayList<Ellipse2D>();
-		Line2D line = new Line2D.Double(startX, startY, goalX, goalY);
+		Line2DExtended line = new Line2DExtended(startX, startY, goalX, goalY);
 		Point2D current;
-		Ellipse2D temp_agent;
+		Ellipse2D temp_agent = initialLocation;
+		int counter = 0;
+		double stepSize = 0.05;
+		while (temp_agent.getX()<newLocation.getX()&&temp_agent.getY()<newLocation.getY()) {
+		    ++counter;
+			current = line.evalAtX(initialLocation.getX()+stepSize*counter);
+			points.add(current);
+			temp_agent = new Ellipse2D.Double(current.getX(), current.getY(),
+					1.0, 1.0);
+			temp_agents.add(temp_agent);
 
-//		for (Iterator<Point2D> it = new LineIterator(line); it.hasNext();) {
-//			current = it.next();
-//			points.add(current);
-//			temp_agent = new Ellipse2D.Double(current.getX(), current.getY(),
-//					1.0, 1.0);
-//			temp_agents.add(temp_agent);
-//
-//		}
-
-        double diffX = Math.abs(startX-goalX)/numChecks;
-        double diffY = Math.abs(startY-goalY)/numChecks;
-        for(int i=0;i<numChecks;i++){
-            points.add(new Point(startX+i*diffX,startY+i*diffY));
-            temp_agent = new Ellipse2D.Double(startX+i*diffX,startY+i*diffY,1,1);
-            temp_agents.add(temp_agent);
-        }
+		}
 
 		for (int i = 0; i < temp_agents.size(); i++) {
-		    if(!(temp_agents.get(i).getX()<width-0.5 && temp_agents.get(i).getX()>0.5 && temp_agents.get(i).getY()<height-0.5 && temp_agents.get(i).getY()>0.5)){
-		        return false;
-            }
 			for (int j = 0; j < walls.size(); j++) {
 				if (temp_agents.get(i).intersects(walls.get(j))) {
 					return false;
