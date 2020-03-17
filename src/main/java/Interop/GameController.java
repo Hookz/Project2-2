@@ -69,16 +69,16 @@ public class GameController{
     private List<Rectangle> doors;
     private List<Rectangle> windows;
     private List<Rectangle> sentries;
-    private HashMap<Intruder,Ellipse2D> intruderLocations;
-    private HashMap<Guard,Ellipse2D> guardLocations;
-    private HashMap<Intruder,Direction> intruderDirections;
-    private HashMap<Guard,Direction> guardDirections;
-    private HashMap<Smell,Ellipse2D> guardSmellLocations;
-    private HashMap<Smell,Ellipse2D> intruderSmellLocations;
-    private HashMap<Sound,Ellipse2D> soundLocations;
-    private HashMap<Intruder,Integer> intruderSprintCooldowns;
-    private HashMap<Intruder,Integer> intruderPheromoneCooldowns;
-    private HashMap<Guard,Integer> guardPheromoneCooldowns;
+    private HashMap<Intruder,Ellipse2D> intruderLocations = new HashMap<>();
+    private HashMap<Guard,Ellipse2D> guardLocations = new HashMap<>();
+    private HashMap<Intruder,Direction> intruderDirections = new HashMap<>();
+    private HashMap<Guard,Direction> guardDirections = new HashMap<>();
+    private HashMap<Smell,Ellipse2D> guardSmellLocations = new HashMap<>();
+    private HashMap<Smell,Ellipse2D> intruderSmellLocations = new HashMap<>();
+    private HashMap<Sound,Ellipse2D> soundLocations = new HashMap<>();
+    private HashMap<Intruder,Integer> intruderSprintCooldowns = new HashMap<>();
+    private HashMap<Intruder,Integer> intruderPheromoneCooldowns = new HashMap<>();
+    private HashMap<Guard,Integer> guardPheromoneCooldowns = new HashMap<>();
 
     private List<Intruder> intruders;
     private List<Guard> guards;
