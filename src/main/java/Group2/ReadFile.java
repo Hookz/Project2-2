@@ -1,4 +1,6 @@
 package Group2;
+import Interop.GameController;
+
 import java.awt.*;
 import java.io.*;
 import java.lang.reflect.Field;
@@ -33,15 +35,16 @@ public class ReadFile{
   private static double maxMoveSoundRadius;
   private static double windowSoundRadius;
   private static double doorSoundRadius;
-  private static Rectangle targetArea;
-  private static Rectangle spawnAreaIntruders;
-  private static Rectangle spawnAreaGuards;
-  private static List<Rectangle> wall = new ArrayList<Rectangle>();
-  private static List<Teleport> teleport = new ArrayList<Teleport>();
+  private static List<Rectangle> targetArea = new ArrayList<Rectangle>();
+  private static List<Rectangle> spawnAreaIntruders = new ArrayList<Rectangle>();
+  private static List<Rectangle> spawnAreaGuards = new ArrayList<Rectangle>();
+  private static double[] viewRangeSentry;
+  private static List<Rectangle> walls = new ArrayList<Rectangle>();
+  private static List<Teleport> teleports = new ArrayList<Teleport>();
   private static List<Rectangle> shaded = new ArrayList<Rectangle>();
-  private static List<Rectangle> door = new ArrayList<Rectangle>();
-  private static List<Rectangle> window = new ArrayList<Rectangle>();
-  private static List<Rectangle> sentry = new ArrayList<Rectangle>();
+  private static List<Rectangle> doors = new ArrayList<Rectangle>();
+  private static List<Rectangle> windows = new ArrayList<Rectangle>();
+  private static List<Rectangle> sentries = new ArrayList<Rectangle>();
 
   public static void main(String[] args) throws IllegalAccessException {
     readFile();
@@ -49,6 +52,10 @@ public class ReadFile{
     for(Field f: fields){
         System.out.println(f.getName()+": "+f.get(f).toString());
     }
+    GameController gc = new GameController(gameMode, height, width, numGuards, numIntruders, captureDistance, winConditionIntruderRounds, maxRotationAngle, maxMoveDistanceIntruder,
+    maxSprintDistanceIntruder, maxMoveDistanceGuard, sprintCooldown, pheromoneCooldown, radiusPheromone, slowDownModifierWindow, slowDownModifierDoor, slowDownModifierSentryTower, viewAngle, viewRays, viewRangeIntruderNormal, viewRangeIntruderShaded,
+    viewRangeGuardNormal, viewRangeGuardShaded, viewRangeSentry, yellSoundRadius, maxMoveSoundRadius, windowSoundRadius, doorSoundRadius, targetArea, spawnAreaIntruders, spawnAreaGuards, walls, teleports,
+            shaded, doors, windows, sentries);
   }
   public static void readFile(){
   try{
@@ -147,7 +154,7 @@ public class ReadFile{
           y = Math.min(Math.min(area[1],area[3]),Math.min(area[5],area[7]));
           areaWidth = Math.max(Math.max(area[0],area[2]),Math.max(area[4],area[6])) - x;
           areaHeight = Math.max(Math.max(area[1],area[3]),Math.max(area[5],area[7])) - y;
-          targetArea = new Rectangle(x,y,areaWidth,areaHeight);
+          targetArea.add(new Rectangle(x,y,areaWidth,areaHeight));
           break;
         case "spawnAreaIntruders":
           area = Arrays.stream(linesplit[1].split(",")).mapToInt(Integer::parseInt).toArray();
@@ -155,7 +162,7 @@ public class ReadFile{
           y = Math.min(Math.min(area[1],area[3]),Math.min(area[5],area[7]));
           areaWidth = Math.max(Math.max(area[0],area[2]),Math.max(area[4],area[6])) - x;
           areaHeight = Math.max(Math.max(area[1],area[3]),Math.max(area[5],area[7])) - y;
-          spawnAreaIntruders = new Rectangle(x,y,areaWidth,areaHeight);
+          spawnAreaIntruders.add(new Rectangle(x,y,areaWidth,areaHeight));
           break;
         case "spawnAreaGuards":
           area = Arrays.stream(linesplit[1].split(",")).mapToInt(Integer::parseInt).toArray();
@@ -163,7 +170,7 @@ public class ReadFile{
           y = Math.min(Math.min(area[1],area[3]),Math.min(area[5],area[7]));
           areaWidth = Math.max(Math.max(area[0],area[2]),Math.max(area[4],area[6])) - x;
           areaHeight = Math.max(Math.max(area[1],area[3]),Math.max(area[5],area[7])) - y;
-          spawnAreaGuards = new Rectangle(x,y,areaWidth,areaHeight);
+          spawnAreaGuards.add(new Rectangle(x,y,areaWidth,areaHeight));
           break;
         case "wall":
           area = Arrays.stream(linesplit[1].split(",")).mapToInt(Integer::parseInt).toArray();
@@ -171,7 +178,7 @@ public class ReadFile{
           y = Math.min(Math.min(area[1],area[3]),Math.min(area[5],area[7]));
           areaWidth = Math.max(Math.max(area[0],area[2]),Math.max(area[4],area[6])) - x;
           areaHeight = Math.max(Math.max(area[1],area[3]),Math.max(area[5],area[7])) - y;
-          wall.add(new Rectangle(x,y,areaWidth,areaHeight));
+          walls.add(new Rectangle(x,y,areaWidth,areaHeight));
           break;
         case "teleport":
           area = Arrays.stream(linesplit[1].split(",")).mapToInt(Integer::parseInt).toArray();
@@ -179,7 +186,7 @@ public class ReadFile{
           y = Math.min(Math.min(area[1],area[3]),Math.min(area[5],area[7]));
           areaWidth = Math.max(Math.max(area[0],area[2]),Math.max(area[4],area[6])) - x;
           areaHeight = Math.max(Math.max(area[1],area[3]),Math.max(area[5],area[7])) - y;
-          teleport.add(new Teleport(new Rectangle(x,y,areaWidth,areaHeight),new Point(area[4],area[5])));
+          teleports.add(new Teleport(new Rectangle(x,y,areaWidth,areaHeight),new Point(area[4],area[5])));
           break;
         case "shaded":
           area = Arrays.stream(linesplit[1].split(",")).mapToInt(Integer::parseInt).toArray();
@@ -195,7 +202,7 @@ public class ReadFile{
           y = Math.min(Math.min(area[1],area[3]),Math.min(area[5],area[7]));
           areaWidth = Math.max(Math.max(area[0],area[2]),Math.max(area[4],area[6])) - x;
           areaHeight = Math.max(Math.max(area[1],area[3]),Math.max(area[5],area[7])) - y;
-          door.add(new Rectangle(x,y,areaWidth,areaHeight));
+          doors.add(new Rectangle(x,y,areaWidth,areaHeight));
           break;
         case "window":
           area = Arrays.stream(linesplit[1].split(",")).mapToInt(Integer::parseInt).toArray();
@@ -203,7 +210,7 @@ public class ReadFile{
           y = Math.min(Math.min(area[1],area[3]),Math.min(area[5],area[7]));
           areaWidth = Math.max(Math.max(area[0],area[2]),Math.max(area[4],area[6])) - x;
           areaHeight = Math.max(Math.max(area[1],area[3]),Math.max(area[5],area[7])) - y;
-          window.add(new Rectangle(x,y,areaWidth,areaHeight));
+          windows.add(new Rectangle(x,y,areaWidth,areaHeight));
           break;
         case "sentry":
           area = Arrays.stream(linesplit[1].split(",")).mapToInt(Integer::parseInt).toArray();
@@ -211,7 +218,10 @@ public class ReadFile{
           y = Math.min(Math.min(area[1],area[3]),Math.min(area[5],area[7]));
           areaWidth = Math.max(Math.max(area[0],area[2]),Math.max(area[4],area[6])) - x;
           areaHeight = Math.max(Math.max(area[1],area[3]),Math.max(area[5],area[7])) - y;
-          sentry.add(new Rectangle(x,y,areaWidth,areaHeight));
+          sentries.add(new Rectangle(x,y,areaWidth,areaHeight));
+          break;
+        case "viewRangeSentry":
+          viewRangeSentry = Arrays.stream(linesplit[1].split(",")).mapToDouble(Double::parseDouble).toArray();
           break;
         default:
           System.out.println("Invalid input sequence in config.txt on line "+lineNumber);
