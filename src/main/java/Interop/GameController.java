@@ -16,6 +16,7 @@ import Interop.Percept.Sound.SoundPerceptType;
 
 import java.awt.Rectangle;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.*;
 
@@ -385,15 +386,42 @@ public class GameController{
         }
     }
 
-    private boolean checkIfLegalMove(Ellipse2D initialLocation, Ellipse2D newLocation){
-        //Check for collisions. If collision occurs, return false and skip turn
+	private boolean checkIfLegalMove(Ellipse2D initialLocation,
+			Ellipse2D newLocation) {
+		// Check for collisions. If collision occurs, return false and skip turn
+		double startX = initialLocation.getX();
+		double startY = initialLocation.getY();
+		double goalX = initialLocation.getX();
+		double goalY = initialLocation.getY();
+		//boolean legal = true;
+		List<Point2D> points = new ArrayList<Point2D>();
+		List<Ellipse2D> temp_agents = new ArrayList<Ellipse2D>();
+		Line2D line = new Line2D.Double(startX, startY, goalX, goalY);
+		Point2D current;
+		Ellipse2D temp_agent;
 
-        boolean legal = true;
+		for (Iterator<Point2D> it = new LineIterator(line); it.hasNext();) {
+			current = it.next();
+			points.add(current);
+			temp_agent = new Ellipse2D.Double(current.getX(), current.getY(),
+					1.0, 1.0);
+			temp_agents.add(temp_agent);
 
-        //If at some point during checking collision is detected, change legal to false
+		}
 
-        return legal;
-    }
+		for (int i = 0; i < temp_agents.size(); i++) {
+			for (int j = 0; j < walls.size(); j++) {
+				if (temp_agents.get(i).intersects(walls.get(j))) {
+					return false;
+				} 
+			}
+		}
+
+		// If at some point during checking collision is detected, change legal
+		// to false
+
+		return true;
+	}
 
     //Smell radius decreases in size each turn
     private void smellDecay(){
