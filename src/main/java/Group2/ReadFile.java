@@ -60,7 +60,7 @@ public class ReadFile{
   public static void readFile(){
   try{
     int lineNumber = 0;
-    final BufferedReader r = new BufferedReader(new FileReader(new File(System.getProperty("java.class.path")+"/config.txt")));
+    final BufferedReader r = new BufferedReader(new FileReader(new File(System.getProperty("user.dir")+"/src/main/resources/config.txt")));
     String nextline;
     int[] area;
     int x,y,areaWidth,areaHeight;

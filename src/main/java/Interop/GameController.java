@@ -3,23 +3,13 @@ package Interop;
 import Group2.AgentsFactory;
 import Group2.Teleport;
 import Interop.Action.*;
-import Interop.Agent.Guard;
-import Interop.Agent.Intruder;
-import Interop.Percept.AreaPercepts;
-import Interop.Percept.GuardPercepts;
-import Interop.Percept.IntruderPercepts;
-import Interop.Percept.Percepts;
+import Interop.Agent.*;
+import Interop.Percept.*;
 import Interop.Percept.Scenario.*;
 import Interop.Geometry.*;
-import Interop.Percept.Smell.SmellPercept;
-import Interop.Percept.Smell.SmellPercepts;
-import Interop.Percept.Sound.SoundPercepts;
-import Interop.Percept.Vision.FieldOfView;
-import Interop.Percept.Vision.ObjectPercepts;
-import Interop.Percept.Vision.VisionPrecepts;
-import Interop.Percept.Sound.SoundPercept;
-import Interop.Percept.Sound.SoundPerceptType;
-
+import Interop.Percept.Smell.*;
+import Interop.Percept.Sound.*;
+import Interop.Percept.Vision.*;
 import java.awt.Rectangle;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
@@ -102,6 +92,8 @@ public class GameController{
     private ScenarioGuardPercepts scenarioGuardPercepts;
     private HashMap<Guard, AreaPercepts> guardsAreaPercepts;
     private HashMap<Intruder, AreaPercepts> intruderAreaPercepts;
+
+    private final double COLLISION_CHECK_STEP_SIZE = 0.05;
 
     public GameController(int gameMode, int height, int width, int numGuards, int numIntruders, double captureDistance, int winConditionIntruderRounds, double maxRotationAngle, double maxMoveDistanceIntruder,
                               double maxSprintDistanceIntruder, double maxMoveDistanceGuard, int sprintCooldown, int pheromoneCooldown, double radiusPheromone, double slowDownModifierWindow,
@@ -292,7 +284,7 @@ public class GameController{
             double newX = guardLocation.getX() + Math.cos(guardDirection.getDegrees()) * ((Move) action).getDistance().getValue();
             double newY = guardLocation.getY() + Math.sin(guardDirection.getDegrees()) * ((Move) action).getDistance().getValue();
             Ellipse2D newGuardLocation = new Ellipse2D.Double(newX,newY,guardLocation.getWidth(),guardLocation.getHeight());
-            if(checkIfLegalMove(guardLocation,newGuardLocation)) {
+            if(checkIfLegalMove(guardLocation,newGuardLocation,COLLISION_CHECK_STEP_SIZE)) {
                 //Teleporting functionality and limitation
                 for(Teleport teleport:teleports) {
                     //Leaving a teleporter area, remove flag
@@ -348,7 +340,7 @@ public class GameController{
             double newX = intruderLocation.getX() + Math.cos(intruderDirection.getDegrees()) * ((Move) action).getDistance().getValue();
             double newY = intruderLocation.getY() + Math.sin(intruderDirection.getDegrees()) * ((Move) action).getDistance().getValue();
             Ellipse2D newintruderLocation = new Ellipse2D.Double(newX,newY,intruderLocation.getWidth(),intruderLocation.getHeight());
-            if(checkIfLegalMove(intruderLocation,newintruderLocation)) {
+            if(checkIfLegalMove(intruderLocation,newintruderLocation, COLLISION_CHECK_STEP_SIZE)) {
                 //Teleporting functionality and limitation
                 for(Teleport teleport:teleports) {
                     //Leaving a teleporter area, remove flag
@@ -381,7 +373,7 @@ public class GameController{
                 double newY = intruderLocation.getY() + Math.sin(intruderDirection.getDegrees()) * ((Move) action).getDistance().getValue();
                 Ellipse2D newintruderLocation = new Ellipse2D.Double(newX, newY, intruderLocation.getWidth(), intruderLocation.getHeight());
 
-                if (checkIfLegalMove(intruderLocation, newintruderLocation)) {
+                if (checkIfLegalMove(intruderLocation, newintruderLocation, COLLISION_CHECK_STEP_SIZE)) {
                     //Teleporting functionality and limitation
                     for(Teleport teleport:teleports) {
                         //Leaving a teleporter area, remove flag
@@ -425,12 +417,16 @@ public class GameController{
     }
 
 	private boolean checkIfLegalMove(Ellipse2D initialLocation,
-			Ellipse2D newLocation) {
+			Ellipse2D newLocation, double stepSize) {
 		// Check for collisions. If collision occurs, return false and skip turn
+
+        if((newLocation.getX()-newLocation.getWidth()/2)<0||(newLocation.getX()+newLocation.getWidth()/2)>width||(newLocation.getY()-newLocation.getHeight()/2)<0||(newLocation.getY()+newLocation.getHeight()/2)>height)
+            return false;
+
 		double startX = initialLocation.getX();
 		double startY = initialLocation.getY();
-		double goalX = initialLocation.getX();
-		double goalY = initialLocation.getY();
+		double goalX = newLocation.getX();
+		double goalY = newLocation.getY();
 		//boolean legal = true;
 		List<Point2D> points = new ArrayList<Point2D>();
 		List<Ellipse2D> temp_agents = new ArrayList<Ellipse2D>();
@@ -438,7 +434,6 @@ public class GameController{
 		Point2D current;
 		Ellipse2D temp_agent = initialLocation;
 		int counter = 0;
-		double stepSize = 0.05;
 		while (temp_agent.getX()<newLocation.getX()&&temp_agent.getY()<newLocation.getY()) {
 		    ++counter;
 			current = line.evalAtX(initialLocation.getX()+stepSize*counter);

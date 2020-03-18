@@ -2,8 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Explorer/Explorer.iml" filepath="$PROJECT_DIR$/Explorer/Explorer.iml" />
-      <module fileurl="file://$PROJECT_DIR$/GameControllerSample/GameControllerSample.iml" filepath="$PROJECT_DIR$/GameControllerSample/GameControllerSample.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/Project2-2.iml" filepath="$PROJECT_DIR$/.idea/Project2-2.iml" />
     </modules>
   </component>
