@@ -34,6 +34,13 @@ public class GUI extends JFrame {
 
                     controller = ReadFile.generateController();
                     Launcher.controller = controller;
+
+                    GUI.super.remove(canvas);
+                    canvas = new GameCanvas(controller);
+                    canvas.backgroundColor = Color.BLUE;
+                    GUI.super.add(canvas);
+
+                    Launcher.canvas = canvas;
                 }
                 else {
                     System.out.println("User cancelled the task.");

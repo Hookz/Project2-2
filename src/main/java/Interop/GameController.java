@@ -25,9 +25,10 @@ public class GameController{
 //    private ScenarioPercepts scenarioPercept;
 //    private ScenarioIntruderPercepts scenarioIntruderPercepts;
 //    private ScenarioGuardPercepts scenarioGuardPercepts;
+    public final boolean DEBUG_TEXT = false;
 
-    private final int height;
-    private final int width;
+    public final int height;
+    public final int width;
     private final int numGuards;
     private final int numIntruders;
     private final double captureDistance;
@@ -64,7 +65,7 @@ public class GameController{
     private List<Rectangle> targetArea;
     private List<Rectangle> spawnAreaIntruders;
     private List<Rectangle> spawnAreaGuards;
-    private List<Rectangle> walls;
+    public List<Rectangle> walls;
     private List<Teleport> teleports;
     private List<Rectangle> shaded;
     private List<Rectangle> doors;
@@ -222,7 +223,7 @@ public class GameController{
             turn = Turn.IntruderTurn;
         }
 
-        runGame();
+        //runGame();
 
     }
 
@@ -250,7 +251,7 @@ public class GameController{
             case IntruderTurn:
                 if(!intruders.isEmpty()) {
                     for (Intruder intruder : intruders) {
-                        System.out.println("Intruder Location: x "+intruderLocations.get(intruder).getX()+" y "+intruderLocations.get(intruder).getY());
+                        if (DEBUG_TEXT) System.out.println("Intruder Location: x "+intruderLocations.get(intruder).getX()+" y "+intruderLocations.get(intruder).getY());
                         sprintCooldownDecay(intruder);
                         intruderPheromoneCooldownDecay(intruder);
                         IntruderPercepts percept = intruderPercept(intruder);

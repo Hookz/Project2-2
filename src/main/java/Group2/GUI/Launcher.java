@@ -71,7 +71,7 @@ public class Launcher {
 
             //sleep for other processes.
             try{
-                Thread.sleep( (lastLoopTime-System.nanoTime() + OPTIMAL_UPDATE_DURATION) / 1000000);
+                Thread.sleep( Math.max((lastLoopTime-System.nanoTime() + OPTIMAL_UPDATE_DURATION) / 1000000, 1));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -88,5 +88,9 @@ public class Launcher {
      */
     public static void logicLoop(double delta) {
         //logic loop here.
+        if (controller != null)
+            controller.playSingleTurn();
+        else
+            System.out.println("We are doomed.");
     }
 }
