@@ -39,3 +39,4 @@ door = 30,40,40,40,30,60,40,60
 window = 0,5,5,5,0,10,5,10
 sentry = 100,100,120,100,100,140,120,140
 viewRangeSentry = 2.0,20.0
+pheromoneExpireRounds = 10

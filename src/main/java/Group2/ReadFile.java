@@ -35,6 +35,7 @@ public class ReadFile{
   private static double maxMoveSoundRadius;
   private static double windowSoundRadius;
   private static double doorSoundRadius;
+  private static int pheromoneExpireRounds;
   private static List<Rectangle> targetArea = new ArrayList<Rectangle>();
   private static List<Rectangle> spawnAreaIntruders = new ArrayList<Rectangle>();
   private static List<Rectangle> spawnAreaGuards = new ArrayList<Rectangle>();
@@ -53,7 +54,7 @@ public class ReadFile{
         System.out.println(f.getName()+": "+f.get(f).toString());
     }
     GameController gc = new GameController(gameMode, height, width, numGuards, numIntruders, captureDistance, winConditionIntruderRounds, maxRotationAngle, maxMoveDistanceIntruder,
-    maxSprintDistanceIntruder, maxMoveDistanceGuard, sprintCooldown, pheromoneCooldown, radiusPheromone, slowDownModifierWindow, slowDownModifierDoor, slowDownModifierSentryTower, viewAngle, viewRays, viewRangeIntruderNormal, viewRangeIntruderShaded,
+    maxSprintDistanceIntruder, maxMoveDistanceGuard, pheromoneExpireRounds, sprintCooldown, pheromoneCooldown, radiusPheromone, slowDownModifierWindow, slowDownModifierDoor, slowDownModifierSentryTower, viewAngle, viewRays, viewRangeIntruderNormal, viewRangeIntruderShaded,
     viewRangeGuardNormal, viewRangeGuardShaded, viewRangeSentry, yellSoundRadius, maxMoveSoundRadius, windowSoundRadius, doorSoundRadius, targetArea, spawnAreaIntruders, spawnAreaGuards, walls, teleports,
             shaded, doors, windows, sentries);
   }
@@ -147,6 +148,9 @@ public class ReadFile{
           break;
         case "doorSoundRadius":
           doorSoundRadius = Double.parseDouble(linesplit[1]);
+          break;
+        case "pheromoneExpireRounds":
+          pheromoneExpireRounds = Integer.parseInt(linesplit[1]);
           break;
         case "targetArea":
           area = Arrays.stream(linesplit[1].split(",")).mapToInt(Integer::parseInt).toArray();

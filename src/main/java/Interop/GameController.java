@@ -54,7 +54,7 @@ public class GameController{
     private final double doorSoundRadius;
     private final double radiusPheromone;
 
-    private final double pheromoneDuration = 10; //SHOULD BE IN SCENARIO FILE BUT ISN'T SO WE SET IT MANUALLY HERE
+    private final double pheromoneExpireRounds;
     private final int sprintCooldown;
     private final int pheromoneCooldown;
 
@@ -106,7 +106,7 @@ public class GameController{
     private final double COLLISION_CHECK_STEP_SIZE = 0.05;
 
     public GameController(int gameMode, int height, int width, int numGuards, int numIntruders, double captureDistance, int winConditionIntruderRounds, double maxRotationAngle, double maxMoveDistanceIntruder,
-                              double maxSprintDistanceIntruder, double maxMoveDistanceGuard, int sprintCooldown, int pheromoneCooldown, double radiusPheromone, double slowDownModifierWindow,
+                              double maxSprintDistanceIntruder, double maxMoveDistanceGuard, int pheromoneExpireRounds, int sprintCooldown, int pheromoneCooldown, double radiusPheromone, double slowDownModifierWindow,
                               double slowDownModifierDoor, double slowDownModifierSentryTower, double viewAngle, int viewRays, double viewRangeIntruderNormal, double viewRangeIntruderShaded,
                               double viewRangeGuardNormal, double viewRangeGuardShaded, double[] viewRangeSentry, double yellSoundRadius, double maxMoveSoundRadius, double windowSoundRadius,
                               double doorSoundRadius, List<Rectangle> targetArea, List<Rectangle> spawnAreaIntruders, List<Rectangle> spawnAreaGuards, List<Rectangle> walls, List<Teleport> teleports,
@@ -132,6 +132,7 @@ public class GameController{
 
         this.sprintCooldown = sprintCooldown;
         this.pheromoneCooldown = pheromoneCooldown;
+        this.pheromoneExpireRounds = pheromoneExpireRounds;
 
         this.slowDownModifierWindow = slowDownModifierWindow;
         this.slowDownModifierDoor = slowDownModifierDoor;
@@ -483,7 +484,7 @@ public class GameController{
             ArrayList<Smell> remove = new ArrayList<>();
             for (Smell smell : intruderSmellLocations.keySet()) {
                 Distance previousSmellRadius = smell.getRadius();
-                Distance newSmellRadius = new Distance(previousSmellRadius.getValue() - (radiusPheromone / pheromoneDuration));
+                Distance newSmellRadius = new Distance(previousSmellRadius.getValue() - (radiusPheromone / pheromoneExpireRounds));
                 if (newSmellRadius.getValue() > 0) {
                     Smell updatedSmell = new Smell(smell.getType(), newSmellRadius);
                     Ellipse2D location = intruderSmellLocations.get(smell);
