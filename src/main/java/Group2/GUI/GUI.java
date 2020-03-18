@@ -3,15 +3,22 @@ package Group2.GUI;
 import Group2.ReadFile;
 import Interop.GameController;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.AbstractAction;
+import javax.swing.JFileChooser;
+
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.io.File;
 
 public class GUI extends JFrame {
     public final int SCN_W = 800;
     public final int SCN_H = 600;
-    public final String SCN_TITLE = "Tom & Jerry - GUI";
+    public final String SCN_TITLE = "Tom & Jerry";
+    public String scenarioName = "No Scenario Loaded";
     public GameCanvas canvas;
     public GameController controller;
 
@@ -35,14 +42,12 @@ public class GUI extends JFrame {
                     System.out.println("Selected scenario: " + selectedFile.getAbsolutePath());
                     ReadFile.readFile(selectedFile);
 
-                    GUI.super.setTitle(SCN_TITLE + ": Scenario " + selectedFile.getName());
-
+                    scenarioName = selectedFile.getName();
                     controller = ReadFile.generateController();
                     Launcher.controller = controller;
 
                     GUI.super.remove(canvas);
                     canvas = new GameCanvas(controller);
-                    canvas.backgroundColor = Color.BLUE;
                     GUI.super.add(canvas);
 
                     Launcher.canvas = canvas;
@@ -53,10 +58,23 @@ public class GUI extends JFrame {
             }
         });
         JMenuItem saveMenuItem = new JMenuItem("Save Scenario");
+        JMenuItem closeMenuItem = new JMenuItem(new AbstractAction("Close Scenario") {
+            public void actionPerformed(ActionEvent e) {
+                GUI.super.remove(canvas);
+                canvas = new GameCanvas(null);
+                GUI.super.add(canvas);
+                scenarioName = "No Scenario Loaded";
+                //reset Launcher fields
+                Launcher.canvas = canvas;
+                Launcher.controller = null;
+                Launcher.turn = 0;
+            }
+        });
         JMenuItem analysisMenuItem = new JMenuItem("Export Analysis");
 
         fileMenu.add(loadMenuItem);
         fileMenu.add(saveMenuItem);
+        fileMenu.add(closeMenuItem);
         fileMenu.addSeparator();
         fileMenu.add(analysisMenuItem);
 
@@ -64,7 +82,19 @@ public class GUI extends JFrame {
         JMenu editMenu = new JMenu("Edit");
         JMenuItem intruderMenuItem = new JMenuItem("Add Intruder");
         JMenuItem guardMenuItem = new JMenuItem("Add Guard");
-        JMenuItem pausePlayMenuItem = new JMenuItem("Play Simulation");
+        JMenuItem pausePlayMenuItem = new JMenuItem(new AbstractAction("Pause Simulation") {
+            public void actionPerformed(ActionEvent e) {
+                if (Launcher.paused) {
+                    Launcher.paused = false;
+
+                    ((JMenuItem) e.getSource()).setText("Pause Simulation");
+                    return;
+                }
+
+                ((JMenuItem) e.getSource()).setText("Play Simulation");
+                Launcher.paused = true;
+            }
+        });
 
         menuBar.add(editMenu);
         editMenu.add(intruderMenuItem);
@@ -95,15 +125,14 @@ public class GUI extends JFrame {
                     GUI.super.dispose();
                     GUI.super.setExtendedState(0);
                     GUI.super.setUndecorated(false);
-                    GUI.super.setSize(originalDimension[0], originalDimension[1]);
                     GUI.super.pack();
+                    GUI.super.setSize(originalDimension[0], originalDimension[1]);
                     GUI.super.setVisible(true);
                     ((JMenuItem) e.getSource()).setText("Toggle Fullscreen");
                     fullscreen = false;
                 }
             }
         });
-
 
         menuBar.add(viewMenu);
         viewMenu.add(perspectiveSubmenu);
@@ -117,8 +146,14 @@ public class GUI extends JFrame {
         super.add(this.canvas);
         super.setJMenuBar(menuBar);
         super.setSize(SCN_W, SCN_H);
-        super.setTitle(SCN_TITLE);
+        super.setTitle(titleFactory());
         super.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
+
+    public String titleFactory() {
+        String res = SCN_TITLE + ", Scenario \"" + scenarioName + "\"";
+        if (Launcher.paused) res += " - Paused - ";
+        return res;
     }
 }
 

@@ -1,9 +1,9 @@
 package Group2.GUI;
 
-import Group2.ReadFile;
 import Interop.GameController;
 
-import javax.swing.*;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 public class Launcher {
     public static boolean gameRunning = true;
@@ -46,11 +46,13 @@ public class Launcher {
      *
      * This data will be relying upon the agents, so I'm not sure how we would bind.
      */
-    public static final long OPTIMAL_UPDATE_DURATION = 1000000000 / 30;
+    public static final int UPDATE_PER_SECOND = 5;
+    public static final long OPTIMAL_UPDATE_DURATION = 1000000000 / UPDATE_PER_SECOND;
+    public static int fps = 0;
+    public static int turn = 0;
     public static void gameLoop() {
         long lastLoopTime = System.nanoTime();
         long lastFrameInThisSecondShownAt = 0;
-        int fps = 0;
 
         while (gameRunning) {
             long now = System.nanoTime();
@@ -60,6 +62,7 @@ public class Launcher {
             lastFrameInThisSecondShownAt += updateLength;
             fps++;
             if (lastFrameInThisSecondShownAt >= 1000000000) {
+                if (interfaceInstance != null) interfaceInstance.setTitle(interfaceInstance.titleFactory() + ", Turn: " + turn + ", FPS: " + fps);
                 lastFrameInThisSecondShownAt = 0;
                 fps = 0;
             }
@@ -90,6 +93,7 @@ public class Launcher {
         if (controller != null) {
             //logic loop here.
             controller.playSingleTurn();
+            turn++;
         }
     }
 }
