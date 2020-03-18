@@ -12,6 +12,8 @@ import Interop.Utils.Utils;
 import Interop.Percept.Smell.*;
 import Interop.Percept.Sound.*;
 import Interop.Percept.Vision.*;
+import javafx.scene.shape.Ellipse;
+
 import java.awt.Rectangle;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
@@ -539,7 +541,7 @@ public class GameController{
     }
 
     private void setAreaPerceptsIntruder(Intruder intruder) {
-        Iterator it = intruderLocations.entrySet().iterator();
+        Iterator it = (new HashMap<>(intruderLocations)).entrySet().iterator();
         while (it.hasNext()) {
             boolean inWindow = false;
             boolean inDoor = false;
@@ -586,7 +588,7 @@ public class GameController{
     }
 
     private void setAreaPerceptsGuard(Guard guard) {
-        Iterator it = guardLocations.entrySet().iterator();
+        Iterator it = (new HashMap<>(guardLocations)).entrySet().iterator();
         while (it.hasNext()) {
             boolean inWindow = false;
             boolean inDoor = false;
