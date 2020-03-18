@@ -427,10 +427,14 @@ public class GameController{
 	private boolean checkIfLegalMove(Ellipse2D initialLocation,
 			Ellipse2D newLocation) {
 		// Check for collisions. If collision occurs, return false and skip turn
+
+        if((newLocation.getX()-newLocation.getWidth()/2)<0||(newLocation.getX()+newLocation.getWidth()/2)>width||(newLocation.getY()-newLocation.getHeight()/2)<0||(newLocation.getY()+newLocation.getHeight()/2)>height)
+            return false;
+
 		double startX = initialLocation.getX();
 		double startY = initialLocation.getY();
-		double goalX = initialLocation.getX();
-		double goalY = initialLocation.getY();
+		double goalX = newLocation.getX();
+		double goalY = newLocation.getY();
 		//boolean legal = true;
 		List<Point2D> points = new ArrayList<Point2D>();
 		List<Ellipse2D> temp_agents = new ArrayList<Ellipse2D>();
