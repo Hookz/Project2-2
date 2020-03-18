@@ -7,9 +7,13 @@ import Interop.Agent.*;
 import Interop.Percept.*;
 import Interop.Percept.Scenario.*;
 import Interop.Geometry.*;
+import Interop.Utils.Utils;
+
 import Interop.Percept.Smell.*;
 import Interop.Percept.Sound.*;
 import Interop.Percept.Vision.*;
+import javafx.scene.shape.Ellipse;
+
 import java.awt.Rectangle;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
@@ -81,6 +85,9 @@ public class GameController{
     private HashMap<Guard,Boolean> guardTeleportFlag = new HashMap<>();
     private HashMap<Intruder, Distance> intruderViewRange = new HashMap<>();
     private HashMap<Guard, Distance> guardViewRange = new HashMap<>();
+    private HashMap<Intruder, Double> intruderMaxMoveDistance = new HashMap<>();
+    private HashMap<Intruder, Double> intruderMaxSprintDistance = new HashMap<>();
+    private HashMap<Guard, Double> guardMaxMoveDistance = new HashMap<>();
 
     private List<Intruder> intruders;
     private List<Guard> guards;
@@ -90,8 +97,11 @@ public class GameController{
     private ScenarioPercepts scenarioPercepts;
     private ScenarioIntruderPercepts scenarioIntruderPercepts;
     private ScenarioGuardPercepts scenarioGuardPercepts;
-    private HashMap<Guard, AreaPercepts> guardsAreaPercepts;
-    private HashMap<Intruder, AreaPercepts> intruderAreaPercepts;
+    private HashMap<Guard, AreaPercepts> guardsAreaPercepts = new HashMap<>();
+    private HashMap<Intruder, AreaPercepts> intruderAreaPercepts = new HashMap<>();
+    private HashMap<Intruder, SoundPercepts> intruderSoundPercepts = new HashMap<>();
+    private HashMap<Guard, SoundPercepts> guardSoundPercepts = new HashMap<>();
+
 
     private final double COLLISION_CHECK_STEP_SIZE = 0.05;
 
@@ -180,7 +190,7 @@ public class GameController{
                 intruderSprintCooldowns.put(intruder,0);
                 intruderPheromoneCooldowns.put(intruder,0);
                 setAreaPerceptsIntruder(intruder);
-                setViewRangeIntruder(intruder);
+                setIntruderSoundPercepts(intruder);
             }
         }
 
@@ -200,7 +210,7 @@ public class GameController{
                 guardPheromoneCooldowns.put(guard,0);
 
                 setAreaPerceptsGuard(guard);
-                setViewRangeGuard(guard);
+                setGuardSoundPercepts(guard);
             }
         }
 
@@ -267,7 +277,7 @@ public class GameController{
         FieldOfView field = new FieldOfView(intruderViewRange.get(intruder), Angle.fromDegrees(viewAngle));
         //ObjectPercepts objects = ;
         //VisionPrecepts vision = ;
-        //SoundPercepts sounds = ;
+        SoundPercepts sounds = intruderSoundPercepts.get(intruder);
         //SmellPercepts smells = ;
         AreaPercepts areaPercepts = intruderAreaPercepts.get(intruder);
 
@@ -299,8 +309,6 @@ public class GameController{
                 guardLocations.put(guard, newGuardLocation);
                 soundLocations.put(stepSound,stepSoundLocation);
             }
-            setAreaPerceptsGuard(guard);
-            setViewRangeGuard(guard);
 
         }else if(action instanceof Rotate){
             Direction guardDirection = guardDirections.get(guard);
@@ -329,6 +337,8 @@ public class GameController{
             System.out.println("No action picked...");
         }
 
+        setAreaPerceptsGuard(guard);
+        setGuardSoundPercepts(guard);
     }
 
     private void intruderAct(Action action, IntruderPercepts percept, Intruder intruder){
@@ -355,8 +365,6 @@ public class GameController{
                 intruderLocations.put(intruder, newintruderLocation);
                 soundLocations.put(stepSound,stepSoundLocation);
             }
-            setAreaPerceptsIntruder(intruder);
-            setViewRangeIntruder(intruder);
 
         }else if(action instanceof Rotate){
             Direction intruderDirection = intruderDirections.get(intruder);
@@ -396,8 +404,6 @@ public class GameController{
             }else{
                 System.out.println("Still on cooldown, turn skipped");
             }
-            setAreaPerceptsIntruder(intruder);
-            setViewRangeIntruder(intruder);
 
         }else if(action instanceof DropPheromone){
             if(intruderPheromoneCooldowns.get(intruder)==0) {
@@ -414,59 +420,62 @@ public class GameController{
         }else{
             System.out.println("No action picked...");
         }
+
+        setAreaPerceptsIntruder(intruder);
+        setIntruderSoundPercepts(intruder);
     }
 
-	private boolean checkIfLegalMove(Ellipse2D initialLocation,
-			Ellipse2D newLocation, double stepSize) {
-		// Check for collisions. If collision occurs, return false and skip turn
+    private boolean checkIfLegalMove(Ellipse2D initialLocation,
+                                     Ellipse2D newLocation, double stepSize) {
+        // Check for collisions. If collision occurs, return false and skip turn
 
         if((newLocation.getX()-newLocation.getWidth()/2)<0||(newLocation.getX()+newLocation.getWidth()/2)>width||(newLocation.getY()-newLocation.getHeight()/2)<0||(newLocation.getY()+newLocation.getHeight()/2)>height)
             return false;
 
-		double startX = initialLocation.getX();
-		double startY = initialLocation.getY();
-		double goalX = newLocation.getX();
-		double goalY = newLocation.getY();
-		//boolean legal = true;
-		List<Point2D> points = new ArrayList<Point2D>();
-		List<Ellipse2D> temp_agents = new ArrayList<Ellipse2D>();
-		Line2DExtended line = new Line2DExtended(startX, startY, goalX, goalY);
-		Point2D current;
-		Ellipse2D temp_agent = initialLocation;
-		int counter = 0;
-		while (temp_agent.getX()<newLocation.getX()&&temp_agent.getY()<newLocation.getY()) {
-		    ++counter;
-			current = line.evalAtX(initialLocation.getX()+stepSize*counter);
-			if(current.getX()<newLocation.getX()&&current.getY()<newLocation.getY()) {
+        double startX = initialLocation.getX();
+        double startY = initialLocation.getY();
+        double goalX = newLocation.getX();
+        double goalY = newLocation.getY();
+        //boolean legal = true;
+        List<Point2D> points = new ArrayList<Point2D>();
+        List<Ellipse2D> temp_agents = new ArrayList<Ellipse2D>();
+        Line2DExtended line = new Line2DExtended(startX, startY, goalX, goalY);
+        Point2D current;
+        Ellipse2D temp_agent = initialLocation;
+        int counter = 0;
+        while (temp_agent.getX()<newLocation.getX()&&temp_agent.getY()<newLocation.getY()) {
+            ++counter;
+            current = line.evalAtX(initialLocation.getX()+stepSize*counter);
+            if(current.getX()<newLocation.getX()&&current.getY()<newLocation.getY()) {
                 points.add(current);
                 temp_agent = new Ellipse2D.Double(current.getX(), current.getY(),
                         1.0, 1.0);
                 temp_agents.add(temp_agent);
             }
-			else break;
-		}
-		temp_agents.add(newLocation);
-		for (int i = 0; i < temp_agents.size(); i++) {
-		    for(Intruder intruder:intruders){
-		        double diffX = Math.abs(temp_agents.get(i).getX() - intruderLocations.get(intruder).getX());
-		        double diffY = Math.abs(temp_agents.get(i).getY() - intruderLocations.get(intruder).getY());
-		        double distance = Math.sqrt(Math.pow(diffX,2)+Math.pow(diffY,2));
-		        if(distance<1){
-		            return false;
+            else break;
+        }
+        temp_agents.add(newLocation);
+        for (int i = 0; i < temp_agents.size(); i++) {
+            for(Intruder intruder:intruders){
+                double diffX = Math.abs(temp_agents.get(i).getX() - intruderLocations.get(intruder).getX());
+                double diffY = Math.abs(temp_agents.get(i).getY() - intruderLocations.get(intruder).getY());
+                double distance = Math.sqrt(Math.pow(diffX,2)+Math.pow(diffY,2));
+                if(distance<1){
+                    return false;
                 }
             }
-			for (int j = 0; j < walls.size(); j++) {
-				if (temp_agents.get(i).intersects(walls.get(j))) {
-					return false;
-				}
-			}
-		}
+            for (int j = 0; j < walls.size(); j++) {
+                if (temp_agents.get(i).intersects(walls.get(j))) {
+                    return false;
+                }
+            }
+        }
 
-		// If at some point during checking collision is detected, change legal
-		// to false
+        // If at some point during checking collision is detected, change legal
+        // to false
 
-		return true;
-	}
+        return true;
+    }
 
     //Smell radius decreases in size each turn
     private void smellDecay(){
@@ -532,7 +541,7 @@ public class GameController{
     }
 
     private void setAreaPerceptsIntruder(Intruder intruder) {
-        Iterator it = intruderLocations.entrySet().iterator();
+        Iterator it = (new HashMap<>(intruderLocations)).entrySet().iterator();
         while (it.hasNext()) {
             boolean inWindow = false;
             boolean inDoor = false;
@@ -541,13 +550,35 @@ public class GameController{
             Map.Entry pair = (Map.Entry)it.next();
             Ellipse2D location = (Ellipse2D) pair.getValue();
             for(Rectangle window: windows) {
-                if(location.intersects(window)) inWindow = true;
+                if(location.intersects(window)) {
+                    inWindow = true;
+                    intruderMaxMoveDistance.put(intruder, defaultMaxMoveDistanceIntruder*slowDownModifierWindow);
+                    intruderMaxSprintDistance.put(intruder, defaultMaxSprintDistanceIntruder*slowDownModifierWindow);
+                    intruderViewRange.put(intruder, new Distance(viewRangeIntruderNormal));
+                }
             }
             for(Rectangle door: doors) {
-                if(location.intersects(door)) inDoor = true;
+                if(location.intersects(door)) {
+                    inDoor = true;
+                    intruderMaxMoveDistance.put(intruder, defaultMaxMoveDistanceIntruder*slowDownModifierDoor);
+                    intruderMaxSprintDistance.put(intruder, defaultMaxSprintDistanceIntruder*slowDownModifierDoor);
+                    intruderViewRange.put(intruder, new Distance(viewRangeIntruderShaded));
+                }
             }
             for(Rectangle sentry: sentries) {
-                if(location.intersects(sentry)) inSentryTower = true;
+                if(location.intersects(sentry)) {
+                    inSentryTower = true;
+                    intruderMaxMoveDistance.put(intruder, defaultMaxMoveDistanceIntruder*slowDownModifierSentryTower);
+                    intruderMaxSprintDistance.put(intruder, defaultMaxSprintDistanceIntruder*slowDownModifierSentryTower);
+                    //Right now only setting it to the long view range, need to also reduce short vision later
+                    intruderViewRange.put(intruder, new Distance(viewRangeSentry[1]));
+                }
+            }
+
+            if(!inWindow && !inDoor && !inSentryTower) {
+                intruderMaxMoveDistance.put(intruder, defaultMaxMoveDistanceIntruder);
+                intruderMaxSprintDistance.put(intruder, defaultMaxSprintDistanceIntruder);
+                intruderViewRange.put(intruder, new Distance(viewRangeIntruderNormal));
             }
 
             //Add the setting for justTeleported once we have the teleport flag
@@ -557,7 +588,7 @@ public class GameController{
     }
 
     private void setAreaPerceptsGuard(Guard guard) {
-        Iterator it = guardLocations.entrySet().iterator();
+        Iterator it = (new HashMap<>(guardLocations)).entrySet().iterator();
         while (it.hasNext()) {
             boolean inWindow = false;
             boolean inDoor = false;
@@ -566,13 +597,34 @@ public class GameController{
             Map.Entry pair = (Map.Entry)it.next();
             Ellipse2D location = (Ellipse2D) pair.getValue();
             for(Rectangle window: windows) {
-                if(location.intersects(window)) inWindow = true;
+                if(location.intersects(window)) {
+                    inWindow = true;
+                    guardMaxMoveDistance.put(guard, defaultMaxMoveDistanceGuard*slowDownModifierWindow);
+                    guardViewRange.put(guard, new Distance(viewRangeGuardNormal));
+
+                }
             }
             for(Rectangle door: doors) {
-                if(location.intersects(door)) inDoor = true;
+                if(location.intersects(door)) {
+                    inDoor = true;
+                    guardMaxMoveDistance.put(guard, defaultMaxMoveDistanceGuard*slowDownModifierDoor);
+                    guardViewRange.put(guard, new Distance(viewRangeGuardShaded));
+
+                }
             }
             for(Rectangle sentry: sentries) {
-                if(location.intersects(sentry)) inSentryTower = true;
+                if(location.intersects(sentry)) {
+                    inSentryTower = true;
+                    guardMaxMoveDistance.put(guard, defaultMaxMoveDistanceGuard*slowDownModifierSentryTower);
+                    //Right now only setting it to the long view range, need to also reduce short vision later
+                    guardViewRange.put(guard, new Distance(viewRangeSentry[1]));
+
+                }
+            }
+
+            if(!inWindow && !inDoor && !inSentryTower) {
+                guardMaxMoveDistance.put(guard, defaultMaxMoveDistanceGuard);
+                guardViewRange.put(guard, new Distance(viewRangeGuardNormal));
             }
 
             //Add the setting for justTeleported once we have the teleport flag
@@ -581,25 +633,58 @@ public class GameController{
         }
     }
 
-    private void setViewRangeIntruder(Intruder intruder) {
-        AreaPercepts areaPercepts = intruderAreaPercepts.get(intruder);
-        if(areaPercepts.isInSentryTower()) {
-            //Right now only setting it to the long view range, need to also reduce short vision later
-            intruderViewRange.put(intruder, new Distance(viewRangeSentry[1]));
+
+    private void setIntruderSoundPercepts(Intruder intruder) {
+
+        Ellipse2D intruderLoc = intruderLocations.get(intruder);
+        HashSet<SoundPercept> soundPerceptsSet = new HashSet<>();
+        Iterator it = (new HashMap<>(soundLocations)).entrySet().iterator();
+
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+            Ellipse2D soundLoc = (Ellipse2D) pair.getValue();
+            double centerDistance = new Distance(new Point(soundLoc.getCenterX(), soundLoc.getCenterY()), new Point(intruderLoc.getCenterX(), intruderLoc.getCenterY())).getValue();
+            double radiusSum = soundLoc.getWidth() + intruderLoc.getWidth();
+            if (centerDistance <= radiusSum) {
+                Sound sound = (Sound) pair.getKey();
+                double deltaX = Math.abs(intruderLoc.getCenterX() - soundLoc.getCenterX());
+                Direction soundDirection = Direction.fromRadians(Math.acos(deltaX / centerDistance));
+                Angle perceivedAngle = soundDirection.getDistance(intruderDirections.get(intruder));
+                Direction perceivedDirection =  Direction.fromRadians(perceivedAngle.getRadians());
+                soundPerceptsSet.add(new SoundPercept(sound.getType(), perceivedDirection));
+            }
+            it.remove();
         }
-        if(areaPercepts.isInDoor()) {
-            intruderViewRange.put(intruder, new Distance(viewRangeIntruderShaded));
-        }
+        SoundPercepts soundPercepts = new SoundPercepts(soundPerceptsSet);
+        this.intruderSoundPercepts.put(intruder, soundPercepts);
     }
 
-    private void setViewRangeGuard(Guard guard) {
-        AreaPercepts areaPercepts = guardsAreaPercepts.get(guard);
-        if(areaPercepts.isInSentryTower()) {
-            guardViewRange.put(guard, new Distance(viewRangeSentry[1]));
+
+    private void setGuardSoundPercepts(Guard guard) {
+
+        Ellipse2D guardLoc = guardLocations.get(guard);
+        HashSet<SoundPercept> soundPerceptsSet = new HashSet<>();
+        Iterator it = (new HashMap<>(soundLocations)).entrySet().iterator();
+
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+            Ellipse2D soundLoc = (Ellipse2D) pair.getValue();
+            double centerDistance = new Distance(new Point(soundLoc.getCenterX(), soundLoc.getCenterY()), new Point(guardLoc.getCenterX(), guardLoc.getCenterY())).getValue();
+            double radiusSum = soundLoc.getWidth() + guardLoc.getWidth();
+            if (centerDistance <= radiusSum) {
+                Sound sound = (Sound) pair.getKey();
+                double deltaX = Math.abs(guardLoc.getCenterX() - soundLoc.getCenterX());
+                Direction soundDirection = Direction.fromRadians(Math.acos(deltaX / centerDistance));
+                Direction perceivedAngle = (Direction) soundDirection.getDistance(guardDirections.get(guard));
+                soundPerceptsSet.add(new SoundPercept(sound.getType(), perceivedAngle));
+            }
+
+            it.remove();
         }
-        if(areaPercepts.isInDoor()) {
-            guardViewRange.put(guard, new Distance(viewRangeGuardShaded));
-        }
+
+        SoundPercepts soundPercepts = new SoundPercepts(soundPerceptsSet);
+        this.guardSoundPercepts.put(guard, soundPercepts);
+
     }
 
 
