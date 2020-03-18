@@ -226,47 +226,50 @@ public class GameController{
 
     }
 
+    boolean gameOver = false;
     private void runGame(){
-        boolean gameOver = false;
         while(!gameOver) {
-            smellDecay();
-            soundDecay();
-            switch (turn) {
-                case GuardTurn:
-                    if(!guards.isEmpty()) {
-                        for (Guard guard : guards) {
-                            guardPheromoneCooldownDecay(guard);
-                            GuardPercepts percept = guardPercept(guard);
-                            Action action = guard.getAction(percept);
-                            guardAct(action, percept, guard);
-                        }
-                    }
-                    break;
-                case IntruderTurn:
-                    if(!intruders.isEmpty()) {
-                        for (Intruder intruder : intruders) {
-                            System.out.println("Intruder Location: x "+intruderLocations.get(intruder).getX()+" y "+intruderLocations.get(intruder).getY());
-                            sprintCooldownDecay(intruder);
-                            intruderPheromoneCooldownDecay(intruder);
-                            IntruderPercepts percept = intruderPercept(intruder);
-                            Action action = intruder.getAction(percept);
-                            intruderAct(action, percept, intruder);
-                        }
-                    }
-                    break;
-            }
-
-            gameOver = checkVictory();
-
-            //Switch turn
-            if (turn.equals(Turn.GuardTurn)) {
-                turn = Turn.IntruderTurn;
-            } else {
-                turn = Turn.GuardTurn;
-            }
+            playSingleTurn();
         }
     }
 
+    public void playSingleTurn() {
+        smellDecay();
+        soundDecay();
+        switch (turn) {
+            case GuardTurn:
+                if(!guards.isEmpty()) {
+                    for (Guard guard : guards) {
+                        guardPheromoneCooldownDecay(guard);
+                        GuardPercepts percept = guardPercept(guard);
+                        Action action = guard.getAction(percept);
+                        guardAct(action, percept, guard);
+                    }
+                }
+                break;
+            case IntruderTurn:
+                if(!intruders.isEmpty()) {
+                    for (Intruder intruder : intruders) {
+                        System.out.println("Intruder Location: x "+intruderLocations.get(intruder).getX()+" y "+intruderLocations.get(intruder).getY());
+                        sprintCooldownDecay(intruder);
+                        intruderPheromoneCooldownDecay(intruder);
+                        IntruderPercepts percept = intruderPercept(intruder);
+                        Action action = intruder.getAction(percept);
+                        intruderAct(action, percept, intruder);
+                    }
+                }
+                break;
+        }
+
+        gameOver = checkVictory();
+
+        //Switch turn
+        if (turn.equals(Turn.GuardTurn)) {
+            turn = Turn.IntruderTurn;
+        } else {
+            turn = Turn.GuardTurn;
+        }
+    }
     private GuardPercepts guardPercept(Guard guard){
 
         return null;
