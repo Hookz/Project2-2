@@ -445,6 +445,14 @@ public class GameController{
 		}
 
 		for (int i = 0; i < temp_agents.size(); i++) {
+		    for(Intruder intruder:intruders){
+		        double diffX = Math.abs(temp_agents.get(i).getX() - intruderLocations.get(intruder).getX());
+		        double diffY = Math.abs(temp_agents.get(i).getY() - intruderLocations.get(intruder).getY());
+		        double distance = Math.sqrt(Math.pow(diffX,2)+Math.pow(diffY,2));
+		        if(distance<1){
+		            return false;
+                }
+            }
 			for (int j = 0; j < walls.size(); j++) {
 				if (temp_agents.get(i).intersects(walls.get(j))) {
 					return false;
