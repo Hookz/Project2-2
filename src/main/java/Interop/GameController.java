@@ -12,7 +12,6 @@ import Interop.Utils.Utils;
 import Interop.Percept.Smell.*;
 import Interop.Percept.Sound.*;
 import Interop.Percept.Vision.*;
-import javafx.scene.shape.Ellipse;
 
 import java.awt.Rectangle;
 import java.awt.geom.Ellipse2D;
