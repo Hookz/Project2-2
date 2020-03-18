@@ -71,8 +71,8 @@ public class GameController{
     private List<Rectangle> doors;
     private List<Rectangle> windows;
     private List<Rectangle> sentries;
-    private HashMap<Intruder,Ellipse2D> intruderLocations = new HashMap<>();
-    private HashMap<Guard,Ellipse2D> guardLocations = new HashMap<>();
+    public HashMap<Intruder,Ellipse2D> intruderLocations = new HashMap<>();
+    public HashMap<Guard,Ellipse2D> guardLocations = new HashMap<>();
     private HashMap<Intruder,Direction> intruderDirections = new HashMap<>();
     private HashMap<Guard,Direction> guardDirections = new HashMap<>();
     private HashMap<Smell,Ellipse2D> guardSmellLocations = new HashMap<>();
