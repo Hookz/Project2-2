@@ -9,6 +9,7 @@ import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
+import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.Map;
 
@@ -31,19 +32,18 @@ public class GameCanvas extends JPanel {
         Dimension currentDimension = getSize();
 
         if (controller != null) {
-            double multiplier = (double) currentDimension.width / controller.width;
-            if (currentDimension.width / controller.width > currentDimension.height / controller.height) {
-                multiplier = (double) currentDimension.height / controller.height;
-            }
+            multiplier = calculateMultiplier();
             List<Rectangle> walls = controller.walls;
             HashMap<Intruder, Ellipse2D> intruderLocations = controller.intruderLocations;
             HashMap<Guard,Ellipse2D> guardLocations = controller.guardLocations;
             //Component updates go here
             for (Rectangle wall : walls) {
-                Rectangle2D tempWall = new Rectangle2D.Double(wall.x * multiplier, wall.y * multiplier, wall.width * multiplier, wall.height * multiplier);
+                g.setColor(Color.BLACK);
+                Rectangle2D tempWall = new Rectangle2D.Double(norm(wall.x) + xCenterMargin(), norm(wall.y) + yCenterMargin(), norm(wall.width), norm(wall.height));
                 g2.setColor(Color.BLACK);
                 g2.fill(tempWall);
                 g.setColor(Color.DARK_GRAY);
+                g.drawRect(norm(wall.x) + xCenterMargin(), norm(wall.y) + yCenterMargin(), norm(wall.width), norm(wall.height));
                 g2.draw(tempWall);
             }
             for(Map.Entry<Intruder,Ellipse2D> intruder: intruderLocations.entrySet()){
@@ -68,5 +68,26 @@ public class GameCanvas extends JPanel {
 
     public GameCanvas(GameController gc) {
         controller = gc;
+    }
+
+    private double multiplier = 1;
+    private double calculateMultiplier() {
+        Dimension currentDimension = getSize();
+
+        double m = (double) currentDimension.width / controller.width;
+        if (currentDimension.width / controller.width > currentDimension.height / controller.height) {
+            m = (double) currentDimension.height / controller.height;
+        }
+        return m;
+    }
+    private int norm(int val) {
+        int res = (int) (val * multiplier);
+        return res;
+    }
+    private int xCenterMargin() {
+        return (int) ((getSize().width - (controller.width * multiplier)) / 2);
+    }
+    private int yCenterMargin() {
+        return (int) ((getSize().height - (controller.height * multiplier)) / 2);
     }
 }

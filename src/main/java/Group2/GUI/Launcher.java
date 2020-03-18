@@ -7,6 +7,7 @@ import javax.swing.*;
 
 public class Launcher {
     public static boolean gameRunning = true;
+    public static boolean paused = false;
     public static GUI interfaceInstance;
     public static GameController controller = null;
     public static GameCanvas canvas = new GameCanvas(controller);
@@ -54,20 +55,20 @@ public class Launcher {
         while (gameRunning) {
             long now = System.nanoTime();
             long updateLength = now - lastLoopTime;
-            double delta = updateLength / ((double) OPTIMAL_UPDATE_DURATION);
             lastLoopTime = now;
 
             lastFrameInThisSecondShownAt += updateLength;
             fps++;
             if (lastFrameInThisSecondShownAt >= 1000000000) {
-                System.out.println("FPS: "+fps);
                 lastFrameInThisSecondShownAt = 0;
                 fps = 0;
             }
 
-            logicLoop(delta);
-            canvas.revalidate();
-            canvas.repaint();
+            if (!paused) {
+                logicLoop();
+                canvas.revalidate();
+                canvas.repaint();
+            }
 
             //sleep for other processes.
             try{
@@ -83,14 +84,12 @@ public class Launcher {
      * such as their location, color etc.
      *
      * Do not do graphical updates here, modify them under GameCanvas > paint(...)
-     * Parameter "delta" provides the time between last frame and current frame, therefore update accordingly to that value.
-     * @param delta
+     * Parameter "delta" (used to) provides the time between last frame and current frame, therefore update accordingly to that value.
      */
-    public static void logicLoop(double delta) {
-        //logic loop here.
-        if (controller != null)
+    public static void logicLoop() {
+        if (controller != null) {
+            //logic loop here.
             controller.playSingleTurn();
-        else
-            System.out.println("We are doomed.");
+        }
     }
 }

@@ -14,6 +14,9 @@ public class GUI extends JFrame {
     public final String SCN_TITLE = "Tom & Jerry - GUI";
     public GameCanvas canvas;
     public GameController controller;
+
+    public boolean fullscreen = false;
+
     public GUI(GameCanvas canvasInstance){
         super("Tom & Jerry - Loading..."); //default title has to be given
         this.canvas = canvasInstance;
@@ -31,6 +34,8 @@ public class GUI extends JFrame {
                     File selectedFile = fileChooser.getSelectedFile();
                     System.out.println("Selected scenario: " + selectedFile.getAbsolutePath());
                     ReadFile.readFile(selectedFile);
+
+                    GUI.super.setTitle(SCN_TITLE + ": Scenario " + selectedFile.getName());
 
                     controller = ReadFile.generateController();
                     Launcher.controller = controller;
@@ -72,7 +77,33 @@ public class GUI extends JFrame {
         JMenuItem godPerspectiveMenuItem = new JMenuItem("God");
         JMenuItem guardPerspectiveMenuItem = new JMenuItem("Guards");
         JMenuItem intruderPerspectiveMenuItem = new JMenuItem("Intruders");
-        JMenuItem fullscreenWindowedMenuItem = new JMenuItem("Toggle Fullscreen");
+        JMenuItem fullscreenWindowedMenuItem = new JMenuItem(new AbstractAction("Toggle Fullscreen") {
+            int[] originalDimension = new int[2];
+            public void actionPerformed(ActionEvent e) {
+                if (!fullscreen) {
+                    originalDimension[0] = GUI.super.getSize().width;
+                    originalDimension[1] = GUI.super.getSize().height;
+                    GUI.super.dispose();
+                    GUI.super.setExtendedState(JFrame.MAXIMIZED_BOTH);
+                    GUI.super.setUndecorated(true);
+                    GUI.super.pack();
+                    GUI.super.setVisible(true);
+                    ((JMenuItem) e.getSource()).setText("Toggle Windowed");
+                    fullscreen = true;
+                }
+                else {
+                    GUI.super.dispose();
+                    GUI.super.setExtendedState(0);
+                    GUI.super.setUndecorated(false);
+                    GUI.super.setSize(originalDimension[0], originalDimension[1]);
+                    GUI.super.pack();
+                    GUI.super.setVisible(true);
+                    ((JMenuItem) e.getSource()).setText("Toggle Fullscreen");
+                    fullscreen = false;
+                }
+            }
+        });
+
 
         menuBar.add(viewMenu);
         viewMenu.add(perspectiveSubmenu);
