@@ -638,7 +638,7 @@ public class GameController{
 
         Ellipse2D intruderLoc = intruderLocations.get(intruder);
         HashSet<SoundPercept> soundPerceptsSet = new HashSet<>();
-        Iterator it = soundLocations.entrySet().iterator();
+        Iterator it = (new HashMap<>(soundLocations)).entrySet().iterator();
 
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry) it.next();
@@ -663,7 +663,7 @@ public class GameController{
 
         Ellipse2D guardLoc = guardLocations.get(guard);
         HashSet<SoundPercept> soundPerceptsSet = new HashSet<>();
-        Iterator it = soundLocations.entrySet().iterator();
+        Iterator it = (new HashMap<>(soundLocations)).entrySet().iterator();
 
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry) it.next();
