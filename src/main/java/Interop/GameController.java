@@ -437,13 +437,15 @@ public class GameController{
 		while (temp_agent.getX()<newLocation.getX()&&temp_agent.getY()<newLocation.getY()) {
 		    ++counter;
 			current = line.evalAtX(initialLocation.getX()+stepSize*counter);
-			points.add(current);
-			temp_agent = new Ellipse2D.Double(current.getX(), current.getY(),
-					1.0, 1.0);
-			temp_agents.add(temp_agent);
-
+			if(current.getX()<newLocation.getX()&&current.getY()<newLocation.getY()) {
+                points.add(current);
+                temp_agent = new Ellipse2D.Double(current.getX(), current.getY(),
+                        1.0, 1.0);
+                temp_agents.add(temp_agent);
+            }
+			else break;
 		}
-
+		temp_agents.add(newLocation);
 		for (int i = 0; i < temp_agents.size(); i++) {
 		    for(Intruder intruder:intruders){
 		        double diffX = Math.abs(temp_agents.get(i).getX() - intruderLocations.get(intruder).getX());
