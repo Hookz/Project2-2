@@ -12,23 +12,21 @@ public class Launcher {
     public static GameCanvas canvas = new GameCanvas(controller);
 
     public static void main(String[] args) {
-        //macOS Native Menubar Enable, Source: https://stackoverflow.com/questions/307024/native-swing-menu-bar-support-for-macos-x-in-java
-        try {
-            System.setProperty("apple.laf.useScreenMenuBar", "true");
-            System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Test");
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        }
-        catch(ClassNotFoundException e) {
-            System.out.println("ClassNotFoundException: " + e.getMessage());
-        }
-        catch(InstantiationException e) {
-            System.out.println("InstantiationException: " + e.getMessage());
-        }
-        catch(IllegalAccessException e) {
-            System.out.println("IllegalAccessException: " + e.getMessage());
-        }
-        catch(UnsupportedLookAndFeelException e) {
-            System.out.println("UnsupportedLookAndFeelException: " + e.getMessage());
+        if (System.getProperty("os.name").toLowerCase().indexOf("mac") >= 0) { //if macOS
+            //macOS Native Menubar Enable, Source: https://stackoverflow.com/questions/307024/native-swing-menu-bar-support-for-macos-x-in-java
+            try {
+                System.setProperty("apple.laf.useScreenMenuBar", "true");
+                System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Test");
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (ClassNotFoundException e) {
+                System.out.println("ClassNotFoundException: " + e.getMessage());
+            } catch (InstantiationException e) {
+                System.out.println("InstantiationException: " + e.getMessage());
+            } catch (IllegalAccessException e) {
+                System.out.println("IllegalAccessException: " + e.getMessage());
+            } catch (UnsupportedLookAndFeelException e) {
+                System.out.println("UnsupportedLookAndFeelException: " + e.getMessage());
+            }
         }
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -68,6 +66,7 @@ public class Launcher {
             }
 
             logicLoop(delta);
+            canvas.revalidate();
             canvas.repaint();
 
             //sleep for other processes.
