@@ -12,8 +12,9 @@ public class GameCanvas extends JPanel {
 
     public void paint(Graphics g) {
         setBackground(backgroundColor);
-        g.setColor(backgroundColor);
-        //Component updates go below!
+        if (controller != null) {
+            //Component updates go here
+        }
     }
 
     public GameCanvas(GameController gc) {

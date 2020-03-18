@@ -240,7 +240,7 @@ public class ReadFile{
 
   public static GameController generateController() {
     return new GameController(gameMode, height, width, numGuards, numIntruders, captureDistance, winConditionIntruderRounds, maxRotationAngle, maxMoveDistanceIntruder,
-            maxSprintDistanceIntruder, maxMoveDistanceGuard, sprintCooldown, pheromoneCooldown, radiusPheromone, slowDownModifierWindow, slowDownModifierDoor, slowDownModifierSentryTower, viewAngle, viewRays, viewRangeIntruderNormal, viewRangeIntruderShaded,
+            maxSprintDistanceIntruder, maxMoveDistanceGuard, pheromoneExpireRounds, sprintCooldown, pheromoneCooldown, radiusPheromone, slowDownModifierWindow, slowDownModifierDoor, slowDownModifierSentryTower, viewAngle, viewRays, viewRangeIntruderNormal, viewRangeIntruderShaded,
             viewRangeGuardNormal, viewRangeGuardShaded, viewRangeSentry, yellSoundRadius, maxMoveSoundRadius, windowSoundRadius, doorSoundRadius, targetArea, spawnAreaIntruders, spawnAreaGuards, walls, teleports,
             shaded, doors, windows, sentries);
   }
