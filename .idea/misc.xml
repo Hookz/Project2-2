@@ -8,6 +8,7 @@
       <list>
         <option value="$PROJECT_DIR$/Explorer/pom.xml" />
         <option value="$PROJECT_DIR$/GameControllerSample/pom.xml" />
+        <option value="$PROJECT_DIR$/pom.xml" />
       </list>
     </option>
   </component>

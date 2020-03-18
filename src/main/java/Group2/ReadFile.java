@@ -48,7 +48,7 @@ public class ReadFile{
   private static List<Rectangle> sentries = new ArrayList<Rectangle>();
 
   public static void main(String[] args) throws IllegalAccessException {
-    readFile();
+    readFile(new File(System.getProperty("user.dir")+"/src/main/resources/config.txt"));
     Field[] fields = Group2.ReadFile.class.getDeclaredFields();
     for(Field f: fields){
         System.out.println(f.getName()+": "+f.get(f).toString());
@@ -58,10 +58,10 @@ public class ReadFile{
     viewRangeGuardNormal, viewRangeGuardShaded, viewRangeSentry, yellSoundRadius, maxMoveSoundRadius, windowSoundRadius, doorSoundRadius, targetArea, spawnAreaIntruders, spawnAreaGuards, walls, teleports,
             shaded, doors, windows, sentries);
   }
-  public static void readFile(){
+  public static void readFile(File fileToLoad){
   try{
     int lineNumber = 0;
-    final BufferedReader r = new BufferedReader(new FileReader(new File(System.getProperty("user.dir")+"/src/main/resources/config.txt")));
+    final BufferedReader r = new BufferedReader(new FileReader(fileToLoad));
     String nextline;
     int[] area;
     int x,y,areaWidth,areaHeight;
@@ -236,5 +236,12 @@ public class ReadFile{
   catch(IOException e){
     e.printStackTrace();
   }
+  }
+
+  public static GameController generateController() {
+    return new GameController(gameMode, height, width, numGuards, numIntruders, captureDistance, winConditionIntruderRounds, maxRotationAngle, maxMoveDistanceIntruder,
+            maxSprintDistanceIntruder, maxMoveDistanceGuard, sprintCooldown, pheromoneCooldown, radiusPheromone, slowDownModifierWindow, slowDownModifierDoor, slowDownModifierSentryTower, viewAngle, viewRays, viewRangeIntruderNormal, viewRangeIntruderShaded,
+            viewRangeGuardNormal, viewRangeGuardShaded, viewRangeSentry, yellSoundRadius, maxMoveSoundRadius, windowSoundRadius, doorSoundRadius, targetArea, spawnAreaIntruders, spawnAreaGuards, walls, teleports,
+            shaded, doors, windows, sentries);
   }
 }
