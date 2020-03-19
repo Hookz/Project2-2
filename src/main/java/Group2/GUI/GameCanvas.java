@@ -17,7 +17,13 @@ import java.util.Map;
 public class GameCanvas extends JPanel {
     public Color backgroundColor = Color.DARK_GRAY;
     private GameController controller = null;
+    public boolean showDebug = true;
 
+    //default page texts.
+    public final String TEXT_MIDDLE_DEFAULT = "No Scenario Loaded";
+    public String text1 = TEXT_MIDDLE_DEFAULT;
+    public final String TEXT_SMALL_DEFAULT = "Please load a scenario from File > Load Scenario";
+    public String text2 = TEXT_SMALL_DEFAULT;
     public void paint(Graphics g) {
         super.paint(g);
         setBackground(backgroundColor);
@@ -61,8 +67,6 @@ public class GameCanvas extends JPanel {
         }
         else {
             //No controller present:
-            String text1 = "No Scenario Loaded";
-            String text2 = "Please load a scenario from File > Load Scenario";
             Font font = new Font("Serif", Font.PLAIN, 50);
             Font fontsm = new Font("Serif", Font.PLAIN, 21);
 
@@ -83,6 +87,23 @@ public class GameCanvas extends JPanel {
             g.setFont(fontsm);
             g.drawString(text2, x, y + 25);
         }
+        if (showDebug) {
+            Color bgPanelColor = new Color(31, 31, 31, 127);
+            g.setColor(bgPanelColor);
+            g.fillRect(1,1, 300,82);
+
+            Font fontdebug = new Font("Monospace", Font.PLAIN, 11);
+            g.setFont(fontdebug);
+            g.setColor(Color.LIGHT_GRAY);
+            g.drawString(GUI.SCN_TITLE + " GUI 1.0SNAPSHOT, DKE P2-2 G02", 4,15);
+            g.drawString("Gameloop    : " + Launcher.gameRunning, 4,15+11);
+            g.drawString("Paused         : " + Launcher.paused, 4,15+22);
+            g.drawString("Controller   : " + this.controller, 4,15+33);
+            g.drawString("FPS Cycle     : " + Launcher.fps, 4,15+44);
+            g.drawString("Target Rate : " + Launcher.UPDATE_PER_SECOND + "per second", 4,15+55);
+            g.drawString("Turn Count : " + Launcher.UPDATE_PER_SECOND, 4,15+66);
+        }
+
     }
 
     public GameCanvas(GameController gc) {

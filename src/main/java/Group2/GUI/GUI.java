@@ -12,12 +12,15 @@ import javax.swing.JFileChooser;
 
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+
 import java.io.File;
 
 public class GUI extends JFrame {
     public final int SCN_W = 800;
     public final int SCN_H = 600;
-    public final String SCN_TITLE = "Tom & Jerry";
+    public static final String SCN_TITLE = "Tom & Jerry";
     public String scenarioName = "No Scenario Loaded";
     public GameCanvas canvas;
     public GameController controller;
@@ -34,6 +37,9 @@ public class GUI extends JFrame {
         JMenuItem loadMenuItem = new JMenuItem(new AbstractAction("Load Scenario") {
             public void actionPerformed(ActionEvent e) {
                 System.out.println("Loading scenario...");
+                canvas.text1 = "Loading Scenario...";
+                canvas.text2 = "";
+
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
 
@@ -54,6 +60,8 @@ public class GUI extends JFrame {
                 }
                 else {
                     System.out.println("User cancelled the task.");
+                    canvas.text1 = canvas.TEXT_MIDDLE_DEFAULT;
+                    canvas.text2 = canvas.TEXT_SMALL_DEFAULT;
                 }
             }
         });
@@ -93,6 +101,7 @@ public class GUI extends JFrame {
 
                 ((JMenuItem) e.getSource()).setText("Play Simulation");
                 Launcher.paused = true;
+                canvas.repaint(); //print once more incase there's debug menu activated
             }
         });
 
@@ -141,7 +150,34 @@ public class GUI extends JFrame {
         perspectiveSubmenu.add(guardPerspectiveMenuItem);
         perspectiveSubmenu.add(intruderPerspectiveMenuItem);
         viewMenu.add(fullscreenWindowedMenuItem);
+        //End Menubar
 
+        //Register Keyclicks
+        addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                return;
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                switch (e.getKeyCode()) {
+                    case 114: //F3
+                        //Toggle GUI Debug
+                        canvas.showDebug = !canvas.showDebug;
+                        canvas.repaint();
+                        break;
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                return;
+            }
+        });
+        //End Keyclicks
+
+        //Register Swing GUI Settings
         super.setLayout(new GridLayout(0, 1));
         super.add(this.canvas);
         super.setJMenuBar(menuBar);

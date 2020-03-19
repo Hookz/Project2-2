@@ -12,5 +12,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="Maven: com.github.Project-2-2:GameInterop:b4be0eabe9" level="project" />
+    <orderEntry type="library" name="Maven: com.github.Project-2-2:GameInterop:b4be0eabe9" level="project" />
   </component>
 </module>
