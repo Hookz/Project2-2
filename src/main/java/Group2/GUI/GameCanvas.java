@@ -1,11 +1,8 @@
 package Group2.GUI;
-
 import Interop.Agent.Guard;
 import Interop.Agent.Intruder;
 import Interop.GameController;
-
 import javax.swing.JPanel;
-
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -15,9 +12,7 @@ import java.awt.FontMetrics;
 import java.awt.Dimension;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
-
 import java.util.Map;
-
 @SuppressWarnings("serial")
 public class GameCanvas extends JPanel {
     public Color backgroundColor = Color.DARK_GRAY;
