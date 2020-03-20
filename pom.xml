@@ -25,11 +25,17 @@
         <maven.compiler.source>10</maven.compiler.source>
         <java.version>1.10</java.version>
     </properties>
-        <dependencies>
-            <dependency>
-                <groupId>com.github.Hookz</groupId>
-                <artifactId>Project2-2-GameInterop</artifactId>
-                <version>1.0</version>
-            </dependency>
-        </dependencies>
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+    <dependencies>
+        <dependency>
+            <groupId>com.github.Hookz</groupId>
+            <artifactId>Project2-2-GameInterop</artifactId>
+            <version>4639df6</version>
+        </dependency>
+    </dependencies>
 </project>

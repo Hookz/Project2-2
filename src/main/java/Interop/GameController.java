@@ -101,6 +101,8 @@ public class GameController{
     private HashMap<Intruder, AreaPercepts> intruderAreaPercepts = new HashMap<>();
     private HashMap<Intruder, SoundPercepts> intruderSoundPercepts = new HashMap<>();
     private HashMap<Guard, SoundPercepts> guardSoundPercepts = new HashMap<>();
+    private HashMap<Intruder, SmellPercepts> intruderSmellPercepts = new HashMap<>();
+    private HashMap<Guard, SmellPercepts> guardSmellPercepts = new HashMap<>();
 
 
     private final double COLLISION_CHECK_STEP_SIZE = 0.05;
@@ -192,6 +194,7 @@ public class GameController{
                 intruderPheromoneCooldowns.put(intruder,0);
                 setAreaPerceptsIntruder(intruder);
                 setIntruderSoundPercepts(intruder);
+                setIntruderSmellPercepts(intruder);
             }
         }
 
@@ -212,6 +215,7 @@ public class GameController{
 
                 setAreaPerceptsGuard(guard);
                 setGuardSoundPercepts(guard);
+                setGuardSmellPercepts(guard);
             }
         }
 
@@ -272,7 +276,15 @@ public class GameController{
         }
     }
     private GuardPercepts guardPercept(Guard guard){
+        Direction targetDirection = guardDirections.get(guard);
+        FieldOfView field = new FieldOfView(guardViewRange.get(guard), Angle.fromDegrees(viewAngle));
+        //ObjectPercepts objects = ;
+        //VisionPrecepts vision = ;
+        SoundPercepts sounds = guardSoundPercepts.get(guard);
+        SmellPercepts smells = guardSmellPercepts.get(guard);
+        AreaPercepts areaPercepts = guardsAreaPercepts.get(guard);
 
+        //return new IntruderPercepts(targetDirection, vision, sounds, smells, areaPercepts, this.scenarioIntruderPercepts);
         return null;
     }
 
@@ -282,7 +294,7 @@ public class GameController{
         //ObjectPercepts objects = ;
         //VisionPrecepts vision = ;
         SoundPercepts sounds = intruderSoundPercepts.get(intruder);
-        //SmellPercepts smells = ;
+        SmellPercepts smells = intruderSmellPercepts.get(intruder);
         AreaPercepts areaPercepts = intruderAreaPercepts.get(intruder);
 
         //return new IntruderPercepts(targetDirection, vision, sounds, smells, areaPercepts, this.scenarioIntruderPercepts);
@@ -343,6 +355,7 @@ public class GameController{
 
         setAreaPerceptsGuard(guard);
         setGuardSoundPercepts(guard);
+        setGuardSmellPercepts(guard);
     }
 
     private void intruderAct(Action action, IntruderPercepts percept, Intruder intruder){
@@ -427,6 +440,7 @@ public class GameController{
 
         setAreaPerceptsIntruder(intruder);
         setIntruderSoundPercepts(intruder);
+        setIntruderSmellPercepts(intruder);
     }
 
     private boolean checkIfLegalMove(Ellipse2D initialLocation,
@@ -689,6 +703,48 @@ public class GameController{
         SoundPercepts soundPercepts = new SoundPercepts(soundPerceptsSet);
         this.guardSoundPercepts.put(guard, soundPercepts);
 
+    }
+
+    private void setIntruderSmellPercepts(Intruder intruder) {
+
+        Ellipse2D intruderLoc = intruderLocations.get(intruder);
+        HashSet<SmellPercept> smellPerceptsSet = new HashSet<>();
+        Iterator it = (new HashMap<>(intruderSmellLocations)).entrySet().iterator();
+
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+            Ellipse2D smellLoc = (Ellipse2D) pair.getValue();
+            double centerDistance = new Distance(new Point(smellLoc.getCenterX(), smellLoc.getCenterY()), new Point(intruderLoc.getCenterX(), intruderLoc.getCenterY())).getValue();
+            double radiusSum = smellLoc.getWidth() + intruderLoc.getWidth();
+            if (centerDistance <= radiusSum) {
+                Smell smell = (Smell) pair.getKey();
+                smellPerceptsSet.add(new SmellPercept(smell.getType(), new Distance(centerDistance)));
+            }
+            it.remove();
+        }
+        SmellPercepts smellPercepts = new SmellPercepts(smellPerceptsSet);
+        this.intruderSmellPercepts.put(intruder, smellPercepts);
+    }
+
+    private void setGuardSmellPercepts(Guard guard) {
+
+        Ellipse2D guardLoc = guardLocations.get(guard);
+        HashSet<SmellPercept> smellPerceptsSet = new HashSet<>();
+        Iterator it = (new HashMap<>(guardSmellLocations)).entrySet().iterator();
+
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+            Ellipse2D smellLoc = (Ellipse2D) pair.getValue();
+            double centerDistance = new Distance(new Point(smellLoc.getCenterX(), smellLoc.getCenterY()), new Point(guardLoc.getCenterX(), guardLoc.getCenterY())).getValue();
+            double radiusSum = smellLoc.getWidth() + guardLoc.getWidth();
+            if (centerDistance <= radiusSum) {
+                Smell smell = (Smell) pair.getKey();
+                smellPerceptsSet.add(new SmellPercept(smell.getType(), new Distance(centerDistance)));
+            }
+            it.remove();
+        }
+        SmellPercepts smellPercepts = new SmellPercepts(smellPerceptsSet);
+        this.guardSmellPercepts.put(guard, smellPercepts);
     }
 
 
