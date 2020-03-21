@@ -18,24 +18,19 @@
     <scm>
         <connection>scm:git:git@github.com/Hookz/Project2-2.git</connection>
         <developerConnection>scm:git:git@github.com/Hookz/Project2-2.git</developerConnection>
-        <url>git@github.com/Hookz/Project2-2.git</url>
+        <url>https://github.com/Hookz/Project2-2/tree/${project.scm.tag}</url>
+        <tag>master</tag>
     </scm>
     <properties>
         <maven.compiler.target>10</maven.compiler.target>
         <maven.compiler.source>10</maven.compiler.source>
         <java.version>1.10</java.version>
     </properties>
-    <repositories>
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
-    </repositories>
-    <dependencies>
-        <dependency>
-            <groupId>com.github.Hookz</groupId>
-            <artifactId>Project2-2-GameInterop</artifactId>
-            <version>4639df6</version>
-        </dependency>
-    </dependencies>
+        <dependencies>
+            <dependency>
+                <groupId>com.github.Hookz</groupId>
+                <artifactId>Project2-2-GameInterop</artifactId>
+                <version>1.0</version>
+            </dependency>
+        </dependencies>
 </project>
