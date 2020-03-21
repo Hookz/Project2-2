@@ -7,14 +7,26 @@
     <groupId>com.github.Hookz</groupId>
     <artifactId>Project2-2</artifactId>
     <version>1.0-SNAPSHOT</version>
-
+    <packaging>pom</packaging>
+    <name>Project2-2</name>
+    <description>Group 2's implementation of Project2-2.</description>
     <url>https://github.com/Hookz/Project2-2</url>
     <licenses>
         <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <name>MIT</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+            <distribution>repo</distribution>
+            <comments>All source code is under the MIT license.</comments>
         </license>
     </licenses>
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/Hookz/Project2-2/issues</url>
+    </issueManagement>
+    <organization>
+        <name>Maastricht University</name>
+        <url>https://maastrichtuniversity.nl</url>
+    </organization>
     <scm>
         <connection>scm:git:git@github.com/Hookz/Project2-2.git</connection>
         <developerConnection>scm:git:git@github.com/Hookz/Project2-2.git</developerConnection>
@@ -33,6 +45,35 @@
         <maven.compiler.source>10</maven.compiler.source>
         <java.version>1.10</java.version>
     </properties>
+    <developers>
+        <developer>
+            <name>Michal Jarski</name>
+        </developer>
+        <developer>
+            <name>Arda Ntourali</name>
+        </developer>
+        <developer>
+            <name>Elliot Doe</name>
+        </developer>
+        <developer>
+            <name>Camille Bouvy</name>
+        </developer>
+        <developer>
+            <name>Wafaa Aljbawi</name>
+        </developer>
+        <developer>
+            <name>Tim Heideman</name>
+        </developer>
+    </developers>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.github.Hookz</groupId>
+                <artifactId>Project2-2-GameInterop</artifactId>
+                <version>1.0</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>com.github.Hookz</groupId>
