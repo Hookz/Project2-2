@@ -181,11 +181,30 @@ public class GameController{
         if(numIntruders>0) {
             intruders = AgentsFactory.createIntruders(numIntruders);
             for (Intruder intruder : intruders) {
-                double x = spawnAreaIntruders.get(0).getX() + spawnAreaIntruders.get(0).getWidth() * random.nextDouble();
-                double y = spawnAreaIntruders.get(0).getY() + spawnAreaIntruders.get(0).getHeight() * random.nextDouble();
-                Ellipse2D intruderLocation = new Ellipse2D.Double(x, y, 1, 1);
+                boolean spawned = false;
+                Ellipse2D intruderLocation = null;
+                while(!spawned) {
+                    spawned = true;
+                    double x = spawnAreaIntruders.get(0).getX() + spawnAreaIntruders.get(0).getWidth() * random.nextDouble();
+                    double y = spawnAreaIntruders.get(0).getY() + spawnAreaIntruders.get(0).getHeight() * random.nextDouble();
+                    intruderLocation = new Ellipse2D.Double(x, y, 1, 1);
+                    if(!intruderLocations.isEmpty()) {
+                        ArrayList<Intruder> initialisedIntruders = new ArrayList<>(intruderLocations.keySet());
+                        for (Intruder otherIntruder : initialisedIntruders) {
+                            double diffX = Math.abs(x - intruderLocations.get(otherIntruder).getX());
+                            double diffY = Math.abs(y - intruderLocations.get(otherIntruder).getY());
+                            double distance = Math.sqrt(Math.pow(diffX, 2) + Math.pow(diffY, 2));
+                            if (distance < 1) {
+                                if (DEBUG_TEXT) {
+                                    System.out.println("Tried to spawn on top of other agent");
+                                }
+                                spawned = false;
+                            }
+                        }
+                    }
+                }
                 intruderLocations.put(intruder, intruderLocation);
-
+                if(DEBUG_TEXT){System.out.println("Intruder Spawned");}
                 double directionAngle = (2*Math.PI) * random.nextDouble();
                 Direction direction = Direction.fromRadians(directionAngle);
                 intruderDirections.put(intruder,direction);
@@ -202,9 +221,28 @@ public class GameController{
         if(numGuards>0) {
             guards = AgentsFactory.createGuards(numGuards);
             for (Guard guard : guards) {
-                double x = spawnAreaGuards.get(0).getX() + spawnAreaGuards.get(0).getWidth() * random.nextDouble();
-                double y = spawnAreaGuards.get(0).getY() + spawnAreaGuards.get(0).getHeight() * random.nextDouble();
-                Ellipse2D guardLocation = new Ellipse2D.Double(x, y, 1, 1);
+                boolean spawned = false;
+                Ellipse2D guardLocation = null;
+                while(!spawned) {
+                    spawned = true;
+                    double x = spawnAreaGuards.get(0).getX() + spawnAreaGuards.get(0).getWidth() * random.nextDouble();
+                    double y = spawnAreaGuards.get(0).getY() + spawnAreaGuards.get(0).getHeight() * random.nextDouble();
+                    guardLocation = new Ellipse2D.Double(x, y, 1, 1);
+                    if (!guardLocations.isEmpty()) {
+                        ArrayList<Guard> initialisedGuards = new ArrayList<>(guardLocations.keySet());
+                        for (Guard otherGuard : initialisedGuards) {
+                            double diffX = Math.abs(x - guardLocations.get(otherGuard).getX());
+                            double diffY = Math.abs(y - guardLocations.get(otherGuard).getY());
+                            double distance = Math.sqrt(Math.pow(diffX, 2) + Math.pow(diffY, 2));
+                            if (distance < 1) {
+                                if (DEBUG_TEXT) {
+                                    System.out.println("Tried to spawn on top of other agent");
+                                }
+                                spawned = false;
+                            }
+                        }
+                    }
+                }
                 guardLocations.put(guard, guardLocation);
 
                 double directionAngle = (2*Math.PI) * random.nextDouble();
@@ -255,7 +293,7 @@ public class GameController{
             case IntruderTurn:
                 if(!intruders.isEmpty()) {
                     for (Intruder intruder : intruders) {
-                        if (DEBUG_TEXT) System.out.println("Intruder Location: x "+intruderLocations.get(intruder).getX()+" y "+intruderLocations.get(intruder).getY());
+                        //if (DEBUG_TEXT) System.out.println("Intruder Location: x "+intruderLocations.get(intruder).getX()+" y "+intruderLocations.get(intruder).getY());
                         sprintCooldownDecay(intruder);
                         intruderPheromoneCooldownDecay(intruder);
                         IntruderPercepts percept = intruderPercept(intruder);

@@ -3,6 +3,7 @@ package Group2;
 import Interop.Agent.Guard;
 import Interop.Agent.Intruder;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -15,8 +16,20 @@ import java.util.List;
  * Agents must not hold ANY references to common objects or references to each other.
  */
 public class AgentsFactory {
-    static public List<Intruder> createIntruders(int number) { return Collections.nCopies(number,new IntruderAgent()); }
+    static public List<Intruder> createIntruders(int number) {
+        ArrayList<Intruder> intruders = new ArrayList<>();
+        for(int i=0;i<number;i++){
+            Intruder intruder = new IntruderAgent(i);
+            intruders.add(intruder);
+        }
+        return intruders;
+    }
     static public List<Guard> createGuards(int number) {
-        return Collections.nCopies(number,new GuardAgent());
+        ArrayList<Guard> guards = new ArrayList<>();
+        for(int i=0;i<number;i++){
+            Guard guard = new GuardAgent(i);
+            guards.add(guard);
+        }
+        return guards;
     }
 }
