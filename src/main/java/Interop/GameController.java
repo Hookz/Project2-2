@@ -17,6 +17,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.rmi.registry.Registry;
 import java.util.*;
 
 public class GameController{
@@ -103,6 +104,8 @@ public class GameController{
     private HashMap<Guard, SoundPercepts> guardSoundPercepts = new HashMap<>();
     private HashMap<Intruder, SmellPercepts> intruderSmellPercepts = new HashMap<>();
     private HashMap<Guard, SmellPercepts> guardSmellPercepts = new HashMap<>();
+    private HashMap<Intruder, ObjectPercepts> intruderObjectPercept = new HashMap<>();
+    private HashMap<Guard, ObjectPercepts> guardObjectPercepts = new HashMap<>();
 
 
     private final double COLLISION_CHECK_STEP_SIZE = 0.05;
@@ -214,6 +217,7 @@ public class GameController{
                 setAreaPerceptsIntruder(intruder);
                 setIntruderSoundPercepts(intruder);
                 setIntruderSmellPercepts(intruder);
+                setIntruderObjectPercept(intruder);
             }
         }
 
@@ -254,6 +258,7 @@ public class GameController{
                 setAreaPerceptsGuard(guard);
                 setGuardSoundPercepts(guard);
                 setGuardSmellPercepts(guard);
+                setGuardObjectPercepts(guard);
             }
         }
 
@@ -314,29 +319,31 @@ public class GameController{
         }
     }
     private GuardPercepts guardPercept(Guard guard){
-        Direction targetDirection = guardDirections.get(guard);
+
         FieldOfView field = new FieldOfView(guardViewRange.get(guard), Angle.fromDegrees(viewAngle));
-        //ObjectPercepts objects = ;
-        //VisionPrecepts vision = ;
+        VisionPrecepts vision = new VisionPrecepts(field, guardObjectPercepts.get(guard));
         SoundPercepts sounds = guardSoundPercepts.get(guard);
         SmellPercepts smells = guardSmellPercepts.get(guard);
         AreaPercepts areaPercepts = guardsAreaPercepts.get(guard);
+        boolean wasLastActionExecuted = false;
 
-        //return new IntruderPercepts(targetDirection, vision, sounds, smells, areaPercepts, this.scenarioIntruderPercepts);
-        return null;
+        return new GuardPercepts(vision, sounds, smells, areaPercepts, scenarioGuardPercepts, wasLastActionExecuted);
     }
 
     private IntruderPercepts intruderPercept(Intruder intruder){
-        Direction targetDirection = intruderDirections.get(intruder);
+
+        //Here I am considering that we only have one target area
+        double centerDistance = new Distance(new Point(targetArea.get(0).getCenterX(), targetArea.get(0).getCenterY()), new Point(intruderLocations.get(intruder).getCenterX(), intruderLocations.get(intruder).getCenterY())).getValue();
+        double deltaX = Math.abs(intruderLocations.get(intruder).getCenterX() - targetArea.get(0).getCenterX());
+        Direction targetDirection = Direction.fromRadians(Math.acos(deltaX / centerDistance));
         FieldOfView field = new FieldOfView(intruderViewRange.get(intruder), Angle.fromDegrees(viewAngle));
-        //ObjectPercepts objects = ;
-        //VisionPrecepts vision = ;
+        VisionPrecepts vision = new VisionPrecepts(field, intruderObjectPercept.get(intruder));
         SoundPercepts sounds = intruderSoundPercepts.get(intruder);
         SmellPercepts smells = intruderSmellPercepts.get(intruder);
         AreaPercepts areaPercepts = intruderAreaPercepts.get(intruder);
+        boolean wasLastActionExecuted = false;
 
-        //return new IntruderPercepts(targetDirection, vision, sounds, smells, areaPercepts, this.scenarioIntruderPercepts);
-        return null;
+        return new IntruderPercepts(targetDirection, vision, sounds, smells, areaPercepts, this.scenarioIntruderPercepts, wasLastActionExecuted);
     }
 
     private void guardAct(Action action, GuardPercepts percept, Guard guard){
@@ -394,6 +401,7 @@ public class GameController{
         setAreaPerceptsGuard(guard);
         setGuardSoundPercepts(guard);
         setGuardSmellPercepts(guard);
+        setGuardObjectPercepts(guard);
     }
 
     private void intruderAct(Action action, IntruderPercepts percept, Intruder intruder){
@@ -479,6 +487,7 @@ public class GameController{
         setAreaPerceptsIntruder(intruder);
         setIntruderSoundPercepts(intruder);
         setIntruderSmellPercepts(intruder);
+        setIntruderObjectPercept(intruder);
     }
 
     private boolean checkIfLegalMove(Ellipse2D initialLocation,
@@ -633,7 +642,6 @@ public class GameController{
                     inSentryTower = true;
                     intruderMaxMoveDistance.put(intruder, defaultMaxMoveDistanceIntruder*slowDownModifierSentryTower);
                     intruderMaxSprintDistance.put(intruder, defaultMaxSprintDistanceIntruder*slowDownModifierSentryTower);
-                    //Right now only setting it to the long view range, need to also reduce short vision later
                     intruderViewRange.put(intruder, new Distance(viewRangeSentry[1]));
                 }
             }
@@ -644,7 +652,8 @@ public class GameController{
                 intruderViewRange.put(intruder, new Distance(viewRangeIntruderNormal));
             }
 
-            //Add the setting for justTeleported once we have the teleport flag
+            if(intruderTeleportFlag.get(intruder)) justTeleported = true;
+
             this.intruderAreaPercepts.put(intruder, new AreaPercepts(inWindow, inDoor, inSentryTower, justTeleported));
             it.remove();
         }
@@ -679,7 +688,6 @@ public class GameController{
                 if(location.intersects(sentry)) {
                     inSentryTower = true;
                     guardMaxMoveDistance.put(guard, defaultMaxMoveDistanceGuard*slowDownModifierSentryTower);
-                    //Right now only setting it to the long view range, need to also reduce short vision later
                     guardViewRange.put(guard, new Distance(viewRangeSentry[1]));
 
                 }
@@ -690,7 +698,8 @@ public class GameController{
                 guardViewRange.put(guard, new Distance(viewRangeGuardNormal));
             }
 
-            //Add the setting for justTeleported once we have the teleport flag
+            if(guardTeleportFlag.get(guard)) justTeleported = true;
+
             this.guardsAreaPercepts.put(guard, new AreaPercepts(inWindow, inDoor, inSentryTower, justTeleported));
             it.remove();
         }
@@ -721,6 +730,7 @@ public class GameController{
         SoundPercepts soundPercepts = new SoundPercepts(soundPerceptsSet);
         this.intruderSoundPercepts.put(intruder, soundPercepts);
     }
+
 
 
     private void setGuardSoundPercepts(Guard guard) {
@@ -772,6 +782,7 @@ public class GameController{
         this.intruderSmellPercepts.put(intruder, smellPercepts);
     }
 
+
     private void setGuardSmellPercepts(Guard guard) {
 
         Ellipse2D guardLoc = guardLocations.get(guard);
@@ -792,6 +803,380 @@ public class GameController{
         SmellPercepts smellPercepts = new SmellPercepts(smellPerceptsSet);
         this.guardSmellPercepts.put(guard, smellPercepts);
     }
+
+
+
+
+
+    private void setIntruderObjectPercept(Intruder intruder) {
+
+        //LinkedList<Line2D.Double> rays = new LinkedList<>();
+        HashSet<ObjectPercept> objectPerceptsSet = new HashSet<>();
+        double maxDist = intruderViewRange.get(intruder).getValue();
+        double x = intruderLocations.get(intruder).getX();
+        double y = intruderLocations.get(intruder).getY();
+        double notInViewDistance = 0;
+        if(intruderAreaPercepts.get(intruder).isInSentryTower()) notInViewDistance = viewRangeSentry[0];
+
+        for (int i = 0; i < viewAngle; i++) {
+            double dir = (Math.PI * 2) * ((double) i / viewAngle);
+            double minDist = maxDist;
+            ObjectPerceptType object = ObjectPerceptType.EmptySpace;
+
+            for (Rectangle wall : walls) {
+                Line2D.Double line1 = new Line2D.Double(wall.x, wall.y, wall.x + wall.width, wall.y );
+                Line2D.Double line2 = new Line2D.Double(wall.x + wall.width, wall.y, wall.x + wall.width, wall.y + wall.height);
+                Line2D.Double line3 = new Line2D.Double(wall.x, wall.y + wall.height, wall.x + wall.width, wall.y + wall.height);
+                Line2D.Double line4 = new Line2D.Double(wall.x, wall.y, wall.x, wall.y + wall.height);
+                double dist1 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line1.x1, line1.y1, line1.x2, line1.y2);
+                double dist2 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line2.x1, line2.y1, line2.x2, line2.y2);
+                double dist3 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line3.x1, line3.y1, line3.x2, line3.y2);
+                double dist4 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line4.x1, line4.y1, line4.x2, line4.y2);
+                double dist = Math.min(Math.min(dist1, dist2), Math.min(dist3, dist4));
+                if (dist < minDist && dist > notInViewDistance) {
+                    minDist = dist;
+                    object = ObjectPerceptType.Wall;
+                }
+            }
+
+            for (Rectangle window : windows) {
+                Line2D.Double line1 = new Line2D.Double(window.x, window.y, window.x + window.width, window.y );
+                Line2D.Double line2 = new Line2D.Double(window.x + window.width, window.y, window.x + window.width, window.y + window.height);
+                Line2D.Double line3 = new Line2D.Double(window.x, window.y + window.height, window.x + window.width, window.y + window.height);
+                Line2D.Double line4 = new Line2D.Double(window.x, window.y, window.x, window.y + window.height);
+                double dist1 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line1.x1, line1.y1, line1.x2, line1.y2);
+                double dist2 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line2.x1, line2.y1, line2.x2, line2.y2);
+                double dist3 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line3.x1, line3.y1, line3.x2, line3.y2);
+                double dist4 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line4.x1, line4.y1, line4.x2, line4.y2);
+                double dist = Math.min(Math.min(dist1, dist2), Math.min(dist3, dist4));
+                if (dist < minDist && dist > notInViewDistance) {
+                    minDist = dist;
+                    object = ObjectPerceptType.Window;
+                }
+            }
+
+            for (Rectangle door : doors) {
+                Line2D.Double line1 = new Line2D.Double(door.x, door.y, door.x + door.width, door.y );
+                Line2D.Double line2 = new Line2D.Double(door.x + door.width, door.y, door.x + door.width, door.y + door.height);
+                Line2D.Double line3 = new Line2D.Double(door.x, door.y + door.height, door.x + door.width, door.y + door.height);
+                Line2D.Double line4 = new Line2D.Double(door.x, door.y, door.x, door.y + door.height);
+                double dist1 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line1.x1, line1.y1, line1.x2, line1.y2);
+                double dist2 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line2.x1, line2.y1, line2.x2, line2.y2);
+                double dist3 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line3.x1, line3.y1, line3.x2, line3.y2);
+                double dist4 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line4.x1, line4.y1, line4.x2, line4.y2);
+                double dist = Math.min(Math.min(dist1, dist2), Math.min(dist3, dist4));
+                if (dist < minDist && dist > notInViewDistance) {
+                    minDist = dist;
+                    object = ObjectPerceptType.Door;
+                }
+            }
+
+            for (Rectangle sentry : sentries) {
+                Line2D.Double line1 = new Line2D.Double(sentry.x, sentry.y, sentry.x + sentry.width, sentry.y );
+                Line2D.Double line2 = new Line2D.Double(sentry.x + sentry.width, sentry.y, sentry.x + sentry.width, sentry.y + sentry.height);
+                Line2D.Double line3 = new Line2D.Double(sentry.x, sentry.y + sentry.height, sentry.x + sentry.width, sentry.y + sentry.height);
+                Line2D.Double line4 = new Line2D.Double(sentry.x, sentry.y, sentry.x, sentry.y + sentry.height);
+                double dist1 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line1.x1, line1.y1, line1.x2, line1.y2);
+                double dist2 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line2.x1, line2.y1, line2.x2, line2.y2);
+                double dist3 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line3.x1, line3.y1, line3.x2, line3.y2);
+                double dist4 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line4.x1, line4.y1, line4.x2, line4.y2);
+                double dist = Math.min(Math.min(dist1, dist2), Math.min(dist3, dist4));
+                if (dist < minDist && dist > notInViewDistance) {
+                    minDist = dist;
+                    object = ObjectPerceptType.SentryTower;
+                }
+            }
+
+            for (Rectangle shade : shaded) {
+                Line2D.Double line1 = new Line2D.Double(shade.x, shade.y, shade.x + shade.width, shade.y );
+                Line2D.Double line2 = new Line2D.Double(shade.x + shade.width, shade.y, shade.x + shade.width, shade.y + shade.height);
+                Line2D.Double line3 = new Line2D.Double(shade.x, shade.y + shade.height, shade.x + shade.width, shade.y + shade.height);
+                Line2D.Double line4 = new Line2D.Double(shade.x, shade.y, shade.x, shade.y + shade.height);
+                double dist1 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line1.x1, line1.y1, line1.x2, line1.y2);
+                double dist2 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line2.x1, line2.y1, line2.x2, line2.y2);
+                double dist3 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line3.x1, line3.y1, line3.x2, line3.y2);
+                double dist4 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line4.x1, line4.y1, line4.x2, line4.y2);
+                double dist = Math.min(Math.min(dist1, dist2), Math.min(dist3, dist4));
+                if (dist < minDist && dist > notInViewDistance) {
+                    minDist = dist;
+                    object = ObjectPerceptType.ShadedArea;
+                }
+            }
+
+
+            for (Rectangle target : targetArea) {
+                Line2D.Double line1 = new Line2D.Double(target.x, target.y, target.x + target.width, target.y );
+                Line2D.Double line2 = new Line2D.Double(target.x + target.width, target.y, target.x + target.width, target.y + target.height);
+                Line2D.Double line3 = new Line2D.Double(target.x, target.y + target.height, target.x + target.width, target.y + target.height);
+                Line2D.Double line4 = new Line2D.Double(target.x, target.y, target.x, target.y + target.height);
+                double dist1 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line1.x1, line1.y1, line1.x2, line1.y2);
+                double dist2 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line2.x1, line2.y1, line2.x2, line2.y2);
+                double dist3 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line3.x1, line3.y1, line3.x2, line3.y2);
+                double dist4 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line4.x1, line4.y1, line4.x2, line4.y2);
+                double dist = Math.min(Math.min(dist1, dist2), Math.min(dist3, dist4));
+                if (dist < minDist && dist > notInViewDistance) {
+                    minDist = dist;
+                    object = ObjectPerceptType.TargetArea;
+                }
+            }
+
+            for(int j=0; j<teleports.size(); i++) {
+                Rectangle teleport = teleports.get(j).getArea();
+                Line2D.Double line1 = new Line2D.Double(teleport.x, teleport.y, teleport.x + teleport.width, teleport.y );
+                Line2D.Double line2 = new Line2D.Double(teleport.x + teleport.width, teleport.y, teleport.x + teleport.width, teleport.y + teleport.height);
+                Line2D.Double line3 = new Line2D.Double(teleport.x, teleport.y + teleport.height, teleport.x + teleport.width, teleport.y + teleport.height);
+                Line2D.Double line4 = new Line2D.Double(teleport.x, teleport.y, teleport.x, teleport.y + teleport.height);
+                double dist1 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line1.x1, line1.y1, line1.x2, line1.y2);
+                double dist2 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line2.x1, line2.y1, line2.x2, line2.y2);
+                double dist3 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line3.x1, line3.y1, line3.x2, line3.y2);
+                double dist4 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line4.x1, line4.y1, line4.x2, line4.y2);
+                double dist = Math.min(Math.min(dist1, dist2), Math.min(dist3, dist4));
+                if (dist < minDist && dist > notInViewDistance) {
+                    minDist = dist;
+                    object = ObjectPerceptType.Teleport;
+                }
+            }
+
+            for(int j=0; j<intruderLocations.size(); i++) {
+                Rectangle otherIntruder = intruderLocations.get(j).getBounds();
+                Line2D.Double line1 = new Line2D.Double(otherIntruder.x, otherIntruder.y, otherIntruder.x + otherIntruder.width, otherIntruder.y );
+                Line2D.Double line2 = new Line2D.Double(otherIntruder.x + otherIntruder.width, otherIntruder.y, otherIntruder.x + otherIntruder.width, otherIntruder.y + otherIntruder.height);
+                Line2D.Double line3 = new Line2D.Double(otherIntruder.x, otherIntruder.y + otherIntruder.height, otherIntruder.x + otherIntruder.width, otherIntruder.y + otherIntruder.height);
+                Line2D.Double line4 = new Line2D.Double(otherIntruder.x, otherIntruder.y, otherIntruder.x, otherIntruder.y + otherIntruder.height);
+                double dist1 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line1.x1, line1.y1, line1.x2, line1.y2);
+                double dist2 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line2.x1, line2.y1, line2.x2, line2.y2);
+                double dist3 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line3.x1, line3.y1, line3.x2, line3.y2);
+                double dist4 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line4.x1, line4.y1, line4.x2, line4.y2);
+                double dist = Math.min(Math.min(dist1, dist2), Math.min(dist3, dist4));
+                if (dist < minDist && dist > notInViewDistance) {
+                    minDist = dist;
+                    object = ObjectPerceptType.Intruder;
+                }
+            }
+
+
+            for(int j=0; j<guardLocations.size(); i++) {
+                Rectangle guard = guardLocations.get(j).getBounds();
+                Line2D.Double line1 = new Line2D.Double(guard.x, guard.y, guard.x + guard.width, guard.y );
+                Line2D.Double line2 = new Line2D.Double(guard.x + guard.width, guard.y, guard.x + guard.width, guard.y + guard.height);
+                Line2D.Double line3 = new Line2D.Double(guard.x, guard.y + guard.height, guard.x + guard.width, guard.y + guard.height);
+                Line2D.Double line4 = new Line2D.Double(guard.x, guard.y, guard.x, guard.y + guard.height);
+                double dist1 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line1.x1, line1.y1, line1.x2, line1.y2);
+                double dist2 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line2.x1, line2.y1, line2.x2, line2.y2);
+                double dist3 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line3.x1, line3.y1, line3.x2, line3.y2);
+                double dist4 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line4.x1, line4.y1, line4.x2, line4.y2);
+                double dist = Math.min(Math.min(dist1, dist2), Math.min(dist3, dist4));
+                if (dist < minDist && dist > notInViewDistance) {
+                    minDist = dist;
+                    object = ObjectPerceptType.Guard;
+                }
+            }
+
+            Point intersectionPoint = new Point(x +  Math.cos(dir) * minDist, y +  Math.sin(dir) * minDist);
+            objectPerceptsSet.add(new ObjectPercept(object, intersectionPoint));
+            //rays.add(new Line2D.Double(x, y, intersectionPoint.getX(), intersectionPoint.getY()));
+        }
+        intruderObjectPercept.put(intruder, new ObjectPercepts(objectPerceptsSet));
+    }
+
+    private void setGuardObjectPercepts(Guard guard) {
+
+        //LinkedList<Line2D.Double> rays = new LinkedList<>();
+        HashSet<ObjectPercept> objectPerceptsSet = new HashSet<>();
+        double maxDist = guardViewRange.get(guard).getValue();
+        double x = guardLocations.get(guard).getX();
+        double y = guardLocations.get(guard).getY();
+        double notInViewDistance = 0;
+        if(guardsAreaPercepts.get(guard).isInSentryTower()) notInViewDistance = viewRangeSentry[0];
+
+        for (int i = 0; i < viewAngle; i++) {
+            double dir = (Math.PI * 2) * ((double) i / viewAngle);
+            double minDist = maxDist;
+            ObjectPerceptType object = ObjectPerceptType.EmptySpace;
+
+            for (Rectangle wall : walls) {
+                Line2D.Double line1 = new Line2D.Double(wall.x, wall.y, wall.x + wall.width, wall.y );
+                Line2D.Double line2 = new Line2D.Double(wall.x + wall.width, wall.y, wall.x + wall.width, wall.y + wall.height);
+                Line2D.Double line3 = new Line2D.Double(wall.x, wall.y + wall.height, wall.x + wall.width, wall.y + wall.height);
+                Line2D.Double line4 = new Line2D.Double(wall.x, wall.y, wall.x, wall.y + wall.height);
+                double dist1 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line1.x1, line1.y1, line1.x2, line1.y2);
+                double dist2 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line2.x1, line2.y1, line2.x2, line2.y2);
+                double dist3 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line3.x1, line3.y1, line3.x2, line3.y2);
+                double dist4 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line4.x1, line4.y1, line4.x2, line4.y2);
+                double dist = Math.min(Math.min(dist1, dist2), Math.min(dist3, dist4));
+                if (dist < minDist && dist > notInViewDistance) {
+                    minDist = dist;
+                    object = ObjectPerceptType.Wall;
+                }
+            }
+
+            for (Rectangle window : windows) {
+                Line2D.Double line1 = new Line2D.Double(window.x, window.y, window.x + window.width, window.y );
+                Line2D.Double line2 = new Line2D.Double(window.x + window.width, window.y, window.x + window.width, window.y + window.height);
+                Line2D.Double line3 = new Line2D.Double(window.x, window.y + window.height, window.x + window.width, window.y + window.height);
+                Line2D.Double line4 = new Line2D.Double(window.x, window.y, window.x, window.y + window.height);
+                double dist1 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line1.x1, line1.y1, line1.x2, line1.y2);
+                double dist2 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line2.x1, line2.y1, line2.x2, line2.y2);
+                double dist3 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line3.x1, line3.y1, line3.x2, line3.y2);
+                double dist4 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line4.x1, line4.y1, line4.x2, line4.y2);
+                double dist = Math.min(Math.min(dist1, dist2), Math.min(dist3, dist4));
+                if (dist < minDist && dist > notInViewDistance) {
+                    minDist = dist;
+                    object = ObjectPerceptType.Window;
+                }
+            }
+
+            for (Rectangle door : doors) {
+                Line2D.Double line1 = new Line2D.Double(door.x, door.y, door.x + door.width, door.y );
+                Line2D.Double line2 = new Line2D.Double(door.x + door.width, door.y, door.x + door.width, door.y + door.height);
+                Line2D.Double line3 = new Line2D.Double(door.x, door.y + door.height, door.x + door.width, door.y + door.height);
+                Line2D.Double line4 = new Line2D.Double(door.x, door.y, door.x, door.y + door.height);
+                double dist1 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line1.x1, line1.y1, line1.x2, line1.y2);
+                double dist2 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line2.x1, line2.y1, line2.x2, line2.y2);
+                double dist3 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line3.x1, line3.y1, line3.x2, line3.y2);
+                double dist4 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line4.x1, line4.y1, line4.x2, line4.y2);
+                double dist = Math.min(Math.min(dist1, dist2), Math.min(dist3, dist4));
+                if (dist < minDist && dist > notInViewDistance) {
+                    minDist = dist;
+                    object = ObjectPerceptType.Door;
+                }
+            }
+
+            for (Rectangle sentry : sentries) {
+                Line2D.Double line1 = new Line2D.Double(sentry.x, sentry.y, sentry.x + sentry.width, sentry.y );
+                Line2D.Double line2 = new Line2D.Double(sentry.x + sentry.width, sentry.y, sentry.x + sentry.width, sentry.y + sentry.height);
+                Line2D.Double line3 = new Line2D.Double(sentry.x, sentry.y + sentry.height, sentry.x + sentry.width, sentry.y + sentry.height);
+                Line2D.Double line4 = new Line2D.Double(sentry.x, sentry.y, sentry.x, sentry.y + sentry.height);
+                double dist1 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line1.x1, line1.y1, line1.x2, line1.y2);
+                double dist2 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line2.x1, line2.y1, line2.x2, line2.y2);
+                double dist3 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line3.x1, line3.y1, line3.x2, line3.y2);
+                double dist4 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line4.x1, line4.y1, line4.x2, line4.y2);
+                double dist = Math.min(Math.min(dist1, dist2), Math.min(dist3, dist4));
+                if (dist < minDist && dist > notInViewDistance) {
+                    minDist = dist;
+                    object = ObjectPerceptType.SentryTower;
+                }
+            }
+
+            for (Rectangle shade : shaded) {
+                Line2D.Double line1 = new Line2D.Double(shade.x, shade.y, shade.x + shade.width, shade.y );
+                Line2D.Double line2 = new Line2D.Double(shade.x + shade.width, shade.y, shade.x + shade.width, shade.y + shade.height);
+                Line2D.Double line3 = new Line2D.Double(shade.x, shade.y + shade.height, shade.x + shade.width, shade.y + shade.height);
+                Line2D.Double line4 = new Line2D.Double(shade.x, shade.y, shade.x, shade.y + shade.height);
+                double dist1 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line1.x1, line1.y1, line1.x2, line1.y2);
+                double dist2 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line2.x1, line2.y1, line2.x2, line2.y2);
+                double dist3 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line3.x1, line3.y1, line3.x2, line3.y2);
+                double dist4 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line4.x1, line4.y1, line4.x2, line4.y2);
+                double dist = Math.min(Math.min(dist1, dist2), Math.min(dist3, dist4));
+                if (dist < minDist && dist > notInViewDistance) {
+                    minDist = dist;
+                    object = ObjectPerceptType.ShadedArea;
+                }
+            }
+
+
+            for (Rectangle target : targetArea) {
+                Line2D.Double line1 = new Line2D.Double(target.x, target.y, target.x + target.width, target.y );
+                Line2D.Double line2 = new Line2D.Double(target.x + target.width, target.y, target.x + target.width, target.y + target.height);
+                Line2D.Double line3 = new Line2D.Double(target.x, target.y + target.height, target.x + target.width, target.y + target.height);
+                Line2D.Double line4 = new Line2D.Double(target.x, target.y, target.x, target.y + target.height);
+                double dist1 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line1.x1, line1.y1, line1.x2, line1.y2);
+                double dist2 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line2.x1, line2.y1, line2.x2, line2.y2);
+                double dist3 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line3.x1, line3.y1, line3.x2, line3.y2);
+                double dist4 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line4.x1, line4.y1, line4.x2, line4.y2);
+                double dist = Math.min(Math.min(dist1, dist2), Math.min(dist3, dist4));
+                if (dist < minDist && dist > notInViewDistance) {
+                    minDist = dist;
+                    object = ObjectPerceptType.TargetArea;
+                }
+            }
+
+            for(int j=0; j<teleports.size(); i++) {
+                Rectangle teleport = teleports.get(j).getArea();
+                Line2D.Double line1 = new Line2D.Double(teleport.x, teleport.y, teleport.x + teleport.width, teleport.y );
+                Line2D.Double line2 = new Line2D.Double(teleport.x + teleport.width, teleport.y, teleport.x + teleport.width, teleport.y + teleport.height);
+                Line2D.Double line3 = new Line2D.Double(teleport.x, teleport.y + teleport.height, teleport.x + teleport.width, teleport.y + teleport.height);
+                Line2D.Double line4 = new Line2D.Double(teleport.x, teleport.y, teleport.x, teleport.y + teleport.height);
+                double dist1 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line1.x1, line1.y1, line1.x2, line1.y2);
+                double dist2 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line2.x1, line2.y1, line2.x2, line2.y2);
+                double dist3 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line3.x1, line3.y1, line3.x2, line3.y2);
+                double dist4 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line4.x1, line4.y1, line4.x2, line4.y2);
+                double dist = Math.min(Math.min(dist1, dist2), Math.min(dist3, dist4));
+                if (dist < minDist && dist > notInViewDistance) {
+                    minDist = dist;
+                    object = ObjectPerceptType.Teleport;
+                }
+            }
+
+            for(int j=0; j<intruderLocations.size(); i++) {
+                Rectangle intruder = intruderLocations.get(j).getBounds();
+                Line2D.Double line1 = new Line2D.Double(intruder.x, intruder.y, intruder.x + intruder.width, intruder.y );
+                Line2D.Double line2 = new Line2D.Double(intruder.x + intruder.width, intruder.y, intruder.x + intruder.width, intruder.y + intruder.height);
+                Line2D.Double line3 = new Line2D.Double(intruder.x, intruder.y + intruder.height, intruder.x + intruder.width, intruder.y + intruder.height);
+                Line2D.Double line4 = new Line2D.Double(intruder.x, intruder.y, intruder.x, intruder.y + intruder.height);
+                double dist1 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line1.x1, line1.y1, line1.x2, line1.y2);
+                double dist2 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line2.x1, line2.y1, line2.x2, line2.y2);
+                double dist3 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line3.x1, line3.y1, line3.x2, line3.y2);
+                double dist4 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line4.x1, line4.y1, line4.x2, line4.y2);
+                double dist = Math.min(Math.min(dist1, dist2), Math.min(dist3, dist4));
+                if (dist < minDist && dist > notInViewDistance) {
+                    minDist = dist;
+                    object = ObjectPerceptType.Intruder;
+                }
+            }
+
+
+            for(int j=0; j<guardLocations.size(); i++) {
+                Rectangle otherGuard = guardLocations.get(j).getBounds();
+                Line2D.Double line1 = new Line2D.Double(otherGuard.x, otherGuard.y, otherGuard.x + otherGuard.width, otherGuard.y );
+                Line2D.Double line2 = new Line2D.Double(otherGuard.x + otherGuard.width, otherGuard.y, otherGuard.x + otherGuard.width, otherGuard.y + otherGuard.height);
+                Line2D.Double line3 = new Line2D.Double(otherGuard.x, otherGuard.y + otherGuard.height, otherGuard.x + otherGuard.width, otherGuard.y + otherGuard.height);
+                Line2D.Double line4 = new Line2D.Double(otherGuard.x, otherGuard.y, otherGuard.x, otherGuard.y + otherGuard.height);
+                double dist1 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line1.x1, line1.y1, line1.x2, line1.y2);
+                double dist2 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line2.x1, line2.y1, line2.x2, line2.y2);
+                double dist3 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line3.x1, line3.y1, line3.x2, line3.y2);
+                double dist4 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line4.x1, line4.y1, line4.x2, line4.y2);
+                double dist = Math.min(Math.min(dist1, dist2), Math.min(dist3, dist4));
+                if (dist < minDist && dist > notInViewDistance) {
+                    minDist = dist;
+                    object = ObjectPerceptType.Guard;
+                }
+            }
+
+            Point intersectionPoint = new Point(x +  Math.cos(dir) * minDist, y +  Math.sin(dir) * minDist);
+            objectPerceptsSet.add(new ObjectPercept(object, intersectionPoint));
+            //rays.add(new Line2D.Double(x, y, intersectionPoint.getX(), intersectionPoint.getY()));
+        }
+        guardObjectPercepts.put(guard, new ObjectPercepts(objectPerceptsSet));
+    }
+
+
+
+    public static double getRayCast(double p0_x, double p0_y, double p1_x, double p1_y, double p2_x, double p2_y, double p3_x, double p3_y) {
+        double s1_x, s1_y, s2_x, s2_y;
+        s1_x = p1_x - p0_x;
+        s1_y = p1_y - p0_y;
+        s2_x = p3_x - p2_x;
+        s2_y = p3_y - p2_y;
+
+        double s, t;
+        s = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y)) / (-s2_x * s1_y + s1_x * s2_y);
+        t = (s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x)) / (-s2_x * s1_y + s1_x * s2_y);
+
+        if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
+            // Collision detected
+            double x = p0_x + (t * s1_x);
+            double y = p0_y + (t * s1_y);
+
+            Point point1 = new Point(p0_x, p0_y);
+            Point point2 = new Point(x, y);
+            return new Distance(point1, point2).getValue();
+        }
+
+        return Double.MAX_VALUE; // No collision
+    }
+
+
 
 
 }
