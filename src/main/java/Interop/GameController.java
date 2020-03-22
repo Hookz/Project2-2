@@ -700,8 +700,9 @@ public class GameController{
                 Sound sound = (Sound) pair.getKey();
                 double deltaX = Math.abs(guardLoc.getCenterX() - soundLoc.getCenterX());
                 Direction soundDirection = Direction.fromRadians(Math.acos(deltaX / centerDistance));
-                Direction perceivedAngle = (Direction) soundDirection.getDistance(guardDirections.get(guard));
-                soundPerceptsSet.add(new SoundPercept(sound.getType(), perceivedAngle));
+                Angle perceivedAngle = soundDirection.getDistance(guardDirections.get(guard));
+                Direction perceivedDirection =  Direction.fromRadians(perceivedAngle.getRadians());
+                soundPerceptsSet.add(new SoundPercept(sound.getType(), perceivedDirection));
             }
 
             it.remove();
