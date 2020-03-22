@@ -822,8 +822,12 @@ public class GameController{
         double notInViewDistance = 0;
         if(intruderAreaPercepts.get(intruder).isInSentryTower()) notInViewDistance = viewRangeSentry[0];
 
-        for (int i = 0; i < viewAngle; i++) {
-            double dir = (Math.PI * 2) * ((double) i / viewAngle);
+        int startOfAngle = (int) (intruderDirections.get(intruder).getDegrees() - viewAngle/2);
+        int endOfAngle = (int) (intruderDirections.get(intruder).getDegrees() + viewAngle/2);
+
+
+        for (int i = startOfAngle; i < endOfAngle; i++) {
+            double dir = Math.toRadians(i);
             double minDist = maxDist;
             ObjectPerceptType object = ObjectPerceptType.EmptySpace;
 
@@ -946,20 +950,23 @@ public class GameController{
             Iterator intruderLocIterator = (new HashMap<>(intruderLocations)).entrySet().iterator();
             while (intruderLocIterator.hasNext()) {
                 Map.Entry pair = (Map.Entry) intruderLocIterator.next();
-                Ellipse2D otherIntruderEllipse = (Ellipse2D) pair.getValue();
-                Rectangle otherIntruder = otherIntruderEllipse.getBounds();
-                Line2D.Double line1 = new Line2D.Double(otherIntruder.x, otherIntruder.y, otherIntruder.x + otherIntruder.width, otherIntruder.y );
-                Line2D.Double line2 = new Line2D.Double(otherIntruder.x + otherIntruder.width, otherIntruder.y, otherIntruder.x + otherIntruder.width, otherIntruder.y + otherIntruder.height);
-                Line2D.Double line3 = new Line2D.Double(otherIntruder.x, otherIntruder.y + otherIntruder.height, otherIntruder.x + otherIntruder.width, otherIntruder.y + otherIntruder.height);
-                Line2D.Double line4 = new Line2D.Double(otherIntruder.x, otherIntruder.y, otherIntruder.x, otherIntruder.y + otherIntruder.height);
-                double dist1 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line1.x1, line1.y1, line1.x2, line1.y2);
-                double dist2 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line2.x1, line2.y1, line2.x2, line2.y2);
-                double dist3 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line3.x1, line3.y1, line3.x2, line3.y2);
-                double dist4 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line4.x1, line4.y1, line4.x2, line4.y2);
-                double dist = Math.min(Math.min(dist1, dist2), Math.min(dist3, dist4));
-                if (dist < minDist && dist > notInViewDistance) {
-                    minDist = dist;
-                    object = ObjectPerceptType.Intruder;
+                Intruder currentIntruder = (Intruder) pair.getKey();
+                if(currentIntruder != intruder) {
+                    Ellipse2D otherIntruderEllipse = (Ellipse2D) pair.getValue();
+                    Rectangle otherIntruder = otherIntruderEllipse.getBounds();
+                    Line2D.Double line1 = new Line2D.Double(otherIntruder.x, otherIntruder.y, otherIntruder.x + otherIntruder.width, otherIntruder.y);
+                    Line2D.Double line2 = new Line2D.Double(otherIntruder.x + otherIntruder.width, otherIntruder.y, otherIntruder.x + otherIntruder.width, otherIntruder.y + otherIntruder.height);
+                    Line2D.Double line3 = new Line2D.Double(otherIntruder.x, otherIntruder.y + otherIntruder.height, otherIntruder.x + otherIntruder.width, otherIntruder.y + otherIntruder.height);
+                    Line2D.Double line4 = new Line2D.Double(otherIntruder.x, otherIntruder.y, otherIntruder.x, otherIntruder.y + otherIntruder.height);
+                    double dist1 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line1.x1, line1.y1, line1.x2, line1.y2);
+                    double dist2 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line2.x1, line2.y1, line2.x2, line2.y2);
+                    double dist3 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line3.x1, line3.y1, line3.x2, line3.y2);
+                    double dist4 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line4.x1, line4.y1, line4.x2, line4.y2);
+                    double dist = Math.min(Math.min(dist1, dist2), Math.min(dist3, dist4));
+                    if (dist < minDist && dist > notInViewDistance) {
+                        minDist = dist;
+                        object = ObjectPerceptType.Intruder;
+                    }
                 }
                 intruderLocIterator.remove();
             }
@@ -1003,8 +1010,10 @@ public class GameController{
         double notInViewDistance = 0;
         if(guardsAreaPercepts.get(guard).isInSentryTower()) notInViewDistance = viewRangeSentry[0];
 
-        for (int i = 0; i < viewAngle; i++) {
-            double dir = (Math.PI * 2) * ((double) i / viewAngle);
+        int startOfAngle = (int) (guardDirections.get(guard).getDegrees() - viewAngle/2);
+        int endOfAngle = (int) (guardDirections.get(guard).getDegrees() + viewAngle/2);
+        for (int i = startOfAngle; i < endOfAngle; i++) {
+            double dir = Math.toRadians(i);
             double minDist = maxDist;
             ObjectPerceptType object = ObjectPerceptType.EmptySpace;
 
@@ -1127,8 +1136,8 @@ public class GameController{
             Iterator intruderLocIterator = (new HashMap<>(intruderLocations)).entrySet().iterator();
             while (intruderLocIterator.hasNext()) {
                 Map.Entry pair = (Map.Entry) intruderLocIterator.next();
-                Ellipse2D otherIntruderEllipse = (Ellipse2D) pair.getValue();
-                Rectangle intruder = otherIntruderEllipse.getBounds();
+                Ellipse2D intruderEllipse = (Ellipse2D) pair.getValue();
+                Rectangle intruder = intruderEllipse.getBounds();
                 Line2D.Double line1 = new Line2D.Double(intruder.x, intruder.y, intruder.x + intruder.width, intruder.y );
                 Line2D.Double line2 = new Line2D.Double(intruder.x + intruder.width, intruder.y, intruder.x + intruder.width, intruder.y + intruder.height);
                 Line2D.Double line3 = new Line2D.Double(intruder.x, intruder.y + intruder.height, intruder.x + intruder.width, intruder.y + intruder.height);
@@ -1148,20 +1157,23 @@ public class GameController{
             Iterator guardLocIterator = (new HashMap<>(guardLocations)).entrySet().iterator();
             while (guardLocIterator.hasNext()) {
                 Map.Entry pair = (Map.Entry) guardLocIterator.next();
-                Ellipse2D guardEllipse = (Ellipse2D) pair.getValue();
-                Rectangle otherGuard = guardEllipse.getBounds();
-                Line2D.Double line1 = new Line2D.Double(otherGuard.x, otherGuard.y, otherGuard.x + otherGuard.width, otherGuard.y );
-                Line2D.Double line2 = new Line2D.Double(otherGuard.x + otherGuard.width, otherGuard.y, otherGuard.x + otherGuard.width, otherGuard.y + otherGuard.height);
-                Line2D.Double line3 = new Line2D.Double(otherGuard.x, otherGuard.y + otherGuard.height, otherGuard.x + otherGuard.width, otherGuard.y + otherGuard.height);
-                Line2D.Double line4 = new Line2D.Double(otherGuard.x, otherGuard.y, otherGuard.x, otherGuard.y + otherGuard.height);
-                double dist1 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line1.x1, line1.y1, line1.x2, line1.y2);
-                double dist2 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line2.x1, line2.y1, line2.x2, line2.y2);
-                double dist3 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line3.x1, line3.y1, line3.x2, line3.y2);
-                double dist4 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line4.x1, line4.y1, line4.x2, line4.y2);
-                double dist = Math.min(Math.min(dist1, dist2), Math.min(dist3, dist4));
-                if (dist < minDist && dist > notInViewDistance) {
-                    minDist = dist;
-                    object = ObjectPerceptType.Guard;
+                Guard currentGuard = (Guard) pair.getKey();
+                if(currentGuard != guard) {
+                    Ellipse2D guardEllipse = (Ellipse2D) pair.getValue();
+                    Rectangle otherGuard = guardEllipse.getBounds();
+                    Line2D.Double line1 = new Line2D.Double(otherGuard.x, otherGuard.y, otherGuard.x + otherGuard.width, otherGuard.y);
+                    Line2D.Double line2 = new Line2D.Double(otherGuard.x + otherGuard.width, otherGuard.y, otherGuard.x + otherGuard.width, otherGuard.y + otherGuard.height);
+                    Line2D.Double line3 = new Line2D.Double(otherGuard.x, otherGuard.y + otherGuard.height, otherGuard.x + otherGuard.width, otherGuard.y + otherGuard.height);
+                    Line2D.Double line4 = new Line2D.Double(otherGuard.x, otherGuard.y, otherGuard.x, otherGuard.y + otherGuard.height);
+                    double dist1 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line1.x1, line1.y1, line1.x2, line1.y2);
+                    double dist2 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line2.x1, line2.y1, line2.x2, line2.y2);
+                    double dist3 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line3.x1, line3.y1, line3.x2, line3.y2);
+                    double dist4 = getRayCast(x, y, x + Math.cos(dir) * maxDist, y + Math.sin(dir) * maxDist, line4.x1, line4.y1, line4.x2, line4.y2);
+                    double dist = Math.min(Math.min(dist1, dist2), Math.min(dist3, dist4));
+                    if (dist < minDist && dist > notInViewDistance) {
+                        minDist = dist;
+                        object = ObjectPerceptType.Guard;
+                    }
                 }
                 guardLocIterator.remove();
             }
