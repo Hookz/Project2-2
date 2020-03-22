@@ -614,7 +614,8 @@ public class GameController{
                 intruderViewRange.put(intruder, new Distance(viewRangeIntruderNormal));
             }
 
-            //Add the setting for justTeleported once we have the teleport flag
+            if(intruderTeleportFlag.get(intruder)) justTeleported = true;
+
             this.intruderAreaPercepts.put(intruder, new AreaPercepts(inWindow, inDoor, inSentryTower, justTeleported));
             it.remove();
         }
@@ -659,7 +660,8 @@ public class GameController{
                 guardViewRange.put(guard, new Distance(viewRangeGuardNormal));
             }
 
-            //Add the setting for justTeleported once we have the teleport flag
+            if(guardTeleportFlag.get(guard)) justTeleported = true;
+
             this.guardsAreaPercepts.put(guard, new AreaPercepts(inWindow, inDoor, inSentryTower, justTeleported));
             it.remove();
         }
