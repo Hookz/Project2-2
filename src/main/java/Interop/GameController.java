@@ -992,7 +992,6 @@ public class GameController{
                 guardLocIterator.remove();
             }
 
-
             Point intersectionPoint = new Point(Math.cos(dir) * minDist, Math.sin(dir) * minDist);
             objectPerceptsSet.add(new ObjectPercept(object, intersectionPoint));
 
