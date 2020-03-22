@@ -212,11 +212,10 @@ public class GameController{
                 Direction direction = Direction.fromRadians(directionAngle);
                 intruderDirections.put(intruder,direction);
 
-                intruderSprintCooldowns.put(intruder,0);
-                intruderPheromoneCooldowns.put(intruder,0);
-
                 intruderTeleportFlag.put(intruder, false);
 
+                intruderSprintCooldowns.put(intruder,0);
+                intruderPheromoneCooldowns.put(intruder,0);
                 setAreaPerceptsIntruder(intruder);
                 setIntruderSoundPercepts(intruder);
                 setIntruderSmellPercepts(intruder);
