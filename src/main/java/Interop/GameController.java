@@ -195,6 +195,9 @@ public class GameController{
 
                 intruderSprintCooldowns.put(intruder,0);
                 intruderPheromoneCooldowns.put(intruder,0);
+
+                intruderTeleportFlag.put(intruder, false);
+
                 setAreaPerceptsIntruder(intruder);
                 setIntruderSoundPercepts(intruder);
                 setIntruderSmellPercepts(intruder);
@@ -216,6 +219,8 @@ public class GameController{
                 guardDirections.put(guard,direction);
 
                 guardPheromoneCooldowns.put(guard,0);
+
+                guardTeleportFlag.put(guard, false);
 
                 setAreaPerceptsGuard(guard);
                 setGuardSoundPercepts(guard);
