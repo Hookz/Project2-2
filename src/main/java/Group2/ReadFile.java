@@ -47,17 +47,6 @@ public class ReadFile{
   private static List<Rectangle> windows = new ArrayList<Rectangle>();
   private static List<Rectangle> sentries = new ArrayList<Rectangle>();
 
-  public static void main(String[] args) throws IllegalAccessException {
-    readFile(new File(System.getProperty("user.dir")+"/src/main/resources/config.txt"));
-    Field[] fields = Group2.ReadFile.class.getDeclaredFields();
-    for(Field f: fields){
-        System.out.println(f.getName()+": "+f.get(f).toString());
-    }
-    GameController gc = new GameController(gameMode, height, width, numGuards, numIntruders, captureDistance, winConditionIntruderRounds, maxRotationAngle, maxMoveDistanceIntruder,
-    maxSprintDistanceIntruder, maxMoveDistanceGuard, pheromoneExpireRounds, sprintCooldown, pheromoneCooldown, radiusPheromone, slowDownModifierWindow, slowDownModifierDoor, slowDownModifierSentryTower, viewAngle, viewRays, viewRangeIntruderNormal, viewRangeIntruderShaded,
-    viewRangeGuardNormal, viewRangeGuardShaded, viewRangeSentry, yellSoundRadius, maxMoveSoundRadius, windowSoundRadius, doorSoundRadius, targetArea, spawnAreaIntruders, spawnAreaGuards, walls, teleports,
-            shaded, doors, windows, sentries);
-  }
   public static void readFile(File fileToLoad){
   try{
     int lineNumber = 0;
