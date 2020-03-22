@@ -993,8 +993,9 @@ public class GameController{
             }
 
 
-            Point intersectionPoint = new Point(x +  Math.cos(dir) * minDist, y +  Math.sin(dir) * minDist);
+            Point intersectionPoint = new Point(Math.cos(dir) * minDist, Math.sin(dir) * minDist);
             objectPerceptsSet.add(new ObjectPercept(object, intersectionPoint));
+
             //rays.add(new Line2D.Double(x, y, intersectionPoint.getX(), intersectionPoint.getY()));
         }
         intruderObjectPercept.put(intruder, new ObjectPercepts(objectPerceptsSet));
@@ -1012,6 +1013,7 @@ public class GameController{
 
         int startOfAngle = (int) (guardDirections.get(guard).getDegrees() - viewAngle/2);
         int endOfAngle = (int) (guardDirections.get(guard).getDegrees() + viewAngle/2);
+
         for (int i = startOfAngle; i < endOfAngle; i++) {
             double dir = Math.toRadians(i);
             double minDist = maxDist;
@@ -1178,7 +1180,7 @@ public class GameController{
                 guardLocIterator.remove();
             }
 
-            Point intersectionPoint = new Point(x +  Math.cos(dir) * minDist, y +  Math.sin(dir) * minDist);
+            Point intersectionPoint = new Point(Math.cos(dir) * minDist, Math.sin(dir) * minDist);
             objectPerceptsSet.add(new ObjectPercept(object, intersectionPoint));
             //rays.add(new Line2D.Double(x, y, intersectionPoint.getX(), intersectionPoint.getY()));
         }
