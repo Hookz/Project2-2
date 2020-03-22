@@ -992,7 +992,9 @@ public class GameController{
                 guardLocIterator.remove();
             }
 
-            Point intersectionPoint = new Point(Math.cos(dir) * minDist, Math.sin(dir) * minDist);
+            //Adding the difference between the agent's direction and the y-axis to match the agent coordinate system
+            double setToYAxisAngle = Utils.clockAngle(Math.cos(intruderDirections.get(intruder).getRadians()), Math.sin(intruderDirections.get(intruder).getRadians()));
+            Point intersectionPoint = new Point(Math.cos(dir + setToYAxisAngle) * minDist, Math.sin(dir +setToYAxisAngle) * minDist);
             objectPerceptsSet.add(new ObjectPercept(object, intersectionPoint));
 
             //rays.add(new Line2D.Double(x, y, intersectionPoint.getX(), intersectionPoint.getY()));
@@ -1179,7 +1181,11 @@ public class GameController{
                 guardLocIterator.remove();
             }
 
-            Point intersectionPoint = new Point(Math.cos(dir) * minDist, Math.sin(dir) * minDist);
+
+
+            //Adding the difference between the agent's direction and the y-axis to match the agent coordinate system
+            double setToYAxisAngle = Utils.clockAngle(Math.cos(guardDirections.get(guard).getRadians()), Math.sin(guardDirections.get(guard).getRadians()));
+            Point intersectionPoint = new Point(Math.cos(dir + setToYAxisAngle) * minDist, Math.sin(dir + setToYAxisAngle) * minDist);
             objectPerceptsSet.add(new ObjectPercept(object, intersectionPoint));
             //rays.add(new Line2D.Double(x, y, intersectionPoint.getX(), intersectionPoint.getY()));
         }
