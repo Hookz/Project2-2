@@ -924,7 +924,7 @@ public class GameController{
                 }
             }
 
-            for(int j=0; j<teleports.size(); i++) {
+            for(int j=0; j<teleports.size(); j++) {
                 Rectangle teleport = teleports.get(j).getArea();
                 Line2D.Double line1 = new Line2D.Double(teleport.x, teleport.y, teleport.x + teleport.width, teleport.y );
                 Line2D.Double line2 = new Line2D.Double(teleport.x + teleport.width, teleport.y, teleport.x + teleport.width, teleport.y + teleport.height);
@@ -941,8 +941,13 @@ public class GameController{
                 }
             }
 
-            for(int j=0; j<intruderLocations.size(); i++) {
-                Rectangle otherIntruder = intruderLocations.get(j).getBounds();
+
+
+            Iterator intruderLocIterator = (new HashMap<>(intruderLocations)).entrySet().iterator();
+            while (intruderLocIterator.hasNext()) {
+                Map.Entry pair = (Map.Entry) intruderLocIterator.next();
+                Ellipse2D otherIntruderEllipse = (Ellipse2D) pair.getValue();
+                Rectangle otherIntruder = otherIntruderEllipse.getBounds();
                 Line2D.Double line1 = new Line2D.Double(otherIntruder.x, otherIntruder.y, otherIntruder.x + otherIntruder.width, otherIntruder.y );
                 Line2D.Double line2 = new Line2D.Double(otherIntruder.x + otherIntruder.width, otherIntruder.y, otherIntruder.x + otherIntruder.width, otherIntruder.y + otherIntruder.height);
                 Line2D.Double line3 = new Line2D.Double(otherIntruder.x, otherIntruder.y + otherIntruder.height, otherIntruder.x + otherIntruder.width, otherIntruder.y + otherIntruder.height);
@@ -956,11 +961,14 @@ public class GameController{
                     minDist = dist;
                     object = ObjectPerceptType.Intruder;
                 }
+                intruderLocIterator.remove();
             }
 
-
-            for(int j=0; j<guardLocations.size(); i++) {
-                Rectangle guard = guardLocations.get(j).getBounds();
+            Iterator guardLocIterator = (new HashMap<>(guardLocations)).entrySet().iterator();
+            while (guardLocIterator.hasNext()) {
+                Map.Entry pair = (Map.Entry) guardLocIterator.next();
+                Ellipse2D guardEllipse = (Ellipse2D) pair.getValue();
+                Rectangle guard = guardEllipse.getBounds();
                 Line2D.Double line1 = new Line2D.Double(guard.x, guard.y, guard.x + guard.width, guard.y );
                 Line2D.Double line2 = new Line2D.Double(guard.x + guard.width, guard.y, guard.x + guard.width, guard.y + guard.height);
                 Line2D.Double line3 = new Line2D.Double(guard.x, guard.y + guard.height, guard.x + guard.width, guard.y + guard.height);
@@ -974,7 +982,9 @@ public class GameController{
                     minDist = dist;
                     object = ObjectPerceptType.Guard;
                 }
+                guardLocIterator.remove();
             }
+
 
             Point intersectionPoint = new Point(x +  Math.cos(dir) * minDist, y +  Math.sin(dir) * minDist);
             objectPerceptsSet.add(new ObjectPercept(object, intersectionPoint));
@@ -997,6 +1007,7 @@ public class GameController{
             double dir = (Math.PI * 2) * ((double) i / viewAngle);
             double minDist = maxDist;
             ObjectPerceptType object = ObjectPerceptType.EmptySpace;
+
 
             for (Rectangle wall : walls) {
                 Line2D.Double line1 = new Line2D.Double(wall.x, wall.y, wall.x + wall.width, wall.y );
@@ -1095,7 +1106,7 @@ public class GameController{
                 }
             }
 
-            for(int j=0; j<teleports.size(); i++) {
+            for(int j=0; j<teleports.size(); j++) {
                 Rectangle teleport = teleports.get(j).getArea();
                 Line2D.Double line1 = new Line2D.Double(teleport.x, teleport.y, teleport.x + teleport.width, teleport.y );
                 Line2D.Double line2 = new Line2D.Double(teleport.x + teleport.width, teleport.y, teleport.x + teleport.width, teleport.y + teleport.height);
@@ -1112,8 +1123,12 @@ public class GameController{
                 }
             }
 
-            for(int j=0; j<intruderLocations.size(); i++) {
-                Rectangle intruder = intruderLocations.get(j).getBounds();
+
+            Iterator intruderLocIterator = (new HashMap<>(intruderLocations)).entrySet().iterator();
+            while (intruderLocIterator.hasNext()) {
+                Map.Entry pair = (Map.Entry) intruderLocIterator.next();
+                Ellipse2D otherIntruderEllipse = (Ellipse2D) pair.getValue();
+                Rectangle intruder = otherIntruderEllipse.getBounds();
                 Line2D.Double line1 = new Line2D.Double(intruder.x, intruder.y, intruder.x + intruder.width, intruder.y );
                 Line2D.Double line2 = new Line2D.Double(intruder.x + intruder.width, intruder.y, intruder.x + intruder.width, intruder.y + intruder.height);
                 Line2D.Double line3 = new Line2D.Double(intruder.x, intruder.y + intruder.height, intruder.x + intruder.width, intruder.y + intruder.height);
@@ -1127,11 +1142,14 @@ public class GameController{
                     minDist = dist;
                     object = ObjectPerceptType.Intruder;
                 }
+                intruderLocIterator.remove();
             }
 
-
-            for(int j=0; j<guardLocations.size(); i++) {
-                Rectangle otherGuard = guardLocations.get(j).getBounds();
+            Iterator guardLocIterator = (new HashMap<>(guardLocations)).entrySet().iterator();
+            while (guardLocIterator.hasNext()) {
+                Map.Entry pair = (Map.Entry) guardLocIterator.next();
+                Ellipse2D guardEllipse = (Ellipse2D) pair.getValue();
+                Rectangle otherGuard = guardEllipse.getBounds();
                 Line2D.Double line1 = new Line2D.Double(otherGuard.x, otherGuard.y, otherGuard.x + otherGuard.width, otherGuard.y );
                 Line2D.Double line2 = new Line2D.Double(otherGuard.x + otherGuard.width, otherGuard.y, otherGuard.x + otherGuard.width, otherGuard.y + otherGuard.height);
                 Line2D.Double line3 = new Line2D.Double(otherGuard.x, otherGuard.y + otherGuard.height, otherGuard.x + otherGuard.width, otherGuard.y + otherGuard.height);
@@ -1145,6 +1163,7 @@ public class GameController{
                     minDist = dist;
                     object = ObjectPerceptType.Guard;
                 }
+                guardLocIterator.remove();
             }
 
             Point intersectionPoint = new Point(x +  Math.cos(dir) * minDist, y +  Math.sin(dir) * minDist);
