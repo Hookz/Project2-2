@@ -107,6 +107,8 @@ public class GameController{
     private HashMap<Intruder, ObjectPercepts> intruderObjectPercept = new HashMap<>();
     private HashMap<Guard, ObjectPercepts> guardObjectPercepts = new HashMap<>();
 
+    private boolean wasLastActionExecuted;
+
 
     private final double COLLISION_CHECK_STEP_SIZE = 0.05;
 
@@ -329,7 +331,7 @@ public class GameController{
         SoundPercepts sounds = guardSoundPercepts.get(guard);
         SmellPercepts smells = guardSmellPercepts.get(guard);
         AreaPercepts areaPercepts = guardsAreaPercepts.get(guard);
-        boolean wasLastActionExecuted = false;
+
 
         return new GuardPercepts(vision, sounds, smells, areaPercepts, scenarioGuardPercepts, wasLastActionExecuted);
     }
@@ -345,7 +347,6 @@ public class GameController{
         SoundPercepts sounds = intruderSoundPercepts.get(intruder);
         SmellPercepts smells = intruderSmellPercepts.get(intruder);
         AreaPercepts areaPercepts = intruderAreaPercepts.get(intruder);
-        boolean wasLastActionExecuted = false;
 
         return new IntruderPercepts(targetDirection, vision, sounds, smells, areaPercepts, this.scenarioIntruderPercepts, wasLastActionExecuted);
     }
@@ -373,18 +374,23 @@ public class GameController{
                 }
                 guardLocations.put(guard, newGuardLocation);
                 soundLocations.put(stepSound,stepSoundLocation);
+                wasLastActionExecuted = true;
             }
+            else wasLastActionExecuted = false;
+
 
         }else if(action instanceof Rotate){
             Direction guardDirection = guardDirections.get(guard);
             double newGuardAngle = guardDirection.getDegrees() + ((Rotate) action).getAngle().getDegrees();
             guardDirections.put(guard,Direction.fromDegrees(newGuardAngle));
+            wasLastActionExecuted = true;
 
         }else if(action instanceof Yell){
             Sound yell = new Sound(SoundPerceptType.Yell,new Distance(yellSoundRadius));
             Ellipse2D yellLocation = new Ellipse2D.Double(guardLocations.get(guard).getX(),guardLocations.get(guard).getY(),
                     yellSoundRadius*2.0,yellSoundRadius*2.0);
             soundLocations.put(yell,yellLocation);
+            wasLastActionExecuted = true;
 
         }else if(action instanceof DropPheromone){
             if(guardPheromoneCooldowns.get(guard)==0) {
@@ -393,12 +399,15 @@ public class GameController{
                         smell.getRadius().getValue() * 2.0, smell.getRadius().getValue() * 2.0); //*2 = Radius -> Diameter
                 guardSmellLocations.put(smell, smellLocation);
                 guardPheromoneCooldowns.replace(guard, pheromoneCooldown);
+                wasLastActionExecuted = true;
             }else{
                 System.out.println("Still on cooldown, turn skipped");
+                wasLastActionExecuted = false;
             }
         }else if(action instanceof NoAction){
-
+            wasLastActionExecuted = true;
         }else{
+            wasLastActionExecuted = false;
             System.out.println("No action picked...");
         }
 
@@ -431,12 +440,15 @@ public class GameController{
                 }
                 intruderLocations.put(intruder, newintruderLocation);
                 soundLocations.put(stepSound,stepSoundLocation);
+                wasLastActionExecuted = true;
             }
+            else wasLastActionExecuted = false;
 
         }else if(action instanceof Rotate){
             Direction intruderDirection = intruderDirections.get(intruder);
             double newintruderAngle = intruderDirection.getDegrees() + ((Rotate) action).getAngle().getDegrees();
             intruderDirections.put(intruder,Direction.fromDegrees(newintruderAngle));
+            wasLastActionExecuted = true;
 
         }else if(action instanceof Sprint){
             if(intruderSprintCooldowns.get(intruder)==0) {
@@ -464,11 +476,14 @@ public class GameController{
                     intruderLocations.put(intruder, newintruderLocation);
                     soundLocations.put(stepSound, stepSoundLocation);
                     intruderSprintCooldowns.replace(intruder,sprintCooldown);
+                    wasLastActionExecuted = true;
 
                 }else{
+                    wasLastActionExecuted = false;
                     System.out.println("Illegal move attempted");
                 }
             }else{
+                wasLastActionExecuted = false;
                 System.out.println("Still on cooldown, turn skipped");
             }
 
@@ -478,14 +493,17 @@ public class GameController{
                 Ellipse2D smellLocation = new Ellipse2D.Double(intruderLocations.get(intruder).getX(), intruderLocations.get(intruder).getY(),
                         smell.getRadius().getValue() * 2.0, smell.getRadius().getValue() * 2.0);
                 intruderSmellLocations.put(smell, smellLocation);
+                wasLastActionExecuted = true;
             }else{
                 System.out.println("Still on cooldown, turn skipped");
+                wasLastActionExecuted = false;
             }
 
         }else if(action instanceof NoAction){
-
+            wasLastActionExecuted = true;
         }else{
             System.out.println("No action picked...");
+            wasLastActionExecuted = false;
         }
 
         setAreaPerceptsIntruder(intruder);
