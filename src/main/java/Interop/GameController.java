@@ -76,9 +76,9 @@ public class GameController{
     public HashMap<Guard,Ellipse2D> guardLocations = new HashMap<>();
     private HashMap<Intruder,Direction> intruderDirections = new HashMap<>();
     private HashMap<Guard,Direction> guardDirections = new HashMap<>();
-    private HashMap<Smell,Ellipse2D> guardSmellLocations = new HashMap<>();
-    private HashMap<Smell,Ellipse2D> intruderSmellLocations = new HashMap<>();
-    private HashMap<Sound,Ellipse2D> soundLocations = new HashMap<>();
+    public HashMap<Smell,Ellipse2D> guardSmellLocations = new HashMap<>();
+    public HashMap<Smell,Ellipse2D> intruderSmellLocations = new HashMap<>();
+    public HashMap<Sound,Ellipse2D> soundLocations = new HashMap<>();
     private HashMap<Intruder,Integer> intruderSprintCooldowns = new HashMap<>();
     private HashMap<Intruder,Integer> intruderPheromoneCooldowns = new HashMap<>();
     private HashMap<Guard,Integer> guardPheromoneCooldowns = new HashMap<>();

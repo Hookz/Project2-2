@@ -3,6 +3,7 @@ import Interop.Agent.Guard;
 import Interop.Agent.Intruder;
 import Interop.GameController;
 import Interop.Smell;
+import Interop.Sound;
 
 import javax.swing.JPanel;
 import java.awt.Color;
@@ -80,10 +81,19 @@ public class GameCanvas extends JPanel {
             for(Map.Entry<Smell,Ellipse2D> intruderSmell: controller.intruderSmellLocations.entrySet()){
                 Ellipse2D smellEllipse = intruderSmell.getValue();
                 smellEllipse = new Ellipse2D.Double(norm(smellEllipse.getX()) + xCenterMargin(), norm(smellEllipse.getY()) + yCenterMargin(), norm(smellEllipse.getWidth()), norm(smellEllipse.getHeight()));
-                Color guardSmellColor = new Color(51, 153, 255, 127);
-                g2.setColor(guardSmellColor);
+                Color intruderSmellColor = new Color(255, 153, 153, 127);
+                g2.setColor(intruderSmellColor);
                 g2.fill(smellEllipse);
                 g2.draw(smellEllipse);
+            }
+
+            for(Map.Entry<Sound,Ellipse2D> sound: controller.soundLocations.entrySet()){
+                Ellipse2D soundEllipse = sound.getValue();
+                soundEllipse = new Ellipse2D.Double(norm(soundEllipse.getX()) + xCenterMargin(), norm(soundEllipse.getY()) + yCenterMargin(), norm(soundEllipse.getWidth()), norm(soundEllipse.getHeight()));
+                Color soundColor = new Color(255, 255, 102, 127);
+                g2.setColor(soundColor);
+                g2.fill(soundEllipse);
+                g2.draw(soundEllipse);
             }
         }
         else {
@@ -111,7 +121,7 @@ public class GameCanvas extends JPanel {
         if (showDebug) {
             Color bgPanelColor = new Color(31, 31, 31, 127);
             g.setColor(bgPanelColor);
-            g.fillRect(1,1, 300,82);
+            g.fillRect(1,1, 300,99);
 
             Font fontdebug = new Font("Monospace", Font.PLAIN, 11);
             g.setFont(fontdebug);
@@ -121,8 +131,9 @@ public class GameCanvas extends JPanel {
             g.drawString("Paused         : " + Launcher.paused, 4,15+22);
             g.drawString("Controller   : " + this.controller, 4,15+33);
             g.drawString("FPS Cycle     : " + Launcher.fps, 4,15+44);
-            g.drawString("Target Rate : " + Launcher.UPDATE_PER_SECOND + "per second", 4,15+55);
-            g.drawString("Turn Count : " + Launcher.UPDATE_PER_SECOND, 4,15+66);
+            g.drawString("FPS         : " + Launcher.fpsThisSecond, 4,15+55);
+            g.drawString("Target Rate : " + Launcher.UPDATE_PER_SECOND + "per second", 4,15+66);
+            g.drawString("Turn Count : " + Launcher.UPDATE_PER_SECOND, 4,15+77);
         }
 
     }

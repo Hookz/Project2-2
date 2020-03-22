@@ -1,9 +1,11 @@
 package Group2.GUI;
 
+import Group2.ReadFile;
 import Interop.GameController;
 
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import java.io.File;
 
 public class Launcher {
     public static boolean gameRunning = true;
@@ -11,6 +13,7 @@ public class Launcher {
     public static GUI interfaceInstance;
     public static GameController controller = null;
     public static GameCanvas canvas = new GameCanvas(controller);
+    private static String selectedFileName = null;
 
     public static void main(String[] args) {
         if (System.getProperty("os.name").toLowerCase().indexOf("mac") >= 0) { //if macOS
@@ -29,10 +32,23 @@ public class Launcher {
                 System.out.println("UnsupportedLookAndFeelException: " + e.getMessage());
             }
         }
+
+        //Load from args a scenario if parameter given:
+        if (args.length > 0) {
+            File selectedFile = new File(args[0]);
+            selectedFileName = selectedFile.getName();
+            ReadFile.readFile(selectedFile);
+
+            controller = ReadFile.generateController();
+            canvas = new GameCanvas(controller);
+        }
+
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 interfaceInstance = new GUI(canvas);
-                interfaceInstance.revalidate();
+                if (args.length > 0) interfaceInstance.scenarioName = selectedFileName;
+
+                    interfaceInstance.revalidate();
                 interfaceInstance.setVisible(true);
             }
         });
@@ -48,6 +64,7 @@ public class Launcher {
      */
     public static int UPDATE_PER_SECOND = 5; //used to final, but now I want to update it.
     public static long OPTIMAL_UPDATE_DURATION = 1000000000 / UPDATE_PER_SECOND;
+    public static int fpsThisSecond = UPDATE_PER_SECOND;
     public static int fps = 0;
     public static int turn = 0;
     public static void gameLoop() {
@@ -65,6 +82,7 @@ public class Launcher {
                 //Debug title, non-necessary.
                 if (interfaceInstance != null) interfaceInstance.setTitle(interfaceInstance.titleFactory());// + ", Turn: " + turn + ", FPS: " + fps);
                 lastFrameInThisSecondShownAt = 0;
+                fpsThisSecond = fps;
                 fps = 0;
             }
 
@@ -84,6 +102,7 @@ public class Launcher {
     }
 
     public static void setFPS (int updateRate) {
+        System.out.println("Attempting to update FPS to " + updateRate);
         if (updateRate > 0 && updateRate <= 144)
                 UPDATE_PER_SECOND = updateRate;
         else {

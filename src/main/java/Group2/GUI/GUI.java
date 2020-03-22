@@ -169,7 +169,7 @@ public class GUI extends JFrame {
                         canvas.repaint();
                         break;
                     case 118: //F7 - FPS -= 5
-                        Launcher.setFPS(Launcher.fps - 5);
+                        Launcher.setFPS(Launcher.UPDATE_PER_SECOND - 5);
                         break;
                     case 119: //F8 - Pause
                         //Toggle GUI Debug
@@ -177,7 +177,7 @@ public class GUI extends JFrame {
                         canvas.repaint();
                         break;
                     case 120: //F9 - FPS += 5
-                        Launcher.setFPS(Launcher.fps + 5);
+                        Launcher.setFPS(Launcher.UPDATE_PER_SECOND + 5);
                         break;
                 }
             }
