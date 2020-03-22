@@ -2,6 +2,8 @@ package Group2.GUI;
 import Interop.Agent.Guard;
 import Interop.Agent.Intruder;
 import Interop.GameController;
+import Interop.Smell;
+
 import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -12,6 +14,7 @@ import java.awt.FontMetrics;
 import java.awt.Dimension;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
+import java.util.HashMap;
 import java.util.Map;
 @SuppressWarnings("serial")
 public class GameCanvas extends JPanel {
@@ -63,6 +66,24 @@ public class GameCanvas extends JPanel {
                 g2.fill(agentEllipse);
                 g2.setColor(Color.CYAN);
                 g2.draw(agentEllipse);
+            }
+
+            for(Map.Entry<Smell,Ellipse2D> guardSmell: controller.guardSmellLocations.entrySet()){
+                Ellipse2D smellEllipse = guardSmell.getValue();
+                smellEllipse = new Ellipse2D.Double(norm(smellEllipse.getX()) + xCenterMargin(), norm(smellEllipse.getY()) + yCenterMargin(), norm(smellEllipse.getWidth()), norm(smellEllipse.getHeight()));
+                Color guardSmellColor = new Color(51, 153, 255, 127);
+                g2.setColor(guardSmellColor);
+                g2.fill(smellEllipse);
+                g2.draw(smellEllipse);
+            }
+
+            for(Map.Entry<Smell,Ellipse2D> intruderSmell: controller.intruderSmellLocations.entrySet()){
+                Ellipse2D smellEllipse = intruderSmell.getValue();
+                smellEllipse = new Ellipse2D.Double(norm(smellEllipse.getX()) + xCenterMargin(), norm(smellEllipse.getY()) + yCenterMargin(), norm(smellEllipse.getWidth()), norm(smellEllipse.getHeight()));
+                Color guardSmellColor = new Color(51, 153, 255, 127);
+                g2.setColor(guardSmellColor);
+                g2.fill(smellEllipse);
+                g2.draw(smellEllipse);
             }
         }
         else {

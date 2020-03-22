@@ -161,11 +161,23 @@ public class GUI extends JFrame {
 
             @Override
             public void keyPressed(KeyEvent e) {
+                System.out.println("Keycode: " + e.getKeyCode());
                 switch (e.getKeyCode()) {
                     case 114: //F3
                         //Toggle GUI Debug
                         canvas.showDebug = !canvas.showDebug;
                         canvas.repaint();
+                        break;
+                    case 118: //F7 - FPS -= 5
+                        Launcher.setFPS(Launcher.fps - 5);
+                        break;
+                    case 119: //F8 - Pause
+                        //Toggle GUI Debug
+                        canvas.showDebug = !canvas.showDebug;
+                        canvas.repaint();
+                        break;
+                    case 120: //F9 - FPS += 5
+                        Launcher.setFPS(Launcher.fps + 5);
                         break;
                 }
             }
@@ -187,9 +199,25 @@ public class GUI extends JFrame {
     }
 
     public String titleFactory() {
-        String res = SCN_TITLE + ", Scenario \"" + scenarioName + "\"";
-        if (Launcher.paused) res += " - Paused - ";
+        String res = SCN_TITLE;
+        if (Launcher.paused) res += " - " + coolPausedTextGenerator() + " - ";
+        res += ", Scenario \"" + scenarioName + "\"";
         return res;
+    }
+
+    //was so tempting to do.
+    private String pausedCoolTextOnTitle = "Paused";
+    private int currentCapitalIndex = 0;
+    public String coolPausedTextGenerator() {
+        currentCapitalIndex = (currentCapitalIndex + 1) % pausedCoolTextOnTitle.length();
+        String before = pausedCoolTextOnTitle.substring(0, currentCapitalIndex).toLowerCase();
+        String toCapitalize = pausedCoolTextOnTitle.substring(currentCapitalIndex, currentCapitalIndex + 1).toUpperCase();
+        String after = pausedCoolTextOnTitle.substring(currentCapitalIndex + 1).toLowerCase();
+
+        //Debug:
+        // System.out.println("Current Text: '" + pausedCoolTextOnTitle + ", currentCapitalIndex: " + currentCapitalIndex + ", Before: '" + before + "'" + ", toCapitalize: '" + toCapitalize + "', after: '" + after + "'");
+        pausedCoolTextOnTitle = before + toCapitalize + after;
+        return pausedCoolTextOnTitle;
     }
 }
 

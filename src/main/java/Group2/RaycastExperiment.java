@@ -74,7 +74,7 @@ public class RaycastExperiment implements Runnable, MouseMotionListener {
 
         //Set the amount of rays to be cast from the origin
         g.setColor(Color.WHITE);
-        LinkedList<Line2D.Float> rays = calcRays(lines,mouseX, mouseY, 45, 2000);
+        LinkedList<Line2D.Float> rays = calcRays(lines,mouseX, mouseY, 360,  45, 0.0);
         for (Line2D.Float ray : rays) {
             g.drawLine((int) ray.x1, (int) ray.y1, (int) ray.x2, (int) ray.y2);
         }
@@ -83,10 +83,11 @@ public class RaycastExperiment implements Runnable, MouseMotionListener {
         bs.show();
     }
 
+    private int resolution = 360;
     //Calculates how rays are being drawn and returns the rays
-    private LinkedList<Line2D.Float> calcRays(LinkedList<Line2D.Float> lines, int x, int y, int resolution, int maxDist) {
+    private LinkedList<Line2D.Float> calcRays(LinkedList<Line2D.Float> lines, int x, int y, int maxDist, int fov, double agentDirection) {
         LinkedList<Line2D.Float> rays = new LinkedList<>();
-        for (int i = 0; i < resolution; i++) {
+        for (int i = 90; i < 135; i++) {
             double dir = (Math.PI * 2) * ((double) i / resolution);
             float minDist = maxDist;
             for (Line2D.Float line : lines) {

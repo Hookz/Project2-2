@@ -834,18 +834,18 @@ public class GameController{
 
         //LinkedList<Line2D.Double> rays = new LinkedList<>();
         HashSet<ObjectPercept> objectPerceptsSet = new HashSet<>();
-        double maxDist = intruderViewRange.get(intruder).getValue();
+        double maxDist = intruderViewRange.get(intruder).getValue() - 0.000000000000001;
         double x = intruderLocations.get(intruder).getX();
         double y = intruderLocations.get(intruder).getY();
         double notInViewDistance = 0;
         if(intruderAreaPercepts.get(intruder).isInSentryTower()) notInViewDistance = viewRangeSentry[0];
 
-        int startOfAngle = (int) (intruderDirections.get(intruder).getDegrees() - viewAngle/2);
-        int endOfAngle = (int) (intruderDirections.get(intruder).getDegrees() + viewAngle/2);
+        //int startOfAngle = Math.round((float) (intruderDirections.get(intruder).getDegrees() - viewAngle/2));
+        //int endOfAngle = Math.round((float) (intruderDirections.get(intruder).getDegrees() + viewAngle/2));
 
-
-        for (int i = startOfAngle; i < endOfAngle; i++) {
-            double dir = Math.toRadians(i);
+        for (int i = 0; i < viewAngle; i++) {
+            double dir = intruderDirections.get(intruder).getRadians() - Math.toRadians(viewAngle/2) + i*Math.PI/180;
+            if(i == 0) dir += 0.000000000000001;
             double minDist = maxDist;
             ObjectPerceptType object = ObjectPerceptType.EmptySpace;
 
@@ -1015,6 +1015,15 @@ public class GameController{
             Point intersectionPoint = new Point(Math.cos(dir + setToYAxisAngle) * minDist, Math.sin(dir +setToYAxisAngle) * minDist);
             objectPerceptsSet.add(new ObjectPercept(object, intersectionPoint));
 
+
+
+            /*
+            FieldOfView field = new FieldOfView(intruderViewRange.get(intruder), Angle.fromDegrees(viewAngle));
+            if(!field.isInView(intersectionPoint)) {
+                double angle =  Math.toDegrees(dir + setToYAxisAngle);
+                System.out.println("Angle of point: " +angle);
+                field.isInView(intersectionPoint);
+            } */
             //rays.add(new Line2D.Double(x, y, intersectionPoint.getX(), intersectionPoint.getY()));
         }
         intruderObjectPercept.put(intruder, new ObjectPercepts(objectPerceptsSet));
@@ -1024,17 +1033,15 @@ public class GameController{
 
         //LinkedList<Line2D.Double> rays = new LinkedList<>();
         HashSet<ObjectPercept> objectPerceptsSet = new HashSet<>();
-        double maxDist = guardViewRange.get(guard).getValue();
+        double maxDist = guardViewRange.get(guard).getValue() - 0.000000000000001;
         double x = guardLocations.get(guard).getX();
         double y = guardLocations.get(guard).getY();
         double notInViewDistance = 0;
         if(guardsAreaPercepts.get(guard).isInSentryTower()) notInViewDistance = viewRangeSentry[0];
 
-        int startOfAngle = (int) (guardDirections.get(guard).getDegrees() - viewAngle/2);
-        int endOfAngle = (int) (guardDirections.get(guard).getDegrees() + viewAngle/2);
-
-        for (int i = startOfAngle; i < endOfAngle; i++) {
-            double dir = Math.toRadians(i);
+        for (int i = 0; i < viewAngle; i++) {
+            double dir = guardDirections.get(guard).getRadians() - Math.toRadians(viewAngle/2) + i*Math.PI/180;
+            if(i == 0) dir += 0.000000000000001;
             double minDist = maxDist;
             ObjectPerceptType object = ObjectPerceptType.EmptySpace;
 
@@ -1204,6 +1211,15 @@ public class GameController{
             //Adding the difference between the agent's direction and the y-axis to match the agent coordinate system
             double setToYAxisAngle = Utils.clockAngle(Math.cos(guardDirections.get(guard).getRadians()), Math.sin(guardDirections.get(guard).getRadians()));
             Point intersectionPoint = new Point(Math.cos(dir + setToYAxisAngle) * minDist, Math.sin(dir + setToYAxisAngle) * minDist);
+
+            /*
+            FieldOfView field = new FieldOfView(guardViewRange.get(guard), Angle.fromDegrees(viewAngle));
+            if(!field.isInView(intersectionPoint)) {
+                double angle =  Math.toDegrees(dir + setToYAxisAngle);
+                System.out.println("Angle of point: " +angle);
+                field.isInView(intersectionPoint);
+            } */
+
             objectPerceptsSet.add(new ObjectPercept(object, intersectionPoint));
             //rays.add(new Line2D.Double(x, y, intersectionPoint.getX(), intersectionPoint.getY()));
         }

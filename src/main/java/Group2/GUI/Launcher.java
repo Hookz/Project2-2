@@ -46,8 +46,8 @@ public class Launcher {
      *
      * This data will be relying upon the agents, so I'm not sure how we would bind.
      */
-    public static final int UPDATE_PER_SECOND = 5;
-    public static final long OPTIMAL_UPDATE_DURATION = 1000000000 / UPDATE_PER_SECOND;
+    public static int UPDATE_PER_SECOND = 5; //used to final, but now I want to update it.
+    public static long OPTIMAL_UPDATE_DURATION = 1000000000 / UPDATE_PER_SECOND;
     public static int fps = 0;
     public static int turn = 0;
     public static void gameLoop() {
@@ -62,7 +62,8 @@ public class Launcher {
             lastFrameInThisSecondShownAt += updateLength;
             fps++;
             if (lastFrameInThisSecondShownAt >= 1000000000) {
-                if (interfaceInstance != null) interfaceInstance.setTitle(interfaceInstance.titleFactory() + ", Turn: " + turn + ", FPS: " + fps);
+                //Debug title, non-necessary.
+                if (interfaceInstance != null) interfaceInstance.setTitle(interfaceInstance.titleFactory());// + ", Turn: " + turn + ", FPS: " + fps);
                 lastFrameInThisSecondShownAt = 0;
                 fps = 0;
             }
@@ -82,6 +83,15 @@ public class Launcher {
         }
     }
 
+    public static void setFPS (int updateRate) {
+        if (updateRate > 0 && updateRate <= 144)
+                UPDATE_PER_SECOND = updateRate;
+        else {
+            System.out.println("Error: Invalid FPS value. >0, <144 ?");
+            return;
+        }
+        OPTIMAL_UPDATE_DURATION = 1000000000 / UPDATE_PER_SECOND;
+    }
     /**
      * logicLoop let's us manipulate the screen contents properties
      * such as their location, color etc.
