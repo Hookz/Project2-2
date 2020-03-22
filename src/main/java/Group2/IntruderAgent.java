@@ -5,8 +5,11 @@ import Interop.Action.*;
 import Interop.Geometry.Distance;
 import Interop.Percept.IntruderPercepts;
 public class IntruderAgent implements Intruder{
+    private int ID;
 
-    public IntruderAgent(){}
+    public IntruderAgent(int ID){
+        this.ID = ID;
+    }
 
     @Override
     public IntruderAction getAction(IntruderPercepts percepts) {
