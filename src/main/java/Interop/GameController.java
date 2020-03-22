@@ -89,8 +89,8 @@ public class GameController{
     private HashMap<Intruder, Double> intruderMaxSprintDistance = new HashMap<>();
     private HashMap<Guard, Double> guardMaxMoveDistance = new HashMap<>();
 
-    private List<Intruder> intruders;
-    private List<Guard> guards;
+    private List<Intruder> intruders = new ArrayList<>();
+    private List<Guard> guards = new ArrayList<>();
 
     private Turn turn = Turn.GuardTurn;
 
@@ -475,15 +475,22 @@ public class GameController{
         temp_agents.add(newLocation);
         for (int i = 0; i < temp_agents.size(); i++) {
             for(Intruder intruder:intruders){
-                double diffX = Math.abs(temp_agents.get(i).getX() - intruderLocations.get(intruder).getX());
-                double diffY = Math.abs(temp_agents.get(i).getY() - intruderLocations.get(intruder).getY());
-                double distance = Math.sqrt(Math.pow(diffX,2)+Math.pow(diffY,2));
-                if(distance<1){
-                    return false;
+                if(!intruderLocations.get(intruder).equals(initialLocation)) {
+                    double diffX = Math.abs(temp_agents.get(i).getX() - intruderLocations.get(intruder).getX());
+                    double diffY = Math.abs(temp_agents.get(i).getY() - intruderLocations.get(intruder).getY());
+                    double distance = Math.sqrt(Math.pow(diffX, 2) + Math.pow(diffY, 2));
+                    if (distance < 1) {
+                        if (DEBUG_TEXT) {
+                            System.out.println("Intruder Collision with other agent");
+                        }
+                        return false;
+                    }
                 }
             }
             for (int j = 0; j < walls.size(); j++) {
                 if (temp_agents.get(i).intersects(walls.get(j))) {
+                    if(DEBUG_TEXT){
+                        System.out.println("Intruder Collision with wall");}
                     return false;
                 }
             }
