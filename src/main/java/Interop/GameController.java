@@ -339,8 +339,7 @@ public class GameController{
         Direction targetAreaAngle = Direction.fromRadians(Math.acos(deltaX / centerDistance));
         //Direction targetDirection = Direction.fromRadians(targetAreaAngle.getDistance(intruderDirections.get(intruder)).getRadians());
         double setToYAxisAngle = Utils.clockAngle(Math.cos(intruderDirections.get(intruder).getRadians()), Math.sin(intruderDirections.get(intruder).getRadians()));
-        Direction targetDirection = Direction.fromRadians((targetAreaAngle.getRadians() + setToYAxisAngle)%2*Math.PI);
-
+        Direction targetDirection = Direction.fromRadians((targetAreaAngle.getRadians() + setToYAxisAngle)%(2*Math.PI));
         FieldOfView field = new FieldOfView(intruderViewRange.get(intruder), Angle.fromDegrees(viewAngle));
         VisionPrecepts vision = new VisionPrecepts(field, intruderObjectPercept.get(intruder));
         SoundPercepts sounds = intruderSoundPercepts.get(intruder);
