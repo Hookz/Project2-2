@@ -268,16 +268,10 @@ public class GameController{
             }
         }
 
-        //Run the UI construction
-        //UI.createUI(<all the walls etc above here>)
-
         boolean intruderStart = random.nextBoolean();
         if(intruderStart){
             turn = Turn.IntruderTurn;
         }
-
-        //runGame();
-
     }
 
     boolean gameOver = false;
@@ -381,9 +375,11 @@ public class GameController{
 
         }else if(action instanceof Rotate){
             Direction guardDirection = guardDirections.get(guard);
-            double newGuardAngle = guardDirection.getDegrees() + ((Rotate) action).getAngle().getDegrees();
-            guardDirections.put(guard,Direction.fromDegrees(newGuardAngle));
-            wasLastActionExecuted = true;
+            if(((Rotate) action).getAngle().getDegrees()<=percept.getScenarioGuardPercepts().getScenarioPercepts().getMaxRotationAngle().getDegrees()) {
+                double newGuardAngle = (guardDirection.getDegrees() + ((Rotate) action).getAngle().getDegrees()) % 360;
+                guardDirections.put(guard, Direction.fromDegrees(newGuardAngle));
+                wasLastActionExecuted = true;
+            }
 
         }else if(action instanceof Yell){
             Sound yell = new Sound(SoundPerceptType.Yell,new Distance(yellSoundRadius));
@@ -446,7 +442,7 @@ public class GameController{
 
         }else if(action instanceof Rotate){
             Direction intruderDirection = intruderDirections.get(intruder);
-            double newintruderAngle = intruderDirection.getDegrees() + ((Rotate) action).getAngle().getDegrees();
+            double newintruderAngle = (intruderDirection.getDegrees() + ((Rotate) action).getAngle().getDegrees())%360;
             intruderDirections.put(intruder,Direction.fromDegrees(newintruderAngle));
             wasLastActionExecuted = true;
 
