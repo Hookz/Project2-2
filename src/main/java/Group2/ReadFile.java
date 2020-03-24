@@ -53,7 +53,7 @@ public class ReadFile{
     final BufferedReader r = new BufferedReader(new FileReader(fileToLoad));
     String nextline;
     int[] area;
-    int x,y,areaWidth,areaHeight;
+    int x,y,areaWidth,areaHeight, targetX, targetY, targetAreaWidth, targetAreaHeight;
     while((nextline = r.readLine()) != null){
       ++lineNumber;
       String[] linesplit = nextline.split(" = ");
@@ -179,7 +179,11 @@ public class ReadFile{
           y = Math.min(Math.min(area[1],area[3]),Math.min(area[5],area[7]));
           areaWidth = Math.max(Math.max(area[0],area[2]),Math.max(area[4],area[6])) - x;
           areaHeight = Math.max(Math.max(area[1],area[3]),Math.max(area[5],area[7])) - y;
-          teleports.add(new Teleport(new Rectangle(x,y,areaWidth,areaHeight),new Point(area[8],area[9])));
+          targetX = Math.min(Math.min(area[8],area[10]),Math.min(area[12],area[14]));
+          targetY = Math.min(Math.min(area[9],area[11]),Math.min(area[13],area[15]));
+          targetAreaWidth = Math.max(Math.max(area[8],area[10]),Math.max(area[12],area[14])) - targetX;
+          targetAreaHeight = Math.max(Math.max(area[9],area[11]),Math.max(area[13],area[15])) - targetY;
+          teleports.add(new Teleport(new Rectangle(x,y,areaWidth,areaHeight),new Rectangle(targetX,targetY,targetAreaWidth,targetAreaHeight)));
           break;
         case "shaded":
           area = Arrays.stream(linesplit[1].split(",")).mapToInt(Integer::parseInt).toArray();
