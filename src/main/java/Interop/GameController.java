@@ -1,7 +1,6 @@
 package Interop;
 
 import Group2.AgentsFactory;
-import Group2.Teleport;
 import Interop.Action.*;
 import Interop.Agent.*;
 import Interop.Percept.*;
@@ -17,7 +16,6 @@ import java.awt.Rectangle;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-import java.rmi.registry.Registry;
 import java.util.*;
 
 public class GameController{
@@ -67,8 +65,8 @@ public class GameController{
     private List<Rectangle> spawnAreaIntruders;
     private List<Rectangle> spawnAreaGuards;
     public List<Rectangle> walls;
-    private List<Teleport> teleports;
-    private List<Rectangle> shaded;
+    public List<Teleport> teleports;
+    public List<Rectangle> shaded;
     private List<Rectangle> doors;
     private List<Rectangle> windows;
     private List<Rectangle> sentries;

@@ -4,15 +4,10 @@ import Interop.Agent.Intruder;
 import Interop.GameController;
 import Interop.Smell;
 import Interop.Sound;
+import Interop.Teleport;
 
 import javax.swing.JPanel;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
@@ -39,6 +34,8 @@ public class GameCanvas extends JPanel {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
+        Stroke defaultStroke = g2.getStroke();
+        Stroke dashed = new BasicStroke(3, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{9}, 0);
 
         if (controller != null) {
             multiplier = calculateMultiplier();
@@ -48,9 +45,23 @@ public class GameCanvas extends JPanel {
                 g2.setColor(Color.BLACK);
                 g2.fill(tempWall);
                 g.setColor(Color.DARK_GRAY);
-                g.drawRect(norm(wall.x) + xCenterMargin(), norm(wall.y) + yCenterMargin(), norm(wall.width), norm(wall.height));
                 g2.draw(tempWall);
             }
+
+            for(Teleport teleport: controller.teleports){
+                Rectangle2D tempTeleport = new Rectangle2D.Double(norm(teleport.area.x)+xCenterMargin(),norm(teleport.area.y)+yCenterMargin(),norm(teleport.area.width),norm(teleport.area.height));
+                g2.setColor(Color.CYAN);
+                g2.setStroke(dashed);
+                g2.draw(tempTeleport);
+                g2.setStroke(defaultStroke);
+            }
+
+            for(Rectangle shadedArea: controller.shaded){
+                Rectangle2D tempShaded = new Rectangle2D.Double(norm(shadedArea.x)+xCenterMargin(),norm(shadedArea.y)+yCenterMargin(),norm(shadedArea.width),norm(shadedArea.height));
+                g2.setColor(Color.WHITE);
+                g2.draw(tempShaded);
+            }
+
             for(Map.Entry<Intruder,Ellipse2D> intruder: controller.intruderLocations.entrySet()){
                 Ellipse2D agentEllipse = intruder.getValue();
                 agentEllipse = new Ellipse2D.Double(norm(agentEllipse.getX()) + xCenterMargin(), norm(agentEllipse.getY()) + yCenterMargin(), norm(agentEllipse.getWidth()), norm(agentEllipse.getHeight()));
