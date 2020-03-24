@@ -356,8 +356,8 @@ public class GameController{
             Direction guardDirection = guardDirections.get(guard);
             Sound stepSound = new Sound(SoundPerceptType.Noise,new Distance(maxMoveSoundRadius));
             Ellipse2D stepSoundLocation = (Ellipse2D) guardLocations.get(guard).clone();
-            double newX = guardLocation.getX() + Math.cos(guardDirection.getDegrees()) * ((Move) action).getDistance().getValue();
-            double newY = guardLocation.getY() + Math.sin(guardDirection.getDegrees()) * ((Move) action).getDistance().getValue();
+            double newX = guardLocation.getX() + Math.cos(guardDirection.getRadians()) * ((Move) action).getDistance().getValue();
+            double newY = guardLocation.getY() + Math.sin(guardDirection.getRadians()) * ((Move) action).getDistance().getValue();
             Ellipse2D newGuardLocation = new Ellipse2D.Double(newX,newY,guardLocation.getWidth(),guardLocation.getHeight());
             if(checkIfLegalMove(guardLocation,newGuardLocation,COLLISION_CHECK_STEP_SIZE)) {
                 //Teleporting functionality and limitation
@@ -425,8 +425,8 @@ public class GameController{
             Direction intruderDirection = intruderDirections.get(intruder);
             Sound stepSound = new Sound(SoundPerceptType.Noise,new Distance(maxMoveSoundRadius));
             Ellipse2D stepSoundLocation = (Ellipse2D) intruderLocations.get(intruder).clone();
-            double newX = intruderLocation.getX() + Math.cos(intruderDirection.getDegrees()) * ((Move) action).getDistance().getValue();
-            double newY = intruderLocation.getY() + Math.sin(intruderDirection.getDegrees()) * ((Move) action).getDistance().getValue();
+            double newX = intruderLocation.getX() + Math.cos(intruderDirection.getRadians()) * ((Move) action).getDistance().getValue();
+            double newY = intruderLocation.getY() + Math.sin(intruderDirection.getRadians()) * ((Move) action).getDistance().getValue();
             Ellipse2D newintruderLocation = new Ellipse2D.Double(newX,newY,intruderLocation.getWidth(),intruderLocation.getHeight());
             if(checkIfLegalMove(intruderLocation,newintruderLocation, COLLISION_CHECK_STEP_SIZE)) {
                 //Teleporting functionality and limitation
@@ -459,8 +459,8 @@ public class GameController{
                 Direction intruderDirection = intruderDirections.get(intruder);
                 Sound stepSound = new Sound(SoundPerceptType.Noise, new Distance(maxMoveSoundRadius));
                 Ellipse2D stepSoundLocation = (Ellipse2D) intruderLocations.get(intruder).clone();
-                double newX = intruderLocation.getX() + Math.cos(intruderDirection.getDegrees()) * ((Sprint) action).getDistance().getValue();
-                double newY = intruderLocation.getY() + Math.sin(intruderDirection.getDegrees()) * ((Sprint) action).getDistance().getValue();
+                double newX = intruderLocation.getX() + Math.cos(intruderDirection.getRadians()) * ((Sprint) action).getDistance().getValue();
+                double newY = intruderLocation.getY() + Math.sin(intruderDirection.getRadians()) * ((Sprint) action).getDistance().getValue();
                 Ellipse2D newintruderLocation = new Ellipse2D.Double(newX, newY, intruderLocation.getWidth(), intruderLocation.getHeight());
 
                 if (checkIfLegalMove(intruderLocation, newintruderLocation, COLLISION_CHECK_STEP_SIZE)) {
