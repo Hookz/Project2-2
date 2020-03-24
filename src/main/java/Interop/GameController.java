@@ -216,6 +216,7 @@ public class GameController{
 
                 intruderSprintCooldowns.put(intruder,0);
                 intruderPheromoneCooldowns.put(intruder,0);
+                intruderTeleportFlag.put(intruder,false);
                 setAreaPerceptsIntruder(intruder);
                 setIntruderSoundPercepts(intruder);
                 setIntruderSmellPercepts(intruder);
@@ -256,6 +257,7 @@ public class GameController{
                 guardDirections.put(guard,direction);
 
                 guardPheromoneCooldowns.put(guard,0);
+                guardTeleportFlag.put(guard,false);
 
                 guardTeleportFlag.put(guard, false);
 
@@ -361,6 +363,7 @@ public class GameController{
                     }else if(teleport.getArea().contains(newX, newY) && !guardTeleportFlag.get(guard)) { //Entering a teleporter without flag, teleport
                         newX = teleport.getGoal().getX();
                         newY = teleport.getGoal().getY();
+                        newGuardLocation = new Ellipse2D.Double(newX,newY,guardLocation.getWidth(),guardLocation.getHeight());
                         guardTeleportFlag.replace(guard,true);
                     }
                 }
@@ -429,6 +432,7 @@ public class GameController{
                     }else if(teleport.getArea().contains(newX, newY) && !intruderTeleportFlag.get(intruder)) { //Entering a teleporter without flag, teleport
                         newX = teleport.getGoal().getX();
                         newY = teleport.getGoal().getY();
+                        newintruderLocation = new Ellipse2D.Double(newX,newY,intruderLocation.getWidth(),intruderLocation.getHeight());
                         intruderTeleportFlag.replace(intruder,true);
                     }
                 }
@@ -463,6 +467,7 @@ public class GameController{
                         }else if(teleport.getArea().contains(newX, newY) && !intruderTeleportFlag.get(intruder)) { //Entering a teleporter without flag, teleport
                             newX = teleport.getGoal().getX();
                             newY = teleport.getGoal().getY();
+                            newintruderLocation = new Ellipse2D.Double(newX, newY, intruderLocation.getWidth(), intruderLocation.getHeight());
                             intruderTeleportFlag.replace(intruder,true);
                         }
                     }
