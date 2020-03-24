@@ -733,13 +733,15 @@ public class GameController{
             Ellipse2D soundLoc = (Ellipse2D) pair.getValue();
             double centerDistance = new Distance(new Point(soundLoc.getCenterX(), soundLoc.getCenterY()), new Point(intruderLoc.getCenterX(), intruderLoc.getCenterY())).getValue();
             double radiusSum = soundLoc.getWidth() + intruderLoc.getWidth();
-            if (centerDistance <= radiusSum) {
-                Sound sound = (Sound) pair.getKey();
-                double deltaX = Math.abs(intruderLoc.getCenterX() - soundLoc.getCenterX());
-                Direction soundDirection = Direction.fromRadians(Math.acos(deltaX / centerDistance));
-                Angle perceivedAngle = soundDirection.getDistance(intruderDirections.get(intruder));
-                Direction perceivedDirection =  Direction.fromRadians(perceivedAngle.getRadians());
-                soundPerceptsSet.add(new SoundPercept(sound.getType(), perceivedDirection));
+            if(centerDistance != 0) {
+                if (centerDistance <= radiusSum) {
+                    Sound sound = (Sound) pair.getKey();
+                    double deltaX = Math.abs(intruderLoc.getCenterX() - soundLoc.getCenterX());
+                    Direction soundDirection = Direction.fromRadians(Math.acos(deltaX / centerDistance));
+                    Angle perceivedAngle = soundDirection.getDistance(intruderDirections.get(intruder));
+                    Direction perceivedDirection = Direction.fromRadians(perceivedAngle.getRadians());
+                    soundPerceptsSet.add(new SoundPercept(sound.getType(), perceivedDirection));
+                }
             }
             it.remove();
         }
@@ -760,15 +762,16 @@ public class GameController{
             Ellipse2D soundLoc = (Ellipse2D) pair.getValue();
             double centerDistance = new Distance(new Point(soundLoc.getCenterX(), soundLoc.getCenterY()), new Point(guardLoc.getCenterX(), guardLoc.getCenterY())).getValue();
             double radiusSum = soundLoc.getWidth() + guardLoc.getWidth();
-            if (centerDistance <= radiusSum) {
-                Sound sound = (Sound) pair.getKey();
-                double deltaX = Math.abs(guardLoc.getCenterX() - soundLoc.getCenterX());
-                Direction soundDirection = Direction.fromRadians(Math.acos(deltaX / centerDistance));
-                Angle perceivedAngle = soundDirection.getDistance(guardDirections.get(guard));
-                Direction perceivedDirection =  Direction.fromRadians(perceivedAngle.getRadians());
-                soundPerceptsSet.add(new SoundPercept(sound.getType(), perceivedDirection));
+            if(centerDistance != 0) {
+                if (centerDistance <= radiusSum) {
+                    Sound sound = (Sound) pair.getKey();
+                    double deltaX = Math.abs(guardLoc.getCenterX() - soundLoc.getCenterX());
+                    Direction soundDirection = Direction.fromRadians(Math.acos(deltaX / centerDistance));
+                    Angle perceivedAngle = soundDirection.getDistance(guardDirections.get(guard));
+                    Direction perceivedDirection = Direction.fromRadians(perceivedAngle.getRadians());
+                    soundPerceptsSet.add(new SoundPercept(sound.getType(), perceivedDirection));
+                }
             }
-
             it.remove();
         }
 
