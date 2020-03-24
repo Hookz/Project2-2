@@ -337,7 +337,6 @@ public class GameController{
         double deltaX = Math.abs(intruderLocations.get(intruder).getCenterX() - targetArea.get(0).getCenterX());
         Direction targetAreaAngle = Direction.fromRadians(Math.acos(deltaX / centerDistance));
         //Direction targetDirection = Direction.fromRadians(targetAreaAngle.getDistance(intruderDirections.get(intruder)).getRadians());
-
         double setToYAxisAngle = Utils.clockAngle(Math.cos(intruderDirections.get(intruder).getRadians()), Math.sin(intruderDirections.get(intruder).getRadians()));
         Direction targetDirection = Direction.fromRadians(targetAreaAngle.getRadians() + setToYAxisAngle);
 
