@@ -335,7 +335,9 @@ public class GameController{
         //Here I am considering that we only have one target area
         double centerDistance = new Distance(new Point(targetArea.get(0).getCenterX(), targetArea.get(0).getCenterY()), new Point(intruderLocations.get(intruder).getCenterX(), intruderLocations.get(intruder).getCenterY())).getValue();
         double deltaX = Math.abs(intruderLocations.get(intruder).getCenterX() - targetArea.get(0).getCenterX());
-        Direction targetDirection = Direction.fromRadians(Math.acos(deltaX / centerDistance));
+        Direction targetAreaAngle = Direction.fromRadians(Math.acos(deltaX / centerDistance));
+        Direction targetDirection = (Direction) targetAreaAngle.getDistance(intruderDirections.get(intruder));
+
         FieldOfView field = new FieldOfView(intruderViewRange.get(intruder), Angle.fromDegrees(viewAngle));
         VisionPrecepts vision = new VisionPrecepts(field, intruderObjectPercept.get(intruder));
         SoundPercepts sounds = intruderSoundPercepts.get(intruder);
@@ -836,6 +838,7 @@ public class GameController{
 
         //LinkedList<Line2D.Double> rays = new LinkedList<>();
         HashSet<ObjectPercept> objectPerceptsSet = new HashSet<>();
+        //Avoids rounding errors in the legal testing
         double maxDist = intruderViewRange.get(intruder).getValue() - 0.000000000000001;
         double x = intruderLocations.get(intruder).getX();
         double y = intruderLocations.get(intruder).getY();
@@ -847,6 +850,7 @@ public class GameController{
 
         for (int i = 0; i < viewAngle; i++) {
             double dir = intruderDirections.get(intruder).getRadians() - Math.toRadians(viewAngle/2) + i*Math.PI/180;
+            //Avoids rounding errors in the legal testing
             if(i == 0) dir += 0.000000000000001;
             double minDist = maxDist;
             ObjectPerceptType object = ObjectPerceptType.EmptySpace;
@@ -1035,6 +1039,7 @@ public class GameController{
 
         //LinkedList<Line2D.Double> rays = new LinkedList<>();
         HashSet<ObjectPercept> objectPerceptsSet = new HashSet<>();
+        //Avoids rounding errors in the legal testing
         double maxDist = guardViewRange.get(guard).getValue() - 0.000000000000001;
         double x = guardLocations.get(guard).getX();
         double y = guardLocations.get(guard).getY();
@@ -1043,6 +1048,7 @@ public class GameController{
 
         for (int i = 0; i < viewAngle; i++) {
             double dir = guardDirections.get(guard).getRadians() - Math.toRadians(viewAngle/2) + i*Math.PI/180;
+            //Avoids rounding errors in the legal testing
             if(i == 0) dir += 0.000000000000001;
             double minDist = maxDist;
             ObjectPerceptType object = ObjectPerceptType.EmptySpace;
