@@ -1,5 +1,6 @@
 package Group2;
 
+import Group2.Agents.ExplorerAgent;
 import Interop.Agent.Guard;
 import Interop.Agent.Intruder;
 
