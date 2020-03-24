@@ -337,6 +337,7 @@ public class GameController{
         double deltaX = Math.abs(intruderLocations.get(intruder).getCenterX() - targetArea.get(0).getCenterX());
         Direction targetAreaAngle = Direction.fromRadians(Math.acos(deltaX / centerDistance));
         Direction targetDirection = (Direction) targetAreaAngle.getDistance(intruderDirections.get(intruder));
+
         FieldOfView field = new FieldOfView(intruderViewRange.get(intruder), Angle.fromDegrees(viewAngle));
         VisionPrecepts vision = new VisionPrecepts(field, intruderObjectPercept.get(intruder));
         SoundPercepts sounds = intruderSoundPercepts.get(intruder);
