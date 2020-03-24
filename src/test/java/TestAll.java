@@ -5,6 +5,7 @@ import SimpleUnitTest.SimpleUnitTest;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import org.junit.jupiter.api.Test;
 
 /**
  * This tests are run by GitHub Actions.
@@ -13,8 +14,9 @@ import java.util.List;
  *
  * @author Tomasz Darmetko
  */
-public class AllTests extends SimpleUnitTest {
+public class TestAll extends SimpleUnitTest {
 
+    @Test
     public static void main(String[] args) {
         InteropTests.main(args);
         testGroups(args);
