@@ -184,7 +184,7 @@ public class ReadFile{
           targetAreaWidth = Math.max(Math.max(area[8],area[10]),Math.max(area[12],area[14])) - targetX;
           targetAreaHeight = Math.max(Math.max(area[9],area[11]),Math.max(area[13],area[15])) - targetY;
           teleports.add(new Teleport(new Rectangle(x,y,areaWidth,areaHeight),new Rectangle(targetX,targetY,targetAreaWidth,targetAreaHeight)));
-          teleports.add(new Teleport(new Rectangle(targetX,targetY,targetAreaWidth,targetAreaHeight),new Rectangle(x,y,areaWidth,areaHeight)));
+          teleports.add(new Teleport(new Rectangle(targetX,targetY,targetAreaWidth,targetAreaHeight),new Rectangle(x,y,areaWidth,areaHeight),teleports.get(teleports.size()-1).teleportColor));
           break;
         case "shaded":
           area = Arrays.stream(linesplit[1].split(",")).mapToInt(Integer::parseInt).toArray();

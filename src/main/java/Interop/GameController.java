@@ -61,7 +61,7 @@ public class GameController{
     private final double slowDownModifierDoor;
     private final double slowDownModifierSentryTower;
 
-    private List<Rectangle> targetArea;
+    public List<Rectangle> targetArea;
     private List<Rectangle> spawnAreaIntruders;
     private List<Rectangle> spawnAreaGuards;
     public List<Rectangle> walls;

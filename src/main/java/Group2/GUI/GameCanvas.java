@@ -48,11 +48,19 @@ public class GameCanvas extends JPanel {
                 g2.draw(tempWall);
             }
 
+            for(Rectangle area : controller.targetArea){
+                Rectangle2D tempArea = new Rectangle2D.Double(norm(area.x) + xCenterMargin(), norm(area.y) + yCenterMargin(), norm(area.width), norm(area.height));
+                g2.setColor(Color.GREEN);
+                g2.fill(tempArea);
+                g.setColor(Color.GREEN);
+                g2.draw(tempArea);
+            }
+
             for(Teleport teleport: controller.teleports){
-                Rectangle2D tempTeleport = new Rectangle2D.Double(norm(teleport.area.x)+xCenterMargin(),norm(teleport.area.y)+yCenterMargin(),norm(teleport.area.width),norm(teleport.area.height));
-                g2.setColor(Color.CYAN);
+                Rectangle2D teleportOrigin = new Rectangle2D.Double(norm(teleport.area.x)+xCenterMargin(),norm(teleport.area.y)+yCenterMargin(),norm(teleport.area.width),norm(teleport.area.height));
+                g2.setColor(teleport.teleportColor);
                 g2.setStroke(dashed);
-                g2.draw(tempTeleport);
+                g2.draw(teleportOrigin);
                 g2.setStroke(defaultStroke);
             }
 
