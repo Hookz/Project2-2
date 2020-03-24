@@ -66,7 +66,7 @@ public class GameController{
     private List<Rectangle> spawnAreaGuards;
     public List<Rectangle> walls;
     public List<Teleport> teleports;
-    private List<Rectangle> shaded;
+    public List<Rectangle> shaded;
     private List<Rectangle> doors;
     private List<Rectangle> windows;
     private List<Rectangle> sentries;

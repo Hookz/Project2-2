@@ -49,11 +49,17 @@ public class GameCanvas extends JPanel {
             }
 
             for(Teleport teleport: controller.teleports){
-                Rectangle2D temptTeleport = new Rectangle2D.Double(norm(teleport.area.x)+xCenterMargin(),norm(teleport.area.y)+yCenterMargin(),norm(teleport.area.width),norm(teleport.area.height));
+                Rectangle2D tempTeleport = new Rectangle2D.Double(norm(teleport.area.x)+xCenterMargin(),norm(teleport.area.y)+yCenterMargin(),norm(teleport.area.width),norm(teleport.area.height));
                 g2.setColor(Color.CYAN);
                 g2.setStroke(dashed);
-                g2.draw(temptTeleport);
+                g2.draw(tempTeleport);
                 g2.setStroke(defaultStroke);
+            }
+
+            for(Rectangle shadedArea: controller.shaded){
+                Rectangle2D tempShaded = new Rectangle2D.Double(norm(shadedArea.x)+xCenterMargin(),norm(shadedArea.y)+yCenterMargin(),norm(shadedArea.width),norm(shadedArea.height));
+                g2.setColor(Color.WHITE);
+                g2.draw(tempShaded);
             }
 
             for(Map.Entry<Intruder,Ellipse2D> intruder: controller.intruderLocations.entrySet()){
