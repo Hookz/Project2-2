@@ -299,6 +299,7 @@ public class GameController{
                 if(!intruders.isEmpty()) {
                     for (Intruder intruder : intruders) {
                         //if (DEBUG_TEXT) System.out.println("Intruder Location: x "+intruderLocations.get(intruder).getX()+" y "+intruderLocations.get(intruder).getY());
+                        //System.out.println("Intruder Angle: "+intruderDirections.get(intruder).getDegrees());
                         sprintCooldownDecay(intruder);
                         intruderPheromoneCooldownDecay(intruder);
                         IntruderPercepts percept = intruderPercept(intruder);
@@ -458,8 +459,8 @@ public class GameController{
                 Direction intruderDirection = intruderDirections.get(intruder);
                 Sound stepSound = new Sound(SoundPerceptType.Noise, new Distance(maxMoveSoundRadius));
                 Ellipse2D stepSoundLocation = (Ellipse2D) intruderLocations.get(intruder).clone();
-                double newX = intruderLocation.getX() + Math.cos(intruderDirection.getDegrees()) * ((Move) action).getDistance().getValue();
-                double newY = intruderLocation.getY() + Math.sin(intruderDirection.getDegrees()) * ((Move) action).getDistance().getValue();
+                double newX = intruderLocation.getX() + Math.cos(intruderDirection.getDegrees()) * ((Sprint) action).getDistance().getValue();
+                double newY = intruderLocation.getY() + Math.sin(intruderDirection.getDegrees()) * ((Sprint) action).getDistance().getValue();
                 Ellipse2D newintruderLocation = new Ellipse2D.Double(newX, newY, intruderLocation.getWidth(), intruderLocation.getHeight());
 
                 if (checkIfLegalMove(intruderLocation, newintruderLocation, COLLISION_CHECK_STEP_SIZE)) {
