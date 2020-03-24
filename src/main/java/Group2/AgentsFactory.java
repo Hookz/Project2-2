@@ -1,5 +1,6 @@
 package Group2;
 
+import Group2.Agents.ExplorerAgent;
 import Interop.Agent.Guard;
 import Interop.Agent.Intruder;
 
@@ -19,7 +20,7 @@ public class AgentsFactory {
     static public List<Intruder> createIntruders(int number) {
         ArrayList<Intruder> intruders = new ArrayList<>();
         for(int i=0;i<number;i++){
-            Intruder intruder = new IntruderAgent(i);
+            Intruder intruder = new ExplorerAgent();
             intruders.add(intruder);
         }
         return intruders;
