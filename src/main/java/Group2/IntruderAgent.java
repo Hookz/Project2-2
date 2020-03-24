@@ -32,19 +32,25 @@ public class IntruderAgent implements Intruder{
             }
         }
 
-        Distance minDistance = new Distance(0);
-        int minDistanceWall = 0;
-        for(int i=0; i<walls.size(); i++) {
-            Distance distanceToWall = new Distance(new Point(0,0), walls.get(i).getPoint());
-            if(distanceToWall.getValue() < minDistance.getValue()) {
-                minDistance = distanceToWall;
-                minDistanceWall = i;
+        if(walls.size() > 0) {
+            Distance minDistance = new Distance(0);
+            int minDistanceWall = 0;
+            for (int i = 0; i < walls.size(); i++) {
+                Distance distanceToWall = new Distance(new Point(0, 0), walls.get(i).getPoint());
+                if (distanceToWall.getValue() < minDistance.getValue()) {
+                    minDistance = distanceToWall;
+                    minDistanceWall = i;
+                }
             }
+
+
+            Angle rotation = avoidWallAngle(walls.get(minDistanceWall).getPoint(), percepts);
+            System.out.println("Rotation with angle: " +rotation.getDegrees());
+            return new Rotate(rotation);
         }
 
-        if(minDistance.getValue() > 5) {
-            avoidWall(walls.get(minDistanceWall).getPoint(), percepts.getTargetDirection());
-        }
+        System.out.println("Moving forward");
+        return new Move(percepts.getScenarioIntruderPercepts().getMaxMoveDistanceIntruder());
 
 
 
@@ -54,6 +60,7 @@ public class IntruderAgent implements Intruder{
 //        }
 
 
+        /*
         double random = Math.random();
         if(random<0.95) {
             return new Move(percepts.getScenarioIntruderPercepts().getMaxMoveDistanceIntruder());
@@ -63,15 +70,18 @@ public class IntruderAgent implements Intruder{
             }else{
                 return new Rotate(Angle.fromDegrees(-1 * Math.random() * percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getDegrees()));
             }
-        }
+        } */
     }
 
-    public void avoidWall(Point wall, Direction targetDirection) {
+    public Angle avoidWallAngle(Point wall, IntruderPercepts percepts) {
+        double rotationAngle = 0;
         Distance wallDistance = new Distance(new Point(0,0), wall);
         Angle wallDirection = Angle.fromRadians(Math.acos(wall.getX() / wallDistance.getValue()));
-        if(targetDirection.getDegrees()%360 < wallDirection.getDegrees()%360) {
-
+        if(percepts.getTargetDirection().getDegrees()%360 < wallDirection.getDegrees()%360) {
+            rotationAngle = percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getDegrees();
         }
+        else rotationAngle = -1 * percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getDegrees();
 
+        return Angle.fromDegrees(rotationAngle);
     }
 }
