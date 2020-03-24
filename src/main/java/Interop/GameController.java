@@ -361,8 +361,8 @@ public class GameController{
                     if(teleport.getArea().contains(guardLocation.getX(),guardLocation.getY()) && !teleport.getArea().contains(newX, newY)){
                         guardTeleportFlag.replace(guard,false);
                     }else if(teleport.getArea().contains(newX, newY) && !guardTeleportFlag.get(guard)) { //Entering a teleporter without flag, teleport
-                        newX = teleport.getGoal().getX();
-                        newY = teleport.getGoal().getY();
+                        newX = teleport.getGoal().getX() + teleport.getGoal().getWidth() * Math.random();
+                        newY = teleport.getGoal().getY() + teleport.getGoal().getHeight() * Math.random();
                         newGuardLocation = new Ellipse2D.Double(newX,newY,guardLocation.getWidth(),guardLocation.getHeight());
                         guardTeleportFlag.replace(guard,true);
                     }
