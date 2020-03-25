@@ -102,11 +102,13 @@ public class IntruderAgent implements Intruder{
                 return new Rotate(rotationAngle);
             }
             else if(rotateFlag > 0) {
-                System.out.println("Rotation with angle: " +rotationAngle.getDegrees());
+                rotateFlag++;
+                System.out.println("Rotation with angle: " + 45);
                 return new Rotate(Angle.fromDegrees(percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getDegrees()));
             }
             else {
-                System.out.println("Rotation with angle: " + rotationAngle.getDegrees());
+                rotateFlag--;
+                System.out.println("Rotation with angle: " + (-45));
                 return new Rotate(Angle.fromDegrees(-1 * percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getDegrees()));
             }
         }
@@ -163,44 +165,50 @@ public class IntruderAgent implements Intruder{
         int objectSizeRight = largerAngleIndex - objectIndex;
 
         //Avoid object from its left side
-        if(objectSizeLeft > objectSizeRight && rotateFlag <= 0) {
+        if(objectSizeLeft > objectSizeRight) {
             //If the leftmost vision ray still detects the object, turn from the max angle to avoid it
             if(smallerAngleIndex <= 1) {
-                rotateFlag--;
                 rotationAngle = (-1 * percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getDegrees());
             }
             //Rotate from the smallest angle for which we don't detect the object anymore
             else {
                 rotationAngle = -23 + smallerAngleIndex;
-                if(rotationAngle > 0) rotateFlag++;
-                else rotateFlag--;
             }
         }
         //Avoid object from its right side
-        else if(rotateFlag >= 0){
+        else {
             //If the rightmost vision ray still detects the object, turn from the max angle to avoid it
             if(largerAngleIndex >= objectsList.size()-1) {
-                rotateFlag++;
                 rotationAngle = (percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getDegrees());
             }
             //Rotate from the smallest angle for which we don't detect the object anymore
 
             else {
                 rotationAngle = -23 + smallerAngleIndex;
-                if(rotationAngle > 0) rotateFlag++;
-                else rotateFlag--;
             }
 
 
         }
-        else if (rotateFlag <= 0) {
-            rotateFlag--;
-            rotationAngle = (-1 * percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getDegrees());
+
+        if(rotationAngle > 0 && rotateFlag >= 0) {
+            rotateFlag ++;
+            System.out.println("Rotation with angle: " +rotationAngle);
+            return Angle.fromDegrees(rotationAngle);
         }
-
-        return Angle.fromDegrees(rotationAngle);
-
-
-
+        else if(rotationAngle < 0 && rotateFlag <= 0) {
+            rotateFlag--;
+            System.out.println("Rotation with angle: " +rotationAngle);
+            return Angle.fromDegrees(rotationAngle);
+        }
+        else if(rotateFlag > 0) {
+            rotateFlag++;
+            System.out.println("Rotation with angle: " + 45);
+            return Angle.fromDegrees(percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getDegrees());
+        }
+        else {
+            rotateFlag--;
+            System.out.println("Rotation with angle: " + (-45));
+            return Angle.fromDegrees(-1 * percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getDegrees());
+        }
     }
 }
