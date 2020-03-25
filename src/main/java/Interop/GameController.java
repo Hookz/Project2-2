@@ -444,8 +444,8 @@ public class GameController{
                     if(teleport.getArea().contains(intruderLocation.getX(),intruderLocation.getY()) && !teleport.getArea().contains(newX, newY)){
                         intruderTeleportFlag.replace(intruder,false);
                     }else if(teleport.getArea().contains(newX, newY) && !intruderTeleportFlag.get(intruder)) { //Entering a teleporter without flag, teleport
-                        newX = teleport.getGoal().getX();
-                        newY = teleport.getGoal().getY();
+                        newX = teleport.getGoal().getX() + teleport.getGoal().getWidth() * Math.random();
+                        newY = teleport.getGoal().getY() + teleport.getGoal().getHeight() * Math.random();
                         newintruderLocation = new Ellipse2D.Double(newX,newY,intruderLocation.getWidth(),intruderLocation.getHeight());
                         intruderTeleportFlag.replace(intruder,true);
                     }
@@ -480,8 +480,8 @@ public class GameController{
                         if(teleport.getArea().contains(intruderLocation.getX(),intruderLocation.getY()) && !teleport.getArea().contains(newX, newY)){
                             intruderTeleportFlag.replace(intruder,false);
                         }else if(teleport.getArea().contains(newX, newY) && !intruderTeleportFlag.get(intruder)) { //Entering a teleporter without flag, teleport
-                            newX = teleport.getGoal().getX();
-                            newY = teleport.getGoal().getY();
+                            newX = teleport.getGoal().getX() + teleport.getGoal().getWidth() * Math.random();
+                            newY = teleport.getGoal().getY() + teleport.getGoal().getHeight() * Math.random();
                             newintruderLocation = new Ellipse2D.Double(newX, newY, intruderLocation.getWidth(), intruderLocation.getHeight());
                             intruderTeleportFlag.replace(intruder,true);
                         }
@@ -499,6 +499,7 @@ public class GameController{
             }else{
                 wasLastActionExecuted = false;
                 System.out.println("Still on cooldown, turn skipped");
+                System.out.println("Turns left on Sprint cooldown: "+intruderSprintCooldowns.get(intruder));
             }
 
         }else if(action instanceof DropPheromone){
@@ -622,21 +623,24 @@ public class GameController{
     private void sprintCooldownDecay(Intruder intruder){
         int old = intruderSprintCooldowns.get(intruder);
         if(old>0) {
-            intruderSprintCooldowns.replace(intruder, old--);
+            old--;
+            intruderSprintCooldowns.replace(intruder, old);
         }
     }
 
     private void intruderPheromoneCooldownDecay(Intruder intruder) {
         int old = intruderPheromoneCooldowns.get(intruder);
         if (old > 0) {
-            intruderPheromoneCooldowns.replace(intruder, old--);
+            old--;
+            intruderPheromoneCooldowns.replace(intruder, old);
         }
     }
 
     private void guardPheromoneCooldownDecay(Guard guard) {
         int old = guardPheromoneCooldowns.get(guard);
         if (old > 0) {
-            guardPheromoneCooldowns.replace(guard, old--);
+            old--;
+            guardPheromoneCooldowns.replace(guard, old);
         }
     }
 
