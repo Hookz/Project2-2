@@ -62,6 +62,7 @@ public class IntruderAgent implements Intruder{
         }
 
 
+        //Make the agent sprint after rotating to avoid the guard
         if(avoidingGuard) {
             avoidingGuard = false;
             rotateFlag = 0;
@@ -69,6 +70,7 @@ public class IntruderAgent implements Intruder{
             return new Sprint(percepts.getScenarioIntruderPercepts().getMaxSprintDistanceIntruder());
         }
 
+        //Make the agent move forward 3 times after rotating to avoid the wall
         if(avoidingWall || continuousAvoiding > 0) {
             if(avoidingWall) avoidingWall = false;
             if(continuousAvoiding > 0) continuousAvoiding--;
@@ -93,9 +95,10 @@ public class IntruderAgent implements Intruder{
                 it.remove();
             }
 
-            Angle rotation = avoidObjectAngle(guards.get(indexGuards).getPoint(), percepts, indexGuards);
+            Angle rotation = avoidObjectAngle(guards.get(indexGuards), percepts, indexGuards);
             System.out.println("Avoiding a guard, rotation with angle: " +rotation.getDegrees());
-            if (Math.abs(rotation.getDegrees()) != 45) avoidingGuard = true;
+            Distance guardDistance = new Distance(guards.get(indexGuards).getPoint(), new Point(0,0));
+            if (Math.abs(rotation.getDegrees()) != 45 && guardDistance.getValue() > 2) avoidingGuard = true;
             return new Rotate(rotation);
         }
 
@@ -113,11 +116,11 @@ public class IntruderAgent implements Intruder{
                 it.remove();
             }
 
-            Angle rotation = avoidObjectAngle(walls.get(indexWalls).getPoint(), percepts, indexWalls);
+            Angle rotation = avoidObjectAngle(walls.get(indexWalls), percepts, indexWalls);
             System.out.println("Avoiding a wall, rotation with angle: " + rotation.getDegrees());
-            if (Math.abs(rotation.getDegrees()) != 45) avoidingWall = true;
+            Distance wallDistance = new Distance(walls.get(indexWalls).getPoint(), new Point(0,0));
+            if (Math.abs(rotation.getDegrees()) != 45 && wallDistance.getValue() > 2) avoidingWall = true;
             return new Rotate(rotation);
-            //}
         }
 
 
@@ -173,8 +176,9 @@ public class IntruderAgent implements Intruder{
 
 
     //Method which avoids objects by returning max rotation angle on the side the closest to the target area
-    public Angle avoidObjectAngle(Point object, IntruderPercepts percepts, int objectIndex) {
+    public Angle avoidObjectAngle(ObjectPercept objectPercept, IntruderPercepts percepts, int objectIndex) {
 
+        Point object = objectPercept.getPoint();
         double rotationAngle = 0;
         int smallerAngleIndex = objectIndex;
         int largerAngleIndex = objectIndex;
@@ -204,8 +208,9 @@ public class IntruderAgent implements Intruder{
         }
 
         else {
-            System.out.println("Wall is on whole field of view");
-            this.continuousAvoiding = 3;
+            System.out.println("Object is on whole field of view");
+            Distance objectDistance= new Distance(object, new Point(0,0));
+            if(objectDistance.getValue() > 2 && objectPercept.getType() == ObjectPerceptType.Wall) this.continuousAvoiding = 3;
             Distance firstRay = new Distance(objectsList.get(0).getPoint(), new Point(0,0));
             Distance lastRay = new Distance(objectsList.get(objectsList.size()-1).getPoint(), new Point(0,0));
             if(firstRay.getValue() > lastRay.getValue()) avoidFromRight = true;
