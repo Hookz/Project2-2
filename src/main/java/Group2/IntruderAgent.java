@@ -30,10 +30,15 @@ public class IntruderAgent implements Intruder{
         Angle rotationAngle = targetDirection.getDistance(Angle.fromDegrees(90));
         Angle maxRotationAngle = percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle();
 
-        if(rotationAngle.getDegrees() > maxRotationAngle.getDegrees())
+        if(rotationAngle.getDegrees() > maxRotationAngle.getDegrees()) {
             rotationAngle = maxRotationAngle;
+            System.out.println("Rotation angle set to max");
+        }
+
         if(targetDirection.getDegrees() < 90 && targetDirection.getDegrees() > 270)
             rotationAngle = Angle.fromDegrees(-rotationAngle.getDegrees());
+
+
 
 
 
@@ -90,26 +95,35 @@ public class IntruderAgent implements Intruder{
         }
 
 
-        while(Math.abs(rotationAngle.getDegrees()) > 5) {
+        if(Math.abs(rotationAngle.getDegrees()) > 5) {
             if(rotationAngle.getDegrees() > 0 && rotateFlag >= 0) {
                 rotateFlag ++;
+                System.out.println("1: Rotate flag: " +rotateFlag);
                 System.out.println("Rotation with angle: " +rotationAngle.getDegrees());
                 return new Rotate(rotationAngle);
             }
             else if(rotationAngle.getDegrees() < 0 && rotateFlag <= 0) {
                 rotateFlag--;
+                System.out.println("2: Rotate flag: " +rotateFlag);
                 System.out.println("Rotation with angle: " +rotationAngle.getDegrees());
                 return new Rotate(rotationAngle);
             }
-            else if(rotateFlag > 0) {
+            else if(rotateFlag > 0 && rotateFlag < 4) {
                 rotateFlag++;
+                System.out.println("3: Rotate flag: " +rotateFlag);
                 System.out.println("Rotation with angle: " + 45);
                 return new Rotate(Angle.fromDegrees(percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getDegrees()));
             }
-            else {
+            else if(rotateFlag < 0 && rotateFlag > -4){
                 rotateFlag--;
+                System.out.println("4: Rotate flag: " +rotateFlag);
                 System.out.println("Rotation with angle: " + (-45));
                 return new Rotate(Angle.fromDegrees(-1 * percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getDegrees()));
+            }
+            else {
+                System.out.println("Rotated too many times, moving forward now");
+                rotateFlag = 0;
+                return new Move(percepts.getScenarioIntruderPercepts().getMaxMoveDistanceIntruder());
             }
         }
 
@@ -200,15 +214,20 @@ public class IntruderAgent implements Intruder{
             System.out.println("Rotation with angle: " +rotationAngle);
             return Angle.fromDegrees(rotationAngle);
         }
-        else if(rotateFlag > 0) {
+        else if(rotateFlag > 0 && rotateFlag < 4) {
             rotateFlag++;
             System.out.println("Rotation with angle: " + 45);
             return Angle.fromDegrees(percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getDegrees());
         }
-        else {
+        else if(rotateFlag < 0 && rotateFlag > -4){
             rotateFlag--;
             System.out.println("Rotation with angle: " + (-45));
             return Angle.fromDegrees(-1 * percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getDegrees());
+        }
+        else {
+            System.out.println("Rotated too many times, moving forward now");
+            rotateFlag = 0;
+            return Angle.fromDegrees(0);
         }
     }
 }
