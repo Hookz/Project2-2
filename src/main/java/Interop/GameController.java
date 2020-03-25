@@ -449,6 +449,7 @@ public class GameController{
         }else if(action instanceof Rotate){
             Direction intruderDirection = intruderDirections.get(intruder);
             double newintruderAngle = (intruderDirection.getDegrees() + ((Rotate) action).getAngle().getDegrees())%360;
+            while (newintruderAngle < 0 ) newintruderAngle += 360;
             intruderDirections.put(intruder,Direction.fromDegrees(newintruderAngle));
             wasLastActionExecuted = true;
 
