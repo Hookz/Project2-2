@@ -73,8 +73,8 @@ public class GameController{
     private List<Rectangle> sentries;
     public HashMap<Intruder,Ellipse2D> intruderLocations = new HashMap<>();
     public HashMap<Guard,Ellipse2D> guardLocations = new HashMap<>();
-    private HashMap<Intruder,Direction> intruderDirections = new HashMap<>();
-    private HashMap<Guard,Direction> guardDirections = new HashMap<>();
+    public HashMap<Intruder,Direction> intruderDirections = new HashMap<>();
+    public HashMap<Guard,Direction> guardDirections = new HashMap<>();
     public HashMap<Smell,Ellipse2D> guardSmellLocations = new HashMap<>();
     public HashMap<Smell,Ellipse2D> intruderSmellLocations = new HashMap<>();
     public HashMap<Sound,Ellipse2D> soundLocations = new HashMap<>();
@@ -90,8 +90,8 @@ public class GameController{
     private HashMap<Guard, Double> guardMaxMoveDistance = new HashMap<>();
     private HashMap<Intruder, Integer> intruderTurnsInTarget = new HashMap<>();
 
-    private List<Intruder> intruders = new ArrayList<>();
-    private List<Guard> guards = new ArrayList<>();
+    public List<Intruder> intruders = new ArrayList<>();
+    public List<Guard> guards = new ArrayList<>();
 
     private Turn turn = Turn.GuardTurn;
 
@@ -648,7 +648,6 @@ public class GameController{
             if(intruderLocations.get(intruder).intersects(target)){
                 int turns = intruderTurnsInTarget.get(intruder);
                 turns++;
-                System.out.println(turns);
                 intruderTurnsInTarget.replace(intruder,turns);
                 if(turns==winConditionIntruderRounds){
                     return true;
