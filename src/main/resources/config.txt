@@ -28,6 +28,7 @@ doorSoundRadius = 5.0
 targetArea = 20,40,25,40,20,45,25,45
 spawnAreaIntruders = 2,2,20,2,2,10,20,10
 spawnAreaGuards = 2,2,20,2,2,10,20,10
+wall = 15,30,40,30,15,31,40,31
 wall = 50,0,51,0,50,20,51,20
 wall = 0,0,1,0,0,80,1,80
 wall = 0,79,120,79,0,80,120,80

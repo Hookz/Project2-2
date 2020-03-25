@@ -1,6 +1,7 @@
 package Interop;
 
 import Group2.AgentsFactory;
+import Group2.GUI.Launcher;
 import Interop.Action.*;
 import Interop.Agent.*;
 import Interop.Percept.*;
@@ -72,8 +73,8 @@ public class GameController{
     private List<Rectangle> sentries;
     public HashMap<Intruder,Ellipse2D> intruderLocations = new HashMap<>();
     public HashMap<Guard,Ellipse2D> guardLocations = new HashMap<>();
-    private HashMap<Intruder,Direction> intruderDirections = new HashMap<>();
-    private HashMap<Guard,Direction> guardDirections = new HashMap<>();
+    public HashMap<Intruder,Direction> intruderDirections = new HashMap<>();
+    public HashMap<Guard,Direction> guardDirections = new HashMap<>();
     public HashMap<Smell,Ellipse2D> guardSmellLocations = new HashMap<>();
     public HashMap<Smell,Ellipse2D> intruderSmellLocations = new HashMap<>();
     public HashMap<Sound,Ellipse2D> soundLocations = new HashMap<>();
@@ -87,9 +88,10 @@ public class GameController{
     private HashMap<Intruder, Double> intruderMaxMoveDistance = new HashMap<>();
     private HashMap<Intruder, Double> intruderMaxSprintDistance = new HashMap<>();
     private HashMap<Guard, Double> guardMaxMoveDistance = new HashMap<>();
+    private HashMap<Intruder, Integer> intruderTurnsInTarget = new HashMap<>();
 
-    private List<Intruder> intruders = new ArrayList<>();
-    private List<Guard> guards = new ArrayList<>();
+    public List<Intruder> intruders = new ArrayList<>();
+    public List<Guard> guards = new ArrayList<>();
 
     private Turn turn = Turn.GuardTurn;
 
@@ -213,7 +215,7 @@ public class GameController{
                 intruderDirections.put(intruder,direction);
 
                 intruderTeleportFlag.put(intruder, false);
-
+                intruderTurnsInTarget.put(intruder,0);
                 intruderSprintCooldowns.put(intruder,0);
                 intruderPheromoneCooldowns.put(intruder,0);
                 intruderTeleportFlag.put(intruder,false);
@@ -292,6 +294,7 @@ public class GameController{
                         GuardPercepts percept = guardPercept(guard);
                         Action action = guard.getAction(percept);
                         guardAct(action, percept, guard);
+                        gameOver = checkVictoryGuard(guard,percept);
                     }
                 }
                 break;
@@ -305,18 +308,25 @@ public class GameController{
                         IntruderPercepts percept = intruderPercept(intruder);
                         Action action = intruder.getAction(percept);
                         intruderAct(action, percept, intruder);
+                        gameOver = checkVictoryIntruder(intruder);
                     }
                 }
                 break;
         }
 
-        gameOver = checkVictory();
-
         //Switch turn
-        if (turn.equals(Turn.GuardTurn)) {
-            turn = Turn.IntruderTurn;
-        } else {
-            turn = Turn.GuardTurn;
+        if(gameOver!=true) {
+            if (turn.equals(Turn.GuardTurn)) {
+                turn = Turn.IntruderTurn;
+            } else {
+                turn = Turn.GuardTurn;
+            }
+        }else if(turn.equals(Turn.GuardTurn)){
+            System.out.println("Guards Win!");
+            Launcher.paused = true;
+        }else if(turn.equals(Turn.IntruderTurn)){
+            System.out.println("Intruders Win!");
+            Launcher.paused = true;
         }
     }
     private GuardPercepts guardPercept(Guard guard){
@@ -337,10 +347,8 @@ public class GameController{
         double centerDistance = new Distance(new Point(targetArea.get(0).getCenterX(), targetArea.get(0).getCenterY()), new Point(intruderLocations.get(intruder).getCenterX(), intruderLocations.get(intruder).getCenterY())).getValue();
         double deltaX = Math.abs(intruderLocations.get(intruder).getCenterX() - targetArea.get(0).getCenterX());
         Direction targetAreaAngle = Direction.fromRadians(Math.acos(deltaX / centerDistance));
-        //Direction targetDirection = Direction.fromRadians(targetAreaAngle.getDistance(intruderDirections.get(intruder)).getRadians());
         double setToYAxisAngle = Utils.clockAngle(Math.cos(intruderDirections.get(intruder).getRadians()), Math.sin(intruderDirections.get(intruder).getRadians()));
-        Direction targetDirection = Direction.fromRadians((targetAreaAngle.getRadians() + setToYAxisAngle)%2*Math.PI);
-
+        Direction targetDirection = Direction.fromRadians((targetAreaAngle.getRadians() + setToYAxisAngle)%(2*Math.PI));
         FieldOfView field = new FieldOfView(intruderViewRange.get(intruder), Angle.fromDegrees(viewAngle));
         VisionPrecepts vision = new VisionPrecepts(field, intruderObjectPercept.get(intruder));
         SoundPercepts sounds = intruderSoundPercepts.get(intruder);
@@ -435,8 +443,8 @@ public class GameController{
                     if(teleport.getArea().contains(intruderLocation.getX(),intruderLocation.getY()) && !teleport.getArea().contains(newX, newY)){
                         intruderTeleportFlag.replace(intruder,false);
                     }else if(teleport.getArea().contains(newX, newY) && !intruderTeleportFlag.get(intruder)) { //Entering a teleporter without flag, teleport
-                        newX = teleport.getGoal().getX();
-                        newY = teleport.getGoal().getY();
+                        newX = teleport.getGoal().getX() + teleport.getGoal().getWidth() * Math.random();
+                        newY = teleport.getGoal().getY() + teleport.getGoal().getHeight() * Math.random();
                         newintruderLocation = new Ellipse2D.Double(newX,newY,intruderLocation.getWidth(),intruderLocation.getHeight());
                         intruderTeleportFlag.replace(intruder,true);
                     }
@@ -450,6 +458,7 @@ public class GameController{
         }else if(action instanceof Rotate){
             Direction intruderDirection = intruderDirections.get(intruder);
             double newintruderAngle = (intruderDirection.getDegrees() + ((Rotate) action).getAngle().getDegrees())%360;
+            while (newintruderAngle < 0 ) newintruderAngle += 360;
             intruderDirections.put(intruder,Direction.fromDegrees(newintruderAngle));
             wasLastActionExecuted = true;
 
@@ -470,8 +479,8 @@ public class GameController{
                         if(teleport.getArea().contains(intruderLocation.getX(),intruderLocation.getY()) && !teleport.getArea().contains(newX, newY)){
                             intruderTeleportFlag.replace(intruder,false);
                         }else if(teleport.getArea().contains(newX, newY) && !intruderTeleportFlag.get(intruder)) { //Entering a teleporter without flag, teleport
-                            newX = teleport.getGoal().getX();
-                            newY = teleport.getGoal().getY();
+                            newX = teleport.getGoal().getX() + teleport.getGoal().getWidth() * Math.random();
+                            newY = teleport.getGoal().getY() + teleport.getGoal().getHeight() * Math.random();
                             newintruderLocation = new Ellipse2D.Double(newX, newY, intruderLocation.getWidth(), intruderLocation.getHeight());
                             intruderTeleportFlag.replace(intruder,true);
                         }
@@ -489,6 +498,7 @@ public class GameController{
             }else{
                 wasLastActionExecuted = false;
                 System.out.println("Still on cooldown, turn skipped");
+                System.out.println("Turns left on Sprint cooldown: "+intruderSprintCooldowns.get(intruder));
             }
 
         }else if(action instanceof DropPheromone){
@@ -612,31 +622,84 @@ public class GameController{
     private void sprintCooldownDecay(Intruder intruder){
         int old = intruderSprintCooldowns.get(intruder);
         if(old>0) {
-            intruderSprintCooldowns.replace(intruder, old--);
+            old--;
+            intruderSprintCooldowns.replace(intruder, old);
         }
     }
 
     private void intruderPheromoneCooldownDecay(Intruder intruder) {
         int old = intruderPheromoneCooldowns.get(intruder);
         if (old > 0) {
-            intruderPheromoneCooldowns.replace(intruder, old--);
+            old--;
+            intruderPheromoneCooldowns.replace(intruder, old);
         }
     }
 
     private void guardPheromoneCooldownDecay(Guard guard) {
         int old = guardPheromoneCooldowns.get(guard);
         if (old > 0) {
-            guardPheromoneCooldowns.replace(guard, old--);
+            old--;
+            guardPheromoneCooldowns.replace(guard, old);
         }
     }
 
-    private boolean checkVictory(){
-        //Check if game is over and victory is achieved
-        boolean gameOver = false;
-
-        //If victory condition is met, set gameOver to true
-        return gameOver;
+    private boolean checkVictoryIntruder(Intruder intruder){
+        for(Rectangle target:targetArea) {
+            if(intruderLocations.get(intruder).intersects(target)){
+                int turns = intruderTurnsInTarget.get(intruder);
+                turns++;
+                intruderTurnsInTarget.replace(intruder,turns);
+                if(turns==winConditionIntruderRounds){
+                    return true;
+                }
+            }else{
+                intruderTurnsInTarget.replace(intruder,0);
+            }
+        }
+        return false;
     }
+
+    /*  Victory Condition Checking for Guard agents:
+        - Checks FoV for any intruders
+        - Checks in any of said intruders are within capture distance
+        - If gamemode only requires 1 capture, game over
+        - If gamemode requires all to be captured:
+            - Find which intruder was captured
+            - Remove that intruder from the game
+            - Check if there's any intruders left:
+                - If yes, continue game
+                - If no, game over
+     */
+    private boolean checkVictoryGuard(Guard guard, Percepts percepts){
+        Set<ObjectPercept> vision = percepts.getVision().getObjects().getAll();
+        for(ObjectPercept object: vision){
+            if(object.getType().equals(ObjectPerceptType.Intruder)){
+                Point intruderPoint = object.getPoint();
+                Point guardPoint = new Point(guardLocations.get(guard).getX(),guardLocations.get(guard).getY());
+                if(intruderPoint.getDistance(guardPoint).getValue()-0.5<=captureDistance){
+                    if(gameMode.equals(GameMode.CaptureOneIntruder)) {
+                        return true;
+                    }else{
+                        Intruder closestIntruder = intruders.get(0);
+                        Point closestIntruderCenter = new Point(intruderLocations.get(0).getX(),intruderLocations.get(0).getY());
+                        for(Intruder intruder:intruders){
+                            Point intruderCenter = new Point(intruderLocations.get(intruder).getX(),intruderLocations.get(intruder).getY());
+                            if(intruderPoint.getDistance(intruderCenter).getValue()<intruderPoint.getDistance(closestIntruderCenter).getValue()){
+                                closestIntruder = intruder;
+                                closestIntruderCenter = intruderCenter;
+                            }
+                        }
+                        delete(closestIntruder);
+                        if(intruders.isEmpty()){
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
 
     private void setAreaPerceptsIntruder(Intruder intruder) {
         Iterator it = (new HashMap<>(intruderLocations)).entrySet().iterator();
@@ -1263,7 +1326,38 @@ public class GameController{
         return Double.MAX_VALUE; // No collision
     }
 
+    private void delete(Intruder intruder){
+        intruders.remove(intruder);
+        intruderDirections.remove(intruder);
+        intruderLocations.remove(intruder);
+        intruderTurnsInTarget.remove(intruder);
+        intruderTeleportFlag.remove(intruder);
+        intruderPheromoneCooldowns.remove(intruder);
+        intruderSprintCooldowns.remove(intruder);
+        intruderSmellLocations.remove(intruder);
+        intruderAreaPercepts.remove(intruder);
+        intruderMaxMoveDistance.remove(intruder);
+        intruderMaxSprintDistance.remove(intruder);
+        intruderObjectPercept.remove(intruder);
+        intruderSmellPercepts.remove(intruder);
+        intruderSoundPercepts.remove(intruder);
+        intruderViewRange.remove(intruder);
+    }
 
+    private void delete(Guard guard){
+        guards.remove(guard);
+        guardDirections.remove(guard);
+        guardLocations.remove(guard);
+        guardTeleportFlag.remove(guard);
+        guardPheromoneCooldowns.remove(guard);
+        guardSmellLocations.remove(guard);
+        guardsAreaPercepts.remove(guard);
+        guardMaxMoveDistance.remove(guard);
+        guardObjectPercepts.remove(guard);
+        guardSmellPercepts.remove(guard);
+        guardSoundPercepts.remove(guard);
+        guardViewRange.remove(guard);
+    }
 
 
 }

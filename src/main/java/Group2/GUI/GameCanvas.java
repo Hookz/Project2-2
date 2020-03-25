@@ -9,6 +9,8 @@ import Interop.Teleport;
 import javax.swing.JPanel;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,6 +50,8 @@ public class GameCanvas extends JPanel {
                 g2.draw(tempWall);
             }
 
+
+
             for(Rectangle area : controller.targetArea){
                 Rectangle2D tempArea = new Rectangle2D.Double(norm(area.x) + xCenterMargin(), norm(area.y) + yCenterMargin(), norm(area.width), norm(area.height));
                 g2.setColor(Color.GREEN);
@@ -77,6 +81,19 @@ public class GameCanvas extends JPanel {
                 g2.fill(agentEllipse);
                 g2.setColor(Color.PINK);
                 g2.draw(agentEllipse);
+            }
+
+            for(Intruder intruder:controller.intruders) {
+                Ellipse2D location = controller.intruderLocations.get(intruder);
+                location = new Ellipse2D.Double(norm(location.getX()) + xCenterMargin(), norm(location.getY()) + yCenterMargin(), norm(location.getWidth()), norm(location.getHeight()));
+                Point2D center = new Point2D.Double(location.getCenterX(),location.getCenterY());
+                double newX = center.getX() + 20*Math.cos(controller.intruderDirections.get(intruder).getRadians());
+                double newY = center.getY() + 20*Math.sin(controller.intruderDirections.get(intruder).getRadians());
+                Point2D newPoint = new Point2D.Double(newX,newY);
+                Line2D line = new Line2D.Double(center,newPoint);
+                g2.setColor(Color.WHITE);
+                g2.fill(line);
+                g2.draw(line);
             }
 
             for(Map.Entry<Guard,Ellipse2D> guard: controller.guardLocations.entrySet()){
@@ -114,6 +131,7 @@ public class GameCanvas extends JPanel {
                 g2.fill(soundEllipse);
                 g2.draw(soundEllipse);
             }
+
         }
         else {
             //No controller present:

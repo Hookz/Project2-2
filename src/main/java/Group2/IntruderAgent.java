@@ -6,16 +6,18 @@ import Interop.Geometry.*;
 import Interop.Percept.IntruderPercepts;
 import Interop.Percept.Vision.ObjectPercept;
 import Interop.Percept.Vision.ObjectPerceptType;
-import Interop.Percept.Vision.ObjectPercepts;
-import Interop.Utils.Utils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+
+import java.util.*;
 
 public class IntruderAgent implements Intruder{
+    //Variable which is negative if the previous turn was to the left (i.e negative angle), positive if the previous angle was to the right and 0 if it was a move
+    private int rotateFlag = 0;
     private int ID;
+    private boolean avoidingGuard;
+    private boolean avoidingWall;
+    private int continuousAvoiding = 0;
+    private boolean reachesTargetArea;
 
     public IntruderAgent(int ID){
         this.ID = ID;
@@ -23,65 +25,249 @@ public class IntruderAgent implements Intruder{
 
     @Override
     public IntruderAction getAction(IntruderPercepts percepts) {
+
+        if(reachesTargetArea) return new NoAction();
+
         Set<ObjectPercept> objects = percepts.getVision().getObjects().getAll();
-        ArrayList<ObjectPercept> walls = new ArrayList<>();
-        Angle rotationAngle = percepts.getTargetDirection();
+        HashMap<Integer, ObjectPercept> walls = new HashMap<>();
+        HashMap<Integer, ObjectPercept> guards = new HashMap<>();
+
+
+        int counter = 0;
+        Point targetAreaLocation = new Point(0,0);
+
+
         for(ObjectPercept object : objects){
-            if (object.getType() == ObjectPerceptType.Wall){
-                walls.add(object);
+            if (object.getType() == ObjectPerceptType.Wall && counter >= 17 && counter <= 27) {
+                walls.put(counter, object);
             }
+
+            else if(object.getType() == ObjectPerceptType.Guard && counter >= 17 && counter <= 27) {
+                guards.put(counter, object);
+            }
+
+            else if(object.getType() == ObjectPerceptType.TargetArea)
+                targetAreaLocation = object.getPoint();
+
+            counter++;
         }
 
-        if(walls.size() > 0) {
-            Distance minDistance = new Distance(0);
-            int minDistanceWall = 0;
-            for (int i = 0; i < walls.size(); i++) {
-                Distance distanceToWall = new Distance(new Point(0, 0), walls.get(i).getPoint());
-                if (distanceToWall.getValue() < minDistance.getValue()) {
-                    minDistance = distanceToWall;
-                    minDistanceWall = i;
-                }
+        if(targetAreaLocation.getX() != 0 && targetAreaLocation.getY() !=0) {
+            Distance targetAreaDistance = new Distance(targetAreaLocation, new Point(0,0));
+            if(targetAreaDistance.getValue() < 2) {
+                reachesTargetArea = true;
+                return new Move(new Distance(2));
             }
 
+        }
 
-            Angle rotation = avoidWallAngle(walls.get(minDistanceWall).getPoint(), percepts);
-            System.out.println("Rotation with angle: " +rotation.getDegrees());
+
+        //Make the agent sprint after rotating to avoid the guard
+        if(avoidingGuard) {
+            avoidingGuard = false;
+            rotateFlag = 0;
+            System.out.println("Sprint to avoid guard");
+            return new Sprint(percepts.getScenarioIntruderPercepts().getMaxSprintDistanceIntruder());
+        }
+
+        //Make the agent move forward 3 times after rotating to avoid the wall
+        if(avoidingWall || continuousAvoiding > 0) {
+            if(avoidingWall) avoidingWall = false;
+            if(continuousAvoiding > 0) continuousAvoiding--;
+            rotateFlag = 0;
+            System.out.println("Move forward after avoiding wall");
+            return new Move(percepts.getScenarioIntruderPercepts().getMaxMoveDistanceIntruder());
+        }
+
+
+
+        int indexGuards = 0;
+        if(guards.size() > 0) {
+            Distance minDistance = new Distance(Double.MAX_VALUE);
+            Iterator it = (new HashMap<>(guards)).entrySet().iterator();
+            while(it.hasNext()) {
+                Map.Entry pair = (Map.Entry) it.next();
+                Distance distanceToGuard = new Distance(new Point(0, 0), guards.get(pair.getKey()).getPoint());
+                if (distanceToGuard.getValue() < minDistance.getValue()) {
+                    minDistance = distanceToGuard;
+                    indexGuards = (int) pair.getKey();
+                }
+                it.remove();
+            }
+
+            Angle rotation = avoidObjectAngle(guards.get(indexGuards), percepts, indexGuards);
+            System.out.println("Avoiding a guard, rotation with angle: " +rotation.getDegrees());
+            Distance guardDistance = new Distance(guards.get(indexGuards).getPoint(), new Point(0,0));
+            if (Math.abs(rotation.getDegrees()) != 45 && guardDistance.getValue() > 2) avoidingGuard = true;
             return new Rotate(rotation);
         }
 
+        int indexWalls = 0;
+        if(walls.size() > 0) {
+            Distance minDistance = new Distance(Double.MAX_VALUE);
+            Iterator it = (new HashMap<>(walls)).entrySet().iterator();
+            while(it.hasNext()) {
+                Map.Entry pair = (Map.Entry) it.next();
+                Distance distanceToWall = new Distance(new Point(0, 0), walls.get(pair.getKey()).getPoint());
+                if (distanceToWall.getValue() < minDistance.getValue()) {
+                    minDistance = distanceToWall;
+                    indexWalls = (int) pair.getKey();
+                }
+                it.remove();
+            }
+
+            Angle rotation = avoidObjectAngle(walls.get(indexWalls), percepts, indexWalls);
+            System.out.println("Avoiding a wall, rotation with angle: " + rotation.getDegrees());
+            Distance wallDistance = new Distance(walls.get(indexWalls).getPoint(), new Point(0,0));
+            if (Math.abs(rotation.getDegrees()) != 45 && wallDistance.getValue() > 2) avoidingWall = true;
+            return new Rotate(rotation);
+        }
+
+
+        //If the intruder isn't avoiding, make it aim for the target area
+        Direction targetDirection = Direction.fromDegrees(percepts.getTargetDirection().getDegrees()%360);
+        Angle rotationAngle = targetDirection.getDistance(Angle.fromDegrees(90));
+        Angle maxRotationAngle = percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle();
+
+        if(rotationAngle.getDegrees() > maxRotationAngle.getDegrees())
+            rotationAngle = maxRotationAngle;
+
+
+        if(targetDirection.getDegrees() < 90 && targetDirection.getDegrees() > 270)
+            rotationAngle = Angle.fromDegrees(-rotationAngle.getDegrees());
+
+
+
+        if(Math.abs(rotationAngle.getDegrees()) > 5) {
+            if(rotationAngle.getDegrees() > 0 && rotateFlag >= 0) {
+                rotateFlag ++;
+                System.out.println("Degree check: " + rotationAngle.getDegrees());
+                return new Rotate(rotationAngle);
+            }
+            else if(rotationAngle.getDegrees() < 0 && rotateFlag <= 0) {
+                rotateFlag--;
+                System.out.println("Degree check: " + rotationAngle.getDegrees());
+                return new Rotate(rotationAngle);
+            }
+            else if(rotateFlag > 0) {
+                rotateFlag++;
+                System.out.println("Forced degree check: " + 45);
+                return new Rotate(Angle.fromDegrees(percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getDegrees()));
+            }
+            else if(rotateFlag < 0){
+                rotateFlag--;
+                System.out.println("Forced degree check with angle: " + (-45));
+                return new Rotate(Angle.fromDegrees(-1 * percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getDegrees()));
+            }
+            else {
+                System.out.println("Rotated too many times, moving forward");
+                rotateFlag = 0;
+                return new Move(percepts.getScenarioIntruderPercepts().getMaxMoveDistanceIntruder());
+            }
+        }
+
+
+        rotateFlag = 0;
         System.out.println("Moving forward");
         return new Move(percepts.getScenarioIntruderPercepts().getMaxMoveDistanceIntruder());
 
-
-
-
-//        if(walls.size()>3){
-//            return new Rotate(Angle.fromRadians(0.5*Math.PI));
-//        }
-
-
-        /*
-        double random = Math.random();
-        if(random<0.95) {
-            return new Move(percepts.getScenarioIntruderPercepts().getMaxMoveDistanceIntruder());
-        }else{
-            if (Math.random()<50) {
-                return new Rotate(Angle.fromDegrees(Math.random() * percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getDegrees()));
-            }else{
-                return new Rotate(Angle.fromDegrees(-1 * Math.random() * percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getDegrees()));
-            }
-        } */
     }
 
-    public Angle avoidWallAngle(Point wall, IntruderPercepts percepts) {
-        double rotationAngle = 0;
-        Distance wallDistance = new Distance(new Point(0,0), wall);
-        Angle wallDirection = Angle.fromRadians(Math.acos(wall.getX() / wallDistance.getValue()));
-        if(percepts.getTargetDirection().getDegrees()%360 < wallDirection.getDegrees()%360) {
-            rotationAngle = percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getDegrees();
-        }
-        else rotationAngle = -1 * percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getDegrees();
 
-        return Angle.fromDegrees(rotationAngle);
+
+    //Method which avoids objects by returning max rotation angle on the side the closest to the target area
+    public Angle avoidObjectAngle(ObjectPercept objectPercept, IntruderPercepts percepts, int objectIndex) {
+
+        Point object = objectPercept.getPoint();
+        double rotationAngle = 0;
+        int smallerAngleIndex = objectIndex;
+        int largerAngleIndex = objectIndex;
+        ArrayList<ObjectPercept> objectsList = new ArrayList<>(percepts.getVision().getObjects().getAll());
+
+        boolean avoidFromRight = false;
+        boolean avoidFromLeft = false;
+
+        while(smallerAngleIndex > 0 && objectsList.get(smallerAngleIndex).getType() == objectsList.get(objectIndex).getType()) {
+            smallerAngleIndex--;
+        }
+        int objectSizeLeft = objectIndex - smallerAngleIndex;
+
+        while(largerAngleIndex < objectsList.size() && objectsList.get(largerAngleIndex).getType() == objectsList.get(objectIndex).getType()){
+            largerAngleIndex++;
+        }
+
+        int objectSizeRight = largerAngleIndex - objectIndex;
+
+        //Avoid object from its left side
+        if(objectSizeLeft > objectSizeRight) {
+            avoidFromLeft = true;
+        }
+        //Avoid object from its right side
+        else if(objectSizeLeft < objectSizeRight){
+            avoidFromRight = true;
+        }
+
+        else {
+            System.out.println("Object is on whole field of view");
+            Distance objectDistance= new Distance(object, new Point(0,0));
+            if(objectDistance.getValue() > 2 && objectPercept.getType() == ObjectPerceptType.Wall) this.continuousAvoiding = 3;
+            Distance firstRay = new Distance(objectsList.get(0).getPoint(), new Point(0,0));
+            Distance lastRay = new Distance(objectsList.get(objectsList.size()-1).getPoint(), new Point(0,0));
+            if(firstRay.getValue() > lastRay.getValue()) avoidFromRight = true;
+            else avoidFromLeft = true;
+
+        }
+
+        if(avoidFromLeft) {
+            //System.out.println("Avoiding from left");
+            //If the leftmost vision ray still detects the object, turn from the max angle to avoid it
+            if(smallerAngleIndex <= 1) {
+                //System.out.println("Avoiding max angle");
+                rotationAngle = (-1 * percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getDegrees());
+            }
+            //Rotate from the smallest angle for which we don't detect the object anymore
+            else {
+                //System.out.println("Smaller Angle Index: " + smallerAngleIndex +" ; Rotation angle: " +(smallerAngleIndex-23));
+                rotationAngle = -23 + smallerAngleIndex;
+            }
+        }
+        else if(avoidFromRight) {
+            //System.out.println("Avoiding from right");
+            //If the rightmost vision ray still detects the object, turn from the max angle to avoid it
+            if(largerAngleIndex >= objectsList.size()-1) {
+                //System.out.println("Avoiding max angle");
+                rotationAngle = (percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getDegrees());
+            }
+            //Rotate from the smallest angle for which we don't detect the object anymore
+
+            else {
+                //System.out.println("Larger Angle Index: " + largerAngleIndex +" ; Rotation angle: " +(largerAngleIndex-23));
+                rotationAngle = -23 + largerAngleIndex;
+            }
+        }
+
+        if(rotationAngle > 0 && rotateFlag >= 0) {
+            rotateFlag ++;
+            return Angle.fromDegrees(rotationAngle);
+        }
+        else if(rotationAngle < 0 && rotateFlag <= 0) {
+            rotateFlag--;
+            return Angle.fromDegrees(rotationAngle);
+        }
+        else if(rotateFlag > 0) {
+            System.out.println("Forced rotation");
+            rotateFlag++;
+            return Angle.fromDegrees(percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getDegrees());
+        }
+        else if(rotateFlag < 0 ){
+            System.out.println("Forced rotation");
+            rotateFlag--;
+            return Angle.fromDegrees(-1 * percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getDegrees());
+        }
+        else {
+            System.out.println("Rotated too many times, moving forward");
+            rotateFlag = 0;
+            return Angle.fromDegrees(0);
+        }
     }
 }
