@@ -1,6 +1,7 @@
 package Interop;
 
 import Group2.AgentsFactory;
+import Group2.GUI.Launcher;
 import Interop.Action.*;
 import Interop.Agent.*;
 import Interop.Percept.*;
@@ -314,10 +315,18 @@ public class GameController{
         }
 
         //Switch turn
-        if (turn.equals(Turn.GuardTurn)) {
-            turn = Turn.IntruderTurn;
-        } else {
-            turn = Turn.GuardTurn;
+        if(gameOver!=true) {
+            if (turn.equals(Turn.GuardTurn)) {
+                turn = Turn.IntruderTurn;
+            } else {
+                turn = Turn.GuardTurn;
+            }
+        }else if(turn.equals(Turn.GuardTurn)){
+            System.out.println("Guards Win!");
+            Launcher.paused = true;
+        }else if(turn.equals(Turn.IntruderTurn)){
+            System.out.println("Intruders Win!");
+            Launcher.paused = true;
         }
     }
     private GuardPercepts guardPercept(Guard guard){
@@ -636,6 +645,7 @@ public class GameController{
             if(intruderLocations.get(intruder).intersects(target)){
                 int turns = intruderTurnsInTarget.get(intruder);
                 turns++;
+                System.out.println(turns);
                 intruderTurnsInTarget.replace(intruder,turns);
                 if(turns==winConditionIntruderRounds){
                     return true;
