@@ -87,6 +87,7 @@ public class GameController{
     private HashMap<Intruder, Double> intruderMaxMoveDistance = new HashMap<>();
     private HashMap<Intruder, Double> intruderMaxSprintDistance = new HashMap<>();
     private HashMap<Guard, Double> guardMaxMoveDistance = new HashMap<>();
+    private HashMap<Intruder, Integer> intruderTurnsInTarget = new HashMap<>();
 
     private List<Intruder> intruders = new ArrayList<>();
     private List<Guard> guards = new ArrayList<>();
@@ -213,7 +214,7 @@ public class GameController{
                 intruderDirections.put(intruder,direction);
 
                 intruderTeleportFlag.put(intruder, false);
-
+                intruderTurnsInTarget.put(intruder,0);
                 intruderSprintCooldowns.put(intruder,0);
                 intruderPheromoneCooldowns.put(intruder,0);
                 intruderTeleportFlag.put(intruder,false);
@@ -292,6 +293,7 @@ public class GameController{
                         GuardPercepts percept = guardPercept(guard);
                         Action action = guard.getAction(percept);
                         guardAct(action, percept, guard);
+                        gameOver = checkVictoryGuard(guard,percept);
                     }
                 }
                 break;
@@ -305,12 +307,11 @@ public class GameController{
                         IntruderPercepts percept = intruderPercept(intruder);
                         Action action = intruder.getAction(percept);
                         intruderAct(action, percept, intruder);
+                        gameOver = checkVictoryIntruder(intruder);
                     }
                 }
                 break;
         }
-
-        gameOver = checkVictory();
 
         //Switch turn
         if (turn.equals(Turn.GuardTurn)) {
@@ -630,13 +631,37 @@ public class GameController{
         }
     }
 
-    private boolean checkVictory(){
-        //Check if game is over and victory is achieved
-        boolean gameOver = false;
-
+    private boolean checkVictoryIntruder(Intruder intruder){
+        for(Rectangle target:targetArea) {
+            if(intruderLocations.get(intruder).intersects(target)){
+                int turns = intruderTurnsInTarget.get(intruder);
+                turns++;
+                intruderTurnsInTarget.replace(intruder,turns);
+                if(turns==winConditionIntruderRounds){
+                    return true;
+                }
+            }else{
+                intruderTurnsInTarget.replace(intruder,0);
+            }
+        }
         //If victory condition is met, set gameOver to true
-        return gameOver;
+        return false;
     }
+
+    private boolean checkVictoryGuard(Guard guard, Percepts percepts){
+        Set<ObjectPercept> vision = percepts.getVision().getObjects().getAll();
+        for(ObjectPercept object: vision){
+            if(object.getType().equals(ObjectPerceptType.Intruder)){
+                Point intruderPoint = object.getPoint();
+                Point guardPoint = new Point(guardLocations.get(guard).getX(),guardLocations.get(guard).getY());
+                if(intruderPoint.getDistance(guardPoint).getValue()-0.5<=captureDistance){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 
     private void setAreaPerceptsIntruder(Intruder intruder) {
         Iterator it = (new HashMap<>(intruderLocations)).entrySet().iterator();
