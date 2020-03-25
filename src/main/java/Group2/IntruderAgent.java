@@ -32,21 +32,18 @@ public class IntruderAgent implements Intruder{
         HashMap<Integer, ObjectPercept> walls = new HashMap<>();
         HashMap<Integer, ObjectPercept> guards = new HashMap<>();
 
-        int indexWalls = 0;
-        int indexGuards = 0;
+
         int counter = 0;
         Point targetAreaLocation = new Point(0,0);
 
 
         for(ObjectPercept object : objects){
             if (object.getType() == ObjectPerceptType.Wall && counter >= 17 && counter <= 27) {
-                walls.put(indexWalls, object);
-                indexWalls++;
+                walls.put(counter, object);
             }
 
             else if(object.getType() == ObjectPerceptType.Guard && counter >= 17 && counter <= 27) {
-                guards.put(indexGuards, object);
-                indexGuards++;
+                guards.put(counter, object);
             }
 
             else if(object.getType() == ObjectPerceptType.TargetArea)
@@ -65,6 +62,7 @@ public class IntruderAgent implements Intruder{
         }
 
 
+        //Make the agent sprint after rotating to avoid the guard
         if(avoidingGuard) {
             avoidingGuard = false;
             rotateFlag = 0;
@@ -72,6 +70,7 @@ public class IntruderAgent implements Intruder{
             return new Sprint(percepts.getScenarioIntruderPercepts().getMaxSprintDistanceIntruder());
         }
 
+        //Make the agent move forward 3 times after rotating to avoid the wall
         if(avoidingWall || continuousAvoiding > 0) {
             if(avoidingWall) avoidingWall = false;
             if(continuousAvoiding > 0) continuousAvoiding--;
@@ -82,47 +81,46 @@ public class IntruderAgent implements Intruder{
 
 
 
-
-
-
-
-
-
+        int indexGuards = 0;
         if(guards.size() > 0) {
-            Distance minDistance = new Distance(0);
-            int minDistanceGuard = 0;
-            for (int i = 0; i < guards.size(); i++) {
-                Distance distanceToGuard = new Distance(new Point(0, 0), guards.get(i).getPoint());
+            Distance minDistance = new Distance(Double.MAX_VALUE);
+            Iterator it = (new HashMap<>(guards)).entrySet().iterator();
+            while(it.hasNext()) {
+                Map.Entry pair = (Map.Entry) it.next();
+                Distance distanceToGuard = new Distance(new Point(0, 0), guards.get(pair.getKey()).getPoint());
                 if (distanceToGuard.getValue() < minDistance.getValue()) {
                     minDistance = distanceToGuard;
-                    minDistanceGuard = i;
+                    indexGuards = (int) pair.getKey();
                 }
+                it.remove();
             }
 
-            Angle rotation = avoidObjectAngle(guards.get(minDistanceGuard).getPoint(), percepts, minDistanceGuard);
+            Angle rotation = avoidObjectAngle(guards.get(indexGuards), percepts, indexGuards);
             System.out.println("Avoiding a guard, rotation with angle: " +rotation.getDegrees());
-            if (Math.abs(rotation.getDegrees()) != 45) avoidingGuard = true;
+            Distance guardDistance = new Distance(guards.get(indexGuards).getPoint(), new Point(0,0));
+            if (Math.abs(rotation.getDegrees()) != 45 && guardDistance.getValue() > 2) avoidingGuard = true;
             return new Rotate(rotation);
         }
 
+        int indexWalls = 0;
         if(walls.size() > 0) {
-            Distance minDistance = new Distance(0);
-            int minDistanceWall = 0;
-            for (int i = 0; i < walls.size(); i++) {
-                Distance distanceToWall = new Distance(new Point(0, 0), walls.get(i).getPoint());
+            Distance minDistance = new Distance(Double.MAX_VALUE);
+            Iterator it = (new HashMap<>(walls)).entrySet().iterator();
+            while(it.hasNext()) {
+                Map.Entry pair = (Map.Entry) it.next();
+                Distance distanceToWall = new Distance(new Point(0, 0), walls.get(pair.getKey()).getPoint());
                 if (distanceToWall.getValue() < minDistance.getValue()) {
                     minDistance = distanceToWall;
-                    minDistanceWall = i;
+                    indexWalls = (int) pair.getKey();
                 }
+                it.remove();
             }
 
-            //Only avoid the wall if it is "close enough", in this case half the range
-            //if(minDistance.getValue() < percepts.getVision().getFieldOfView().getRange().getValue()/2){
-            Angle rotation = avoidObjectAngle(walls.get(minDistanceWall).getPoint(), percepts, minDistanceWall);
+            Angle rotation = avoidObjectAngle(walls.get(indexWalls), percepts, indexWalls);
             System.out.println("Avoiding a wall, rotation with angle: " + rotation.getDegrees());
-            if (Math.abs(rotation.getDegrees()) != 45) avoidingWall = true;
+            Distance wallDistance = new Distance(walls.get(indexWalls).getPoint(), new Point(0,0));
+            if (Math.abs(rotation.getDegrees()) != 45 && wallDistance.getValue() > 2) avoidingWall = true;
             return new Rotate(rotation);
-            //}
         }
 
 
@@ -178,9 +176,9 @@ public class IntruderAgent implements Intruder{
 
 
     //Method which avoids objects by returning max rotation angle on the side the closest to the target area
-    public Angle avoidObjectAngle(Point object, IntruderPercepts percepts, int objectIndex) {
+    public Angle avoidObjectAngle(ObjectPercept objectPercept, IntruderPercepts percepts, int objectIndex) {
 
-        System.out.println("Object index: " +objectIndex);
+        Point object = objectPercept.getPoint();
         double rotationAngle = 0;
         int smallerAngleIndex = objectIndex;
         int largerAngleIndex = objectIndex;
@@ -210,8 +208,9 @@ public class IntruderAgent implements Intruder{
         }
 
         else {
-            System.out.println("Wall is on whole field of view");
-            this.continuousAvoiding = 3;
+            System.out.println("Object is on whole field of view");
+            Distance objectDistance= new Distance(object, new Point(0,0));
+            if(objectDistance.getValue() > 2 && objectPercept.getType() == ObjectPerceptType.Wall) this.continuousAvoiding = 3;
             Distance firstRay = new Distance(objectsList.get(0).getPoint(), new Point(0,0));
             Distance lastRay = new Distance(objectsList.get(objectsList.size()-1).getPoint(), new Point(0,0));
             if(firstRay.getValue() > lastRay.getValue()) avoidFromRight = true;
