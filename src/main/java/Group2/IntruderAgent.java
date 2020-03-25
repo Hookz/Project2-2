@@ -32,21 +32,18 @@ public class IntruderAgent implements Intruder{
         HashMap<Integer, ObjectPercept> walls = new HashMap<>();
         HashMap<Integer, ObjectPercept> guards = new HashMap<>();
 
-        int indexWalls = 0;
-        int indexGuards = 0;
+
         int counter = 0;
         Point targetAreaLocation = new Point(0,0);
 
 
         for(ObjectPercept object : objects){
             if (object.getType() == ObjectPerceptType.Wall && counter >= 17 && counter <= 27) {
-                walls.put(indexWalls, object);
-                indexWalls++;
+                walls.put(counter, object);
             }
 
             else if(object.getType() == ObjectPerceptType.Guard && counter >= 17 && counter <= 27) {
-                guards.put(indexGuards, object);
-                indexGuards++;
+                guards.put(counter, object);
             }
 
             else if(object.getType() == ObjectPerceptType.TargetArea)
@@ -82,43 +79,41 @@ public class IntruderAgent implements Intruder{
 
 
 
-
-
-
-
-
-
+        int indexGuards = 0;
         if(guards.size() > 0) {
-            Distance minDistance = new Distance(0);
-            int minDistanceGuard = 0;
-            for (int i = 0; i < guards.size(); i++) {
-                Distance distanceToGuard = new Distance(new Point(0, 0), guards.get(i).getPoint());
+            Distance minDistance = new Distance(Double.MAX_VALUE);
+            Iterator it = (new HashMap<>(guards)).entrySet().iterator();
+            while(it.hasNext()) {
+                Map.Entry pair = (Map.Entry) it.next();
+                Distance distanceToGuard = new Distance(new Point(0, 0), guards.get(pair.getKey()).getPoint());
                 if (distanceToGuard.getValue() < minDistance.getValue()) {
                     minDistance = distanceToGuard;
-                    minDistanceGuard = i;
+                    indexGuards = (int) pair.getKey();
                 }
+                it.remove();
             }
 
-            Angle rotation = avoidObjectAngle(guards.get(minDistanceGuard).getPoint(), percepts, minDistanceGuard);
+            Angle rotation = avoidObjectAngle(guards.get(indexGuards).getPoint(), percepts, indexGuards);
             System.out.println("Avoiding a guard, rotation with angle: " +rotation.getDegrees());
             if (Math.abs(rotation.getDegrees()) != 45) avoidingGuard = true;
             return new Rotate(rotation);
         }
 
+        int indexWalls = 0;
         if(walls.size() > 0) {
-            Distance minDistance = new Distance(0);
-            int minDistanceWall = 0;
-            for (int i = 0; i < walls.size(); i++) {
-                Distance distanceToWall = new Distance(new Point(0, 0), walls.get(i).getPoint());
+            Distance minDistance = new Distance(Double.MAX_VALUE);
+            Iterator it = (new HashMap<>(walls)).entrySet().iterator();
+            while(it.hasNext()) {
+                Map.Entry pair = (Map.Entry) it.next();
+                Distance distanceToWall = new Distance(new Point(0, 0), walls.get(pair.getKey()).getPoint());
                 if (distanceToWall.getValue() < minDistance.getValue()) {
                     minDistance = distanceToWall;
-                    minDistanceWall = i;
+                    indexWalls = (int) pair.getKey();
                 }
+                it.remove();
             }
 
-            //Only avoid the wall if it is "close enough", in this case half the range
-            //if(minDistance.getValue() < percepts.getVision().getFieldOfView().getRange().getValue()/2){
-            Angle rotation = avoidObjectAngle(walls.get(minDistanceWall).getPoint(), percepts, minDistanceWall);
+            Angle rotation = avoidObjectAngle(walls.get(indexWalls).getPoint(), percepts, indexWalls);
             System.out.println("Avoiding a wall, rotation with angle: " + rotation.getDegrees());
             if (Math.abs(rotation.getDegrees()) != 45) avoidingWall = true;
             return new Rotate(rotation);
@@ -180,7 +175,6 @@ public class IntruderAgent implements Intruder{
     //Method which avoids objects by returning max rotation angle on the side the closest to the target area
     public Angle avoidObjectAngle(Point object, IntruderPercepts percepts, int objectIndex) {
 
-        System.out.println("Object index: " +objectIndex);
         double rotationAngle = 0;
         int smallerAngleIndex = objectIndex;
         int largerAngleIndex = objectIndex;
