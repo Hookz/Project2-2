@@ -644,10 +644,20 @@ public class GameController{
                 intruderTurnsInTarget.replace(intruder,0);
             }
         }
-        //If victory condition is met, set gameOver to true
         return false;
     }
 
+    /*  Victory Condition Checking for Guard agents:
+        - Checks FoV for any intruders
+        - Checks in any of said intruders are within capture distance
+        - If gamemode only requires 1 capture, game over
+        - If gamemode requires all to be captured:
+            - Find which intruder was captured
+            - Remove that intruder from the game
+            - Check if there's any intruders left:
+                - If yes, continue game
+                - If no, game over
+     */
     private boolean checkVictoryGuard(Guard guard, Percepts percepts){
         Set<ObjectPercept> vision = percepts.getVision().getObjects().getAll();
         for(ObjectPercept object: vision){
@@ -655,7 +665,23 @@ public class GameController{
                 Point intruderPoint = object.getPoint();
                 Point guardPoint = new Point(guardLocations.get(guard).getX(),guardLocations.get(guard).getY());
                 if(intruderPoint.getDistance(guardPoint).getValue()-0.5<=captureDistance){
-                    return true;
+                    if(gameMode.equals(GameMode.CaptureOneIntruder)) {
+                        return true;
+                    }else{
+                        Intruder closestIntruder = intruders.get(0);
+                        Point closestIntruderCenter = new Point(intruderLocations.get(0).getX(),intruderLocations.get(0).getY());
+                        for(Intruder intruder:intruders){
+                            Point intruderCenter = new Point(intruderLocations.get(intruder).getX(),intruderLocations.get(intruder).getY());
+                            if(intruderPoint.getDistance(intruderCenter).getValue()<intruderPoint.getDistance(closestIntruderCenter).getValue()){
+                                closestIntruder = intruder;
+                                closestIntruderCenter = intruderCenter;
+                            }
+                        }
+                        delete(closestIntruder);
+                        if(intruders.isEmpty()){
+                            return true;
+                        }
+                    }
                 }
             }
         }
@@ -1288,7 +1314,38 @@ public class GameController{
         return Double.MAX_VALUE; // No collision
     }
 
+    private void delete(Intruder intruder){
+        intruders.remove(intruder);
+        intruderDirections.remove(intruder);
+        intruderLocations.remove(intruder);
+        intruderTurnsInTarget.remove(intruder);
+        intruderTeleportFlag.remove(intruder);
+        intruderPheromoneCooldowns.remove(intruder);
+        intruderSprintCooldowns.remove(intruder);
+        intruderSmellLocations.remove(intruder);
+        intruderAreaPercepts.remove(intruder);
+        intruderMaxMoveDistance.remove(intruder);
+        intruderMaxSprintDistance.remove(intruder);
+        intruderObjectPercept.remove(intruder);
+        intruderSmellPercepts.remove(intruder);
+        intruderSoundPercepts.remove(intruder);
+        intruderViewRange.remove(intruder);
+    }
 
+    private void delete(Guard guard){
+        guards.remove(guard);
+        guardDirections.remove(guard);
+        guardLocations.remove(guard);
+        guardTeleportFlag.remove(guard);
+        guardPheromoneCooldowns.remove(guard);
+        guardSmellLocations.remove(guard);
+        guardsAreaPercepts.remove(guard);
+        guardMaxMoveDistance.remove(guard);
+        guardObjectPercepts.remove(guard);
+        guardSmellPercepts.remove(guard);
+        guardSoundPercepts.remove(guard);
+        guardViewRange.remove(guard);
+    }
 
 
 }
