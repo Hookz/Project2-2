@@ -119,10 +119,6 @@ public class GameController{
                               double doorSoundRadius, List<Rectangle> targetArea, List<Rectangle> spawnAreaIntruders, List<Rectangle> spawnAreaGuards, List<Rectangle> walls, List<Teleport> teleports,
                               List<Rectangle> shaded, List<Rectangle> doors, List<Rectangle> windows, List<Rectangle> sentries)
     {
-//        this.scenarioPercept = new ScenarioPercepts(gamemode, new Distance(captureDistance), Angle.fromDegrees(maxRotationAngle), new SlowDownModifiers(slowDownModifierWindow, slowDownModifierDoor,
-//                        slowDownModifierSentryTower), new Distance(radiusPheromone), pheromoneCooldown);
-//        this.scenarioIntruderPercepts = new ScenarioIntruderPercepts(this.scenarioPercept, winConditionIntruderRounds, new Distance(maxMoveDistanceIntruder), new Distance(maxSprintDistanceIntruder), sprintCooldown);
-//        this.scenarioGuardPercepts = new ScenarioGuardPercepts(this.scenarioPercept, new Distance(maxMoveDistanceGuard));
 
         this.gameMode = GameMode.values()[gameMode];
         this.height = height;
@@ -347,8 +343,24 @@ public class GameController{
         double centerDistance = new Distance(new Point(targetArea.get(0).getCenterX(), targetArea.get(0).getCenterY()), new Point(intruderLocations.get(intruder).getCenterX(), intruderLocations.get(intruder).getCenterY())).getValue();
         double deltaX = Math.abs(intruderLocations.get(intruder).getCenterX() - targetArea.get(0).getCenterX());
         Direction targetAreaAngle = Direction.fromRadians(Math.acos(deltaX / centerDistance));
+
+
+        /*
+        //System.out.println("Target area angle before change: " +targetAreaAngle.getDegrees());
+        if(targetArea.get(0).getCenterX() > intruderLocations.get(intruder).getCenterX() && targetArea.get(0).getCenterY() > intruderLocations.get(intruder).getCenterY())
+            targetAreaAngle = Direction.fromDegrees(360 - targetAreaAngle.getDegrees());
+        else if(targetArea.get(0).getCenterX() < intruderLocations.get(intruder).getCenterX() && targetArea.get(0).getCenterY() < intruderLocations.get(intruder).getCenterY())
+            targetAreaAngle = Direction.fromDegrees(90 + targetAreaAngle.getDegrees());
+        else if(targetArea.get(0).getCenterX() < intruderLocations.get(intruder).getCenterX() && targetArea.get(0).getCenterY() > intruderLocations.get(intruder).getCenterY())
+            targetAreaAngle = Direction.fromDegrees(180 + targetAreaAngle.getDegrees());
+        */
+
+
+        //Put the target direction in the agent's coordinate system (agent direction = y-axis)
         double setToYAxisAngle = Utils.clockAngle(Math.cos(intruderDirections.get(intruder).getRadians()), Math.sin(intruderDirections.get(intruder).getRadians()));
         Direction targetDirection = Direction.fromRadians((targetAreaAngle.getRadians() + setToYAxisAngle)%(2*Math.PI));
+
+
         FieldOfView field = new FieldOfView(intruderViewRange.get(intruder), Angle.fromDegrees(viewAngle));
         VisionPrecepts vision = new VisionPrecepts(field, intruderObjectPercept.get(intruder));
         SoundPercepts sounds = intruderSoundPercepts.get(intruder);
