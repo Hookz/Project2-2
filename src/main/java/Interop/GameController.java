@@ -638,7 +638,9 @@ public class GameController{
                     remove.add(sound);
                 }
             }
-            soundLocations.remove(remove);
+            for(Sound sound:remove){
+                soundLocations.remove(sound);
+            }
         }
     }
 
