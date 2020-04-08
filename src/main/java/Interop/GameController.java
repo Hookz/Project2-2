@@ -375,7 +375,8 @@ public class GameController{
             Ellipse2D guardLocation = guardLocations.get(guard);
             Direction guardDirection = guardDirections.get(guard);
             Sound stepSound = new Sound(SoundPerceptType.Noise,new Distance(maxMoveSoundRadius));
-            Ellipse2D stepSoundLocation = (Ellipse2D) guardLocations.get(guard).clone();
+            Ellipse2D stepSoundLocation = new Ellipse2D.Double(guardLocations.get(guard).getX()-stepSound.getRadius().getValue(), guardLocations.get(guard).getY()-stepSound.getRadius().getValue(),
+                    stepSound.getRadius().getValue() * 2.0, stepSound.getRadius().getValue() * 2.0);
             double newX = guardLocation.getX() + Math.cos(guardDirection.getRadians()) * ((Move) action).getDistance().getValue();
             double newY = guardLocation.getY() + Math.sin(guardDirection.getRadians()) * ((Move) action).getDistance().getValue();
             Ellipse2D newGuardLocation = new Ellipse2D.Double(newX,newY,guardLocation.getWidth(),guardLocation.getHeight());
@@ -409,7 +410,7 @@ public class GameController{
 
         }else if(action instanceof Yell){
             Sound yell = new Sound(SoundPerceptType.Yell,new Distance(yellSoundRadius));
-            Ellipse2D yellLocation = new Ellipse2D.Double(guardLocations.get(guard).getX(),guardLocations.get(guard).getY(),
+            Ellipse2D yellLocation = new Ellipse2D.Double(guardLocations.get(guard).getX()-yellSoundRadius,guardLocations.get(guard).getY()-yellSoundRadius,
                     yellSoundRadius*2.0,yellSoundRadius*2.0);
             soundLocations.put(yell,yellLocation);
             wasLastActionExecuted = true;
@@ -417,7 +418,7 @@ public class GameController{
         }else if(action instanceof DropPheromone){
             if(guardPheromoneCooldowns.get(guard)==0) {
                 Smell smell = new Smell(((DropPheromone) action).getType(), new Distance(radiusPheromone));
-                Ellipse2D smellLocation = new Ellipse2D.Double(guardLocations.get(guard).getX(), guardLocations.get(guard).getY(),
+                Ellipse2D smellLocation = new Ellipse2D.Double(guardLocations.get(guard).getX()-smell.getRadius().getValue(), guardLocations.get(guard).getY()-smell.getRadius().getValue(),
                         smell.getRadius().getValue() * 2.0, smell.getRadius().getValue() * 2.0); //*2 = Radius -> Diameter
                 guardSmellLocations.put(smell, smellLocation);
                 guardPheromoneCooldowns.replace(guard, pheromoneCooldown);
@@ -444,7 +445,8 @@ public class GameController{
             Ellipse2D intruderLocation = intruderLocations.get(intruder);
             Direction intruderDirection = intruderDirections.get(intruder);
             Sound stepSound = new Sound(SoundPerceptType.Noise,new Distance(maxMoveSoundRadius));
-            Ellipse2D stepSoundLocation = (Ellipse2D) intruderLocations.get(intruder).clone();
+            Ellipse2D stepSoundLocation = new Ellipse2D.Double(intruderLocations.get(intruder).getX()-stepSound.getRadius().getValue(), intruderLocations.get(intruder).getY()-stepSound.getRadius().getValue(),
+                    stepSound.getRadius().getValue() * 2.0, stepSound.getRadius().getValue() * 2.0);
             double newX = intruderLocation.getX() + Math.cos(intruderDirection.getRadians()) * ((Move) action).getDistance().getValue();
             double newY = intruderLocation.getY() + Math.sin(intruderDirection.getRadians()) * ((Move) action).getDistance().getValue();
             Ellipse2D newintruderLocation = new Ellipse2D.Double(newX,newY,intruderLocation.getWidth(),intruderLocation.getHeight());
@@ -479,7 +481,8 @@ public class GameController{
                 Ellipse2D intruderLocation = intruderLocations.get(intruder);
                 Direction intruderDirection = intruderDirections.get(intruder);
                 Sound stepSound = new Sound(SoundPerceptType.Noise, new Distance(maxMoveSoundRadius));
-                Ellipse2D stepSoundLocation = (Ellipse2D) intruderLocations.get(intruder).clone();
+                Ellipse2D stepSoundLocation = new Ellipse2D.Double(intruderLocations.get(intruder).getX()-stepSound.getRadius().getValue(), intruderLocations.get(intruder).getY()-stepSound.getRadius().getValue(),
+                        stepSound.getRadius().getValue() * 2.0, stepSound.getRadius().getValue() * 2.0);
                 double newX = intruderLocation.getX() + Math.cos(intruderDirection.getRadians()) * ((Sprint) action).getDistance().getValue();
                 double newY = intruderLocation.getY() + Math.sin(intruderDirection.getRadians()) * ((Sprint) action).getDistance().getValue();
                 Ellipse2D newintruderLocation = new Ellipse2D.Double(newX, newY, intruderLocation.getWidth(), intruderLocation.getHeight());
@@ -516,7 +519,7 @@ public class GameController{
         }else if(action instanceof DropPheromone){
             if(intruderPheromoneCooldowns.get(intruder)==0) {
                 Smell smell = new Smell(((DropPheromone) action).getType(), new Distance(radiusPheromone));
-                Ellipse2D smellLocation = new Ellipse2D.Double(intruderLocations.get(intruder).getX(), intruderLocations.get(intruder).getY(),
+                Ellipse2D smellLocation = new Ellipse2D.Double(intruderLocations.get(intruder).getX()-smell.getRadius().getValue(), intruderLocations.get(intruder).getY()-smell.getRadius().getValue(),
                         smell.getRadius().getValue() * 2.0, smell.getRadius().getValue() * 2.0);
                 intruderSmellLocations.put(smell, smellLocation);
                 wasLastActionExecuted = true;
@@ -601,20 +604,28 @@ public class GameController{
     private void smellDecay(){
         if (!intruderSmellLocations.isEmpty()) {
             ArrayList<Smell> remove = new ArrayList<>();
+            HashMap<Smell,Ellipse2D> newEntries = new HashMap<>();
             for (Smell smell : intruderSmellLocations.keySet()) {
                 Distance previousSmellRadius = smell.getRadius();
                 Distance newSmellRadius = new Distance(previousSmellRadius.getValue() - (radiusPheromone / pheromoneExpireRounds));
                 if (newSmellRadius.getValue() > 0) {
                     Smell updatedSmell = new Smell(smell.getType(), newSmellRadius);
                     Ellipse2D location = intruderSmellLocations.get(smell);
-                    Ellipse2D updatedLocation = new Ellipse2D.Double(location.getX(), location.getY(), newSmellRadius.getValue(), newSmellRadius.getValue());
-                    remove.add(smell);
-                    intruderSmellLocations.put(updatedSmell, updatedLocation);
+                    Ellipse2D updatedLocation = new Ellipse2D.Double(location.getX()+previousSmellRadius.getValue()-newSmellRadius.getValue(), location.getY()+previousSmellRadius.getValue()-newSmellRadius.getValue(), newSmellRadius.getValue()*2, newSmellRadius.getValue()*2);
+                    //remove.add(smell);
+                    newEntries.put(updatedSmell,updatedLocation);
+                    //intruderSmellLocations.put(updatedSmell, updatedLocation);
                 } else {
                     remove.add(smell);
                 }
             }
-            intruderSmellLocations.remove(remove);
+            intruderSmellLocations = newEntries;
+            for(Smell smell:remove){
+                intruderSmellLocations.remove(smell);
+            }
+            if(!newEntries.isEmpty()) {
+                intruderSmellLocations.putAll(newEntries);
+            }
         }
     }
 
