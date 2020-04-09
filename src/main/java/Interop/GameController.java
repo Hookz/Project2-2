@@ -1,7 +1,6 @@
 package Interop;
 
 import Group2.AgentsFactory;
-import Group2.GUI.Launcher;
 import Interop.Action.*;
 import Interop.Agent.*;
 import Interop.Percept.*;
@@ -319,10 +318,8 @@ public class GameController{
             }
         }else if(turn.equals(Turn.GuardTurn)){
             System.out.println("Guards Win!");
-            Launcher.paused = true;
         }else if(turn.equals(Turn.IntruderTurn)){
             System.out.println("Intruders Win!");
-            Launcher.paused = true;
         }
     }
     private GuardPercepts guardPercept(Guard guard){
