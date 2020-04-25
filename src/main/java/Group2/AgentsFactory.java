@@ -10,7 +10,7 @@ import java.util.List;
 
 /**
  * This class provides common way to build agents for the competition.
- * 
+ *
  * Sharing knowledge between agents is NOT ALLOWED.
  *
  * For example:

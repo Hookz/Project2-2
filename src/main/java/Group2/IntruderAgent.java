@@ -24,8 +24,6 @@ public class IntruderAgent implements Intruder{
     private Point currentPosition;
     private Point currentMapBottomRight;
 
-    private double xDistance;
-    private double yDistance;
     private Angle currentAngle;
 
     public IntruderAgent(int ID){
@@ -96,7 +94,6 @@ public class IntruderAgent implements Intruder{
         IntruderAction action = new Move(percepts.getScenarioIntruderPercepts().getMaxMoveDistanceIntruder());
         updateCurrentMap(action, percepts);
         return action;
-
     }
 
     /**
@@ -222,7 +219,7 @@ public class IntruderAgent implements Intruder{
 
         // If the field surrounding the direction is full with obstacles (walls or guards), make the agent rotate from its maximum angle (add a small random value to avoid getting stuck in the same areas)
         if(rayWithoutObstacle == 0) {
-            System.out.println("-----------------------------Rotate to avoid obstacles-----------------------------");
+            //System.out.println("-----------------------------Rotate to avoid obstacles-----------------------------");
             this.moveForward = 5;
             //Rotate to the right if the previous action was a move or a right rotation, else rotate left
             if (rotateFlag >= 0) {
@@ -241,7 +238,7 @@ public class IntruderAgent implements Intruder{
         if(moveForward > 0 && !directionIsObstructed) {
             rotateFlag = 0;
             moveForward--;
-            System.out.println("-----------------------------Move forward to stop rotating-----------------------------");
+            //System.out.println("-----------------------------Move forward to stop rotating-----------------------------");
             rotationAngle = Angle.fromDegrees(0);
         }
 
@@ -255,7 +252,7 @@ public class IntruderAgent implements Intruder{
         else if(rotationAngle.getDegrees() < 0 && rotateFlag <= 0)rotateFlag--;
         //Prevent opposite rotations to occur (i.e. rotating to the left then to the right)
         else {
-            System.out.println("-------------------------------------Avoid opposite rotation: moving forward------------------------------");
+            //System.out.println("-------------------------------------Avoid opposite rotation: moving forward------------------------------");
             rotationAngle  = Angle.fromDegrees(0);
         }
 
@@ -493,8 +490,10 @@ public class IntruderAgent implements Intruder{
 
                 extendCurrentMap(shiftInX, shiftInY, new Point(currentPosition.getX(), currentPosition.getY()));
 
-
-                currentMap[objectYInMap][objectXInMap] = objectPercept.getType();
+                //Do not add guards to the map as they are not static
+                if(objectPercept.getType() != ObjectPerceptType.Guard) {
+                    currentMap[objectYInMap][objectXInMap] = objectPercept.getType();
+                }
                 //System.out.println("Add in Map at [" + objectXInMap +", " + objectYInMap +"]: " +objectPercept.getType());
 
 
@@ -506,7 +505,7 @@ public class IntruderAgent implements Intruder{
                     int xInMap = (int) Math.round(currentPosition.getX() + x);
                     int yInMap = (int) Math.round(currentPosition.getY() - y);
                     //System.out.println("Add in Map at [" + xInMap +", " + yInMap +"] EmptySpace");
-                    currentMap[yInMap][xInMap] = ObjectPerceptType.EmptySpace;
+                    if(currentMap[yInMap][xInMap] == null) currentMap[yInMap][xInMap] = ObjectPerceptType.EmptySpace;
                 }
 
             }
@@ -585,5 +584,7 @@ public class IntruderAgent implements Intruder{
 
     }
 
-
+    public ObjectPerceptType[][] getCurrentMap() {
+        return currentMap;
+    }
 }

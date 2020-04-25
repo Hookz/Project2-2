@@ -21,7 +21,7 @@ import java.util.*;
 
 public class GameController{
 
-//    These should be initialised and created in the percept method
+    //    These should be initialised and created in the percept method
 //    private ScenarioPercepts scenarioPercept;
 //    private ScenarioIntruderPercepts scenarioIntruderPercepts;
 //    private ScenarioGuardPercepts scenarioGuardPercepts;
@@ -113,11 +113,11 @@ public class GameController{
     private final double COLLISION_CHECK_STEP_SIZE = 0.05;
 
     public GameController(int gameMode, int height, int width, int numGuards, int numIntruders, double captureDistance, int winConditionIntruderRounds, double maxRotationAngle, double maxMoveDistanceIntruder,
-                              double maxSprintDistanceIntruder, double maxMoveDistanceGuard, int pheromoneExpireRounds, int sprintCooldown, int pheromoneCooldown, double radiusPheromone, double slowDownModifierWindow,
-                              double slowDownModifierDoor, double slowDownModifierSentryTower, double viewAngle, int viewRays, double viewRangeIntruderNormal, double viewRangeIntruderShaded,
-                              double viewRangeGuardNormal, double viewRangeGuardShaded, double[] viewRangeSentry, double yellSoundRadius, double maxMoveSoundRadius, double windowSoundRadius,
-                              double doorSoundRadius, List<Rectangle> targetArea, List<Rectangle> spawnAreaIntruders, List<Rectangle> spawnAreaGuards, List<Rectangle> walls, List<Teleport> teleports,
-                              List<Rectangle> shaded, List<Rectangle> doors, List<Rectangle> windows, List<Rectangle> sentries)
+                          double maxSprintDistanceIntruder, double maxMoveDistanceGuard, int pheromoneExpireRounds, int sprintCooldown, int pheromoneCooldown, double radiusPheromone, double slowDownModifierWindow,
+                          double slowDownModifierDoor, double slowDownModifierSentryTower, double viewAngle, int viewRays, double viewRangeIntruderNormal, double viewRangeIntruderShaded,
+                          double viewRangeGuardNormal, double viewRangeGuardShaded, double[] viewRangeSentry, double yellSoundRadius, double maxMoveSoundRadius, double windowSoundRadius,
+                          double doorSoundRadius, List<Rectangle> targetArea, List<Rectangle> spawnAreaIntruders, List<Rectangle> spawnAreaGuards, List<Rectangle> walls, List<Teleport> teleports,
+                          List<Rectangle> shaded, List<Rectangle> doors, List<Rectangle> windows, List<Rectangle> sentries)
     {
 
         this.gameMode = GameMode.values()[gameMode];
@@ -166,14 +166,13 @@ public class GameController{
         this.sentries = sentries;
 
         this.scenarioPercepts = new ScenarioPercepts(this.gameMode, new Distance(captureDistance), Angle.fromDegrees(maxRotationAngle), new SlowDownModifiers(slowDownModifierWindow, slowDownModifierDoor,
-                        slowDownModifierSentryTower), new Distance(radiusPheromone), pheromoneCooldown);
+                slowDownModifierSentryTower), new Distance(radiusPheromone), pheromoneCooldown);
         this.scenarioIntruderPercepts = new ScenarioIntruderPercepts(this.scenarioPercepts, winConditionIntruderRounds, new Distance(maxMoveDistanceIntruder), new Distance(maxSprintDistanceIntruder), sprintCooldown);
         this.scenarioGuardPercepts = new ScenarioGuardPercepts(this.scenarioPercepts, new Distance(maxMoveDistanceGuard));
 
         /* THIS IS FOR PERIOD 1 AS WE ONLY NEED AN EXPLORATION AGENT
         Later there needs to be a functionality, such that we can choose which groups intruder, and which groups guard
         to use in the game.
-
         Also based on assumption that there will be 1 spawnArea per group
          */
 
