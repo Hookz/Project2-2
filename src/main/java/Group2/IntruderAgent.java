@@ -396,120 +396,119 @@ public class IntruderAgent implements Intruder{
 
         if(action instanceof Move || action instanceof Sprint) {
             Distance distance = new Distance(0);
-            if(action instanceof Move) distance = ((Move) action).getDistance();
+            if (action instanceof Move) distance = ((Move) action).getDistance();
             else distance = ((Sprint) action).getDistance();
 
             //Change the sign of y to keep the y-axis pointing downwards
-            Point changeInPosition = new Point(Math.cos(currentAngle.getRadians())*distance.getValue(), -Math.sin(currentAngle.getRadians())*distance.getValue());
-            Point newPosition = new Point(currentPosition.getX() + changeInPosition.getX(), currentPosition.getY()+changeInPosition.getY());
-
+            Point changeInPosition = new Point(Math.cos(currentAngle.getRadians()) * distance.getValue(), -Math.sin(currentAngle.getRadians()) * distance.getValue());
+            Point newPosition = new Point(currentPosition.getX() + changeInPosition.getX(), currentPosition.getY() + changeInPosition.getY());
 
 
             int shiftInX = 0;
             int shiftInY = 0;
 
             //Increase the size of the current map if the agent is outside
-            if(newPosition.getX() <= 0) shiftInX = -1;
-            else if(newPosition.getX() >= currentMapBottomRight.getX()) shiftInX = 1;
+            if (newPosition.getX() <= 0) shiftInX = -1;
+            else if (newPosition.getX() >= currentMapBottomRight.getX()) shiftInX = 1;
 
-            if(newPosition.getY() <= 0) shiftInY = -1;
-            else if(newPosition.getY() >= currentMapBottomRight.getY()) shiftInY = 1;
+            if (newPosition.getY() <= 0) shiftInY = -1;
+            else if (newPosition.getY() >= currentMapBottomRight.getY()) shiftInY = 1;
 
             extendCurrentMap(shiftInX, shiftInY, newPosition);
 
-
-
-            /*
-            //Add all the points in the range of view to the map
-            for(int i=0; i<currentMap.length; i++) {
-                for (int j=0; j<currentMap[0].length; j++) {
-
-                    //Set the map point's coordinate system to origin = agent to check if it is in the agent's field of view
-                    Point mapPoint = new Point(currentPosition.getX() - j, currentPosition.getY() - i);
-
-                    if(percepts.getVision().getFieldOfView().isInView(mapPoint)) {
-
-                        double distanceAgentToPoint = new Distance(new Point(0,0), mapPoint).getValue();
-                        Angle pointAngle = Angle.fromRadians(Math.asin(deltaX/distanceAgentToPoint));
-
-                        for(ObjectPercept objectPercept : percepts.getVision().getObjects().getAll()) {
-                            double distanceAgentToObstacle = new Distance(objectPercept.getPoint(), new Point(0,0)).getValue();
-                            Angle rayAngle = Angle.fromRadians(Math.asin(deltaX/distanceAgentToObstacle));
-                            if(pointAngle.getDegrees() < rayAngle.getDegrees() + 0.5 && pointAngle.getDegrees() > rayAngle.getDegrees() - 0.5) {
-
-                                //If the point is on a ray without
-                                if(distanceAgentToPoint < distanceAgentToObstacle) currentMap[i][j] = ObjectPerceptType.EmptySpace;
-                                else if(distanceAgentToPoint == distanceAgentToObstacle) currentMap[i][j] = objectPercept.getType();
-                            }
-                        }
-                    }
-                }
-            }*/
-
-
-
-            //Add all the points in the range of view to the map
-            for(ObjectPercept objectPercept: percepts.getVision().getObjects().getAll()) {
-
-                Point objectPoint = new Point(objectPercept.getPoint().getX(), objectPercept.getPoint().getY());
-
-
-                if(currentAngle.getDegrees() > 180 && currentAngle.getDegrees() < 360) {
-                    objectPoint = new Point(-objectPoint.getX(), -objectPoint.getY());
-                }
-
-                double distanceToObject = new Distance(objectPoint, new Point(0,0)).getValue();
-                double deltaX = Math.abs(objectPoint.getX());
-                Angle objectAngle = Angle.fromRadians(Math.asin(deltaX/distanceToObject));
-                while(objectAngle.getDegrees() < 0) objectAngle = Angle.fromDegrees(objectAngle.getDegrees()+360);
-                if(objectAngle.getDegrees() < 90 || objectAngle.getDegrees() > 270) objectAngle = Angle.fromDegrees(-objectAngle.getDegrees());
-
-
-                //Angle of the object point in the map's coordinate system
-                Angle angleInMap = Angle.fromDegrees(currentAngle.getDegrees() + objectAngle.getDegrees());
-
-
-                int objectXInMap = (int) Math.round(currentPosition.getX() + Math.cos(angleInMap.getRadians())*distanceToObject);
-                int objectYInMap = (int) Math.round(currentPosition.getY() - Math.sin(angleInMap.getRadians())*distanceToObject);
-
-                shiftInX = 0;
-                shiftInY = 0;
-
-                if(objectXInMap <= 0) {
-                    shiftInX = -1;
-                    objectXInMap += currentMap[0].length;
-                }
-                else if(objectXInMap >= currentMapBottomRight.getX()) shiftInX = 1;
-
-
-                if(objectYInMap <= 0) {
-                    shiftInY = -1;
-                    objectYInMap += currentMap.length;
-                }
-                else if(objectYInMap >= currentMapBottomRight.getY()) shiftInY = 1;
-
-                extendCurrentMap(shiftInX, shiftInY, new Point(currentPosition.getX(), currentPosition.getY()));
-
-                //Do not add guards to the map as they are not static
-                if(objectPercept.getType() != ObjectPerceptType.Guard) {
-                    currentMap[objectYInMap][objectXInMap] = objectPercept.getType();
-                }
-                //System.out.println("Add in Map at [" + objectXInMap +", " + objectYInMap +"]: " +objectPercept.getType());
-
-
-                //Set all points between the object percept point and the agent to empty spaces
-                for(int i = 1; i < (int) distanceToObject; i++) {
-                    double x = Math.cos(angleInMap.getRadians()) * i;
-                    double y = Math.sin(angleInMap.getRadians()) * i;
-
-                    int xInMap = (int) Math.round(currentPosition.getX() + x);
-                    int yInMap = (int) Math.round(currentPosition.getY() - y);
-                    //System.out.println("Add in Map at [" + xInMap +", " + yInMap +"] EmptySpace");
-                    if(currentMap[yInMap][xInMap] == null) currentMap[yInMap][xInMap] = ObjectPerceptType.EmptySpace;
-                }
-
-            }
         }
+
+        /*
+        //Add all the points in the range of view to the map
+         for(int i=0; i<currentMap.length; i++) {
+             for (int j=0; j<currentMap[0].length; j++) {
+
+                 //Set the map point's coordinate system to origin = agent to check if it is in the agent's field of view
+                 Point mapPoint = new Point(currentPosition.getX() - j, currentPosition.getY() - i);
+
+                 if(percepts.getVision().getFieldOfView().isInView(mapPoint)) {
+
+                     double distanceAgentToPoint = new Distance(new Point(0,0), mapPoint).getValue();
+                     Angle pointAngle = Angle.fromRadians(Math.asin(deltaX/distanceAgentToPoint));
+
+                     for(ObjectPercept objectPercept : percepts.getVision().getObjects().getAll()) {
+                         double distanceAgentToObstacle = new Distance(objectPercept.getPoint(), new Point(0,0)).getValue();
+                         Angle rayAngle = Angle.fromRadians(Math.asin(deltaX/distanceAgentToObstacle));
+                         if(pointAngle.getDegrees() < rayAngle.getDegrees() + 0.5 && pointAngle.getDegrees() > rayAngle.getDegrees() - 0.5) {
+
+                             //If the point is on a ray without
+                             if(distanceAgentToPoint < distanceAgentToObstacle) currentMap[i][j] = ObjectPerceptType.EmptySpace;
+                             else if(distanceAgentToPoint == distanceAgentToObstacle) currentMap[i][j] = objectPercept.getType();
+                         }
+                     }
+                 }
+             }
+         } */
+
+
+
+        //Add all the points in the range of view to the map
+        for(ObjectPercept objectPercept: percepts.getVision().getObjects().getAll()) {
+
+            Point objectPoint = new Point(objectPercept.getPoint().getX(), objectPercept.getPoint().getY());
+
+
+            if(currentAngle.getDegrees() > 180 && currentAngle.getDegrees() < 360) {
+                objectPoint = new Point(-objectPoint.getX(), -objectPoint.getY());
+            }
+
+            double distanceToObject = new Distance(objectPoint, new Point(0,0)).getValue();
+            double deltaX = Math.abs(objectPoint.getX());
+            Angle objectAngle = Angle.fromRadians(Math.asin(deltaX/distanceToObject));
+            while(objectAngle.getDegrees() < 0) objectAngle = Angle.fromDegrees(objectAngle.getDegrees()+360);
+            if(objectAngle.getDegrees() < 90 || objectAngle.getDegrees() > 270) objectAngle = Angle.fromDegrees(-objectAngle.getDegrees());
+
+
+            //Angle of the object point in the map's coordinate system
+            Angle angleInMap = Angle.fromDegrees(currentAngle.getDegrees() + objectAngle.getDegrees());
+
+
+            int objectXInMap = (int) Math.round(currentPosition.getX() + Math.cos(angleInMap.getRadians())*distanceToObject);
+            int objectYInMap = (int) Math.round(currentPosition.getY() - Math.sin(angleInMap.getRadians())*distanceToObject);
+
+            int shiftInX = 0;
+            int shiftInY = 0;
+
+            if(objectXInMap <= 0) {
+                shiftInX = -1;
+                objectXInMap += currentMap[0].length;
+            }
+            else if(objectXInMap >= currentMapBottomRight.getX()) shiftInX = 1;
+
+
+            if(objectYInMap <= 0) {
+                shiftInY = -1;
+                objectYInMap += currentMap.length;
+            }
+            else if(objectYInMap >= currentMapBottomRight.getY()) shiftInY = 1;
+
+            extendCurrentMap(shiftInX, shiftInY, new Point(currentPosition.getX(), currentPosition.getY()));
+
+            //Do not add guards to the map as they are not static
+            if(objectPercept.getType() != ObjectPerceptType.Guard) {
+                currentMap[objectYInMap][objectXInMap] = objectPercept.getType();
+            }
+            //System.out.println("Add in Map at [" + objectXInMap +", " + objectYInMap +"]: " +objectPercept.getType());
+
+
+            //Set all points between the object percept point and the agent to empty spaces
+            for(int i = 1; i < (int) distanceToObject; i++) {
+                double x = Math.cos(angleInMap.getRadians()) * i;
+                double y = Math.sin(angleInMap.getRadians()) * i;
+
+                int xInMap = (int) Math.round(currentPosition.getX() + x);
+                int yInMap = (int) Math.round(currentPosition.getY() - y);
+                //System.out.println("Add in Map at [" + xInMap +", " + yInMap +"] EmptySpace");
+                if(currentMap[yInMap][xInMap] == null) currentMap[yInMap][xInMap] = ObjectPerceptType.EmptySpace;
+            }
+
+        }
+
     }
 
 
