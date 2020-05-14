@@ -32,6 +32,8 @@ public class IntruderAgent implements Intruder{
     @Override
     public IntruderAction getAction(IntruderPercepts percepts) {
 
+
+
         //Stop the intruder if it reaches the target area
         if(reachesTargetArea) return new NoAction();
 

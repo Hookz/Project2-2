@@ -33,6 +33,9 @@ public class GridMap {
      */
     public void updateMap(Action action, Percepts percepts) {
 
+        //Reset the map if the agent just got teleported
+        if(percepts.getAreaPercepts().isJustTeleported()) resetParameters();
+
         if(action instanceof Rotate) {
             currentAngle = Angle.fromDegrees((currentAngle.getDegrees() + ((Rotate) action).getAngle().getDegrees())%360);
             while(currentAngle.getDegrees() < 0) currentAngle = Angle.fromDegrees(currentAngle.getDegrees() + 360);
@@ -224,7 +227,12 @@ public class GridMap {
         if(y == -1) currentPosition = new Point(currentPosition.getX(), currentPosition.getY() + shiftInY);
 
         currentMapBottomRight = new Point(currentMapBottomRight.getX() +shiftInX, currentMapBottomRight.getY()+shiftInY);
+    }
 
-
+    public void resetParameters() {
+        this.currentMap = new ObjectPerceptType[100][100];
+        this.currentPosition = new Point(0,0);
+        this.currentMapBottomRight = new Point(100,100);
+        this.currentAngle = Angle.fromDegrees(0);
     }
 }
