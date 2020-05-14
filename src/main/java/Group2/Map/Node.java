@@ -8,7 +8,6 @@ public class Node {
 
     private final ObjectPerceptType object;
     private ArrayList<Node> neighbours = new ArrayList<>();
-    private boolean visited;
 
     public Node(ObjectPerceptType object){
         this.object = object;
@@ -28,11 +27,10 @@ public class Node {
         neighbour.neighbours.add(this);
     }
 
-    public void setVisited(boolean visited) {
-        this.visited = visited;
-    }
-
-    public boolean getVisited() {
-        return visited;
+    @Override
+    public String toString() {
+        return "Node{" +
+                "object=" + object +
+                '}';
     }
 }

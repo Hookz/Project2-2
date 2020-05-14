@@ -14,44 +14,61 @@ public class Graph {
     public Graph() {}
 
 
-    //TODO: Change implementation so that the edges added correspond to the neighbour's reference (instead of creating a new one)
     //TODO: Add weights to the edges (?depending on what object is there?)
     public Graph(ObjectPerceptType[][] matrixMap) {
 
         for(int i=0; i<matrixMap.length; i++) {
             for(int j=0; j<matrixMap[0].length;j++) {
-
                 Node newNode = new Node(matrixMap[i][j]);
-                if(i != 0) {
-                    Node neighbour = new Node(matrixMap[i-1][j]);
-                    newNode.addNeighbour(neighbour);
-                    this.addEdge(newNode, neighbour, 0);
-                }
-                if(i != matrixMap.length){
-                    Node neighbour = new Node(matrixMap[i+1][j]);
-                    newNode.addNeighbour(neighbour);
-                    this.addEdge(newNode, neighbour, 0);
-                }
-                if(j != 0) {
-                    Node neighbour = new Node(matrixMap[i][j-1]);
-                    newNode.addNeighbour(neighbour);
-                    this.addEdge(newNode, neighbour, 0);
-                }
-                if(j != matrixMap[0].length){
-                    Node neighbour = new Node(matrixMap[i][j+1]);
-                    newNode.addNeighbour(neighbour);
-                    this.addEdge(newNode, neighbour, 0);
-                }
                 this.addNode(newNode);
             }
+        }
+
+        for(int i=0; i<this.nodes.size(); i++) {
+            Node current = this.nodes.get(i);
+
+            //Top node
+            if(i > matrixMap[0].length)
+               this.addEdge(current, this.nodes.get(i - matrixMap[0].length), 0);
+
+            //Bottom node
+            if(i < (matrixMap.length -1)*matrixMap[0].length)
+                this.addEdge(current, this.nodes.get(i + matrixMap[0].length), 0);
+
+            //Left node
+            if(i % matrixMap[0].length != 0)
+                this.addEdge(current, this.nodes.get(i - 1), 0);
+
+            //Right node
+            if(i % matrixMap[0].length != matrixMap[0].length -1 )
+                this.addEdge(current, this.nodes.get(i +1), 0);
+
+            //Top left node
+            if(i > matrixMap[0].length && i % matrixMap[0].length != 0)
+                this.addEdge(current, this.nodes.get(i - matrixMap[0].length -1), 0);
+
+            //Top right node
+            if(i > matrixMap[0].length && i % matrixMap[0].length != matrixMap[0].length -1)
+                this.addEdge(current, this.nodes.get(i - matrixMap[0].length +1), 0);
+
+            //Bottom left node
+            if(i < (matrixMap.length -1)*matrixMap[0].length && i % matrixMap[0].length != 0)
+                this.addEdge(current, this.nodes.get(i + matrixMap[0].length -1), 0);
+
+            //Bottom right node
+            if(i < (matrixMap.length -1)*matrixMap[0].length && i % matrixMap[0].length != matrixMap[0].length -1)
+                this.addEdge(current, this.nodes.get(i + matrixMap[0].length +1), 0);
+
         }
     }
 
 
-    public Edge addEdge(Node x, Node y, double weight) {
-        x.addNeighbour(y);
-        edges.add(new Edge(x, y, weight));
-        return new Edge(x, y, weight);
+    public void addEdge(Node x, Node y, double weight) {
+        //Check if the edge does not already exist
+        if(!x.getNeighbours().contains(y)) {
+            x.addNeighbour(y);
+            edges.add(new Edge(x, y, weight));
+        }
     }
 
     public void addNode(Node x) {

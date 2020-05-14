@@ -6,7 +6,7 @@ public class PathFinding {
 
     private Graph graph;
     private List<List<Node>> allPaths = new ArrayList<>();
-
+    private HashSet<Node> nodeSet = new HashSet<>();
 
     public PathFinding(Graph graph) {
         this.graph = graph;
@@ -62,9 +62,9 @@ public class PathFinding {
 
 
     //Find all possible paths from source to target
-    public void getPaths(Node source, Node target, List<Node> currentPath) {
+    public void createPaths(Node source, Node target, List<Node> currentPath) {
 
-        source.setVisited(true);
+        this.nodeSet.add(source);
 
         if(source.equals(target)) {
 
@@ -74,22 +74,26 @@ public class PathFinding {
             System.out.println(currentPath);
 
             //Backtrack
-            source.setVisited(false);
+            this.nodeSet.remove(source);
             return;
         }
 
         for(Object o: source.getNeighbours()) {
             Node x = (Node) o;
 
-            if(!x.getVisited()) {
+            if(!this.nodeSet.contains(x)) {
                 currentPath.add(x);
-                getPaths(x, target, currentPath);
+                createPaths(x, target, currentPath);
 
                 //Backtrack
                 currentPath.remove(x);
             }
         }
         //Backtrack
-        source.setVisited(false);
+        this.nodeSet.remove(source);
+    }
+
+    public List<List<Node>> getAllPaths() {
+        return allPaths;
     }
 }
