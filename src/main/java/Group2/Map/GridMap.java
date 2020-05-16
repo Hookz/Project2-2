@@ -33,17 +33,21 @@ public class GridMap {
      */
     public void updateMap(Action action, Percepts percepts) {
 
+        //Length from which we extend the map in case the agent goes outside
+        int shiftLength = 50;
+
         //Reset the map if the agent just got teleported
         if(percepts.getAreaPercepts().isJustTeleported()) resetParameters();
 
+        //Update the direction angle
         if(action instanceof Rotate) {
             currentAngle = Angle.fromDegrees((currentAngle.getDegrees() + ((Rotate) action).getAngle().getDegrees())%360);
             while(currentAngle.getDegrees() < 0) currentAngle = Angle.fromDegrees(currentAngle.getDegrees() + 360);
         }
 
-
+        //Update the agent's position on the map
         if(action instanceof Move || action instanceof Sprint) {
-            Distance distance = new Distance(0);
+            Distance distance;
             if (action instanceof Move) distance = ((Move) action).getDistance();
             else distance = ((Sprint) action).getDistance();
 
@@ -62,83 +66,53 @@ public class GridMap {
             if (newPosition.getY() <= 0) shiftInY = -1;
             else if (newPosition.getY() >= currentMapBottomRight.getY()) shiftInY = 1;
 
-            extendMap(shiftInX, shiftInY, newPosition);
-
+            extendMap(shiftInX, shiftInY, newPosition, shiftLength);
         }
 
-        /*
-        //Add all the points in the range of view to the map
-         for(int i=0; i<currentMap.length; i++) {
-             for (int j=0; j<currentMap[0].length; j++) {
 
-                 //Set the map point's coordinate system to origin = agent to check if it is in the agent's field of view
-                 Point mapPoint = new Point(currentPosition.getX() - j, currentPosition.getY() - i);
-
-                 if(percepts.getVision().getFieldOfView().isInView(mapPoint)) {
-
-                     double distanceAgentToPoint = new Distance(new Point(0,0), mapPoint).getValue();
-                     Angle pointAngle = Angle.fromRadians(Math.asin(deltaX/distanceAgentToPoint));
-
-                     for(ObjectPercept objectPercept : percepts.getVision().getObjects().getAll()) {
-                         double distanceAgentToObstacle = new Distance(objectPercept.getPoint(), new Point(0,0)).getValue();
-                         Angle rayAngle = Angle.fromRadians(Math.asin(deltaX/distanceAgentToObstacle));
-                         if(pointAngle.getDegrees() < rayAngle.getDegrees() + 0.5 && pointAngle.getDegrees() > rayAngle.getDegrees() - 0.5) {
-
-                             //If the point is on a ray without
-                             if(distanceAgentToPoint < distanceAgentToObstacle) currentMap[i][j] = ObjectPerceptType.EmptySpace;
-                             else if(distanceAgentToPoint == distanceAgentToObstacle) currentMap[i][j] = objectPercept.getType();
-                         }
-                     }
-                 }
-             }
-         } */
-
-
-
-        //Add all the points in the range of view to the map
+        //Add all the points in the range of view of the agent to the map
         for(ObjectPercept objectPercept: percepts.getVision().getObjects().getAll()) {
 
+            //Object point in the agent's cartesian system (agent is at (0,0))
             Point objectPoint = new Point(objectPercept.getPoint().getX(), objectPercept.getPoint().getY());
 
 
-            if(currentAngle.getDegrees() > 180 && currentAngle.getDegrees() < 360) {
-                objectPoint = new Point(-objectPoint.getX(), -objectPoint.getY());
-            }
-
             double distanceToObject = new Distance(objectPoint, new Point(0,0)).getValue();
             double deltaX = Math.abs(objectPoint.getX());
+            //Angle between object point and agent's direction
             Angle objectAngle = Angle.fromRadians(Math.asin(deltaX/distanceToObject));
-            while(objectAngle.getDegrees() < 0) objectAngle = Angle.fromDegrees(objectAngle.getDegrees()+360);
-            if(objectAngle.getDegrees() < 90 || objectAngle.getDegrees() > 270) objectAngle = Angle.fromDegrees(-objectAngle.getDegrees());
+            if(objectPoint.getX() < 0) objectAngle = Angle.fromDegrees(-objectAngle.getDegrees());
 
 
             //Angle of the object point in the map's coordinate system
             Angle angleInMap = Angle.fromDegrees(currentAngle.getDegrees() + objectAngle.getDegrees());
 
-
+            //Coordinates of the object point in the map's coordinate system
             int objectXInMap = (int) Math.round(currentPosition.getX() + Math.cos(angleInMap.getRadians())*distanceToObject);
             int objectYInMap = (int) Math.round(currentPosition.getY() - Math.sin(angleInMap.getRadians())*distanceToObject);
 
+
+            //Extend the map if the observed point is outside
             int shiftInX = 0;
             int shiftInY = 0;
 
             if(objectXInMap <= 0) {
                 shiftInX = -1;
-                objectXInMap += currentMap[0].length;
+                objectXInMap += shiftLength;
             }
             else if(objectXInMap >= currentMapBottomRight.getX()) shiftInX = 1;
-
-
             if(objectYInMap <= 0) {
                 shiftInY = -1;
-                objectYInMap += currentMap.length;
+                objectYInMap += shiftLength;
             }
             else if(objectYInMap >= currentMapBottomRight.getY()) shiftInY = 1;
+            extendMap(shiftInX, shiftInY, new Point(currentPosition.getX(), currentPosition.getY()), shiftLength);
 
-            extendMap(shiftInX, shiftInY, new Point(currentPosition.getX(), currentPosition.getY()));
 
-            //Do not add guards to the map as they are not static
-            if(objectPercept.getType() != ObjectPerceptType.Guard) {
+
+            //Add the observed object to the map (except if it is a guard as they are not static)
+            //Only add object to the map if it hasn't been added before
+            if(objectPercept.getType() != ObjectPerceptType.Guard && currentMap[objectYInMap][objectXInMap] == null) {
                 currentMap[objectYInMap][objectXInMap] = objectPercept.getType();
             }
             //System.out.println("Add in Map at [" + objectXInMap +", " + objectYInMap +"]: " +objectPercept.getType());
@@ -146,12 +120,15 @@ public class GridMap {
 
             //Set all points between the object percept point and the agent to empty spaces
             for(int i = 1; i < (int) distanceToObject; i++) {
+
+                //Coordinates of the point in the agent's coordinate system (agent at (0,0))
                 double x = Math.cos(angleInMap.getRadians()) * i;
                 double y = Math.sin(angleInMap.getRadians()) * i;
 
                 int xInMap = (int) Math.round(currentPosition.getX() + x);
                 int yInMap = (int) Math.round(currentPosition.getY() - y);
                 //System.out.println("Add in Map at [" + xInMap +", " + yInMap +"] EmptySpace");
+
                 if(currentMap[yInMap][xInMap] == null) currentMap[yInMap][xInMap] = ObjectPerceptType.EmptySpace;
             }
 
@@ -166,29 +143,26 @@ public class GridMap {
      * @param y = -1 if the map needs to be extended on the top, = -1 if it is on the bottom
      * @param newPosition, the position the agent needs to be updated to if it moved (set to current position if the agent isn't moving)
      */
-    public void extendMap(int x, int y, Point newPosition) {
+    public void extendMap(int x, int y, Point newPosition, int shiftLength) {
         //Variables keeping track of change in size of the map
-        int shiftInX = 0;
-        int shiftInY = 0;
 
-        //Agent/ point in vision is on the left of the current known map, extend the map to that area and shift all the points to the left
+        //Point is on the left of the current known map, extend the map to that area and shift all the points to the left
         if(x == -1) {
             //System.out.println("Extend map to left");
-            ObjectPerceptType[][] newMap = new ObjectPerceptType[currentMap.length][currentMap[0].length +50];
-            shiftInX = 50;
+            ObjectPerceptType[][] newMap = new ObjectPerceptType[currentMap.length][currentMap[0].length * 2];
             for(int i=0; i<currentMap.length; i++) {
                 for(int j=0; j<currentMap[0].length ;j++) {
-                    newMap[i][j+shiftInX] = currentMap[i][j];
+                    newMap[i][j+shiftLength] = currentMap[i][j];
                 }
             }
             currentMap = newMap;
         }
 
 
-        //Agent/ point in vision is on the right of the current known map, extend the map to that area
+        //Point is on the right of the current known map, extend the map to that area
         if(x == 1) {
             //System.out.println("Extend map to right");
-            ObjectPerceptType[][] newMap = new ObjectPerceptType[currentMap.length][currentMap[0].length +50];
+            ObjectPerceptType[][] newMap = new ObjectPerceptType[currentMap.length][currentMap[0].length * 2];
             for(int i=0; i<currentMap.length; i++) {
                 for(int j=0; j<currentMap[0].length ;j++) {
                     newMap[i][j] = currentMap[i][j];
@@ -197,23 +171,22 @@ public class GridMap {
             currentMap = newMap;
         }
 
-        //Agent/ point in vision is above the current known map, extend the map to that area and shift all points to the top
+        //Point is above the current known map, extend the map to that area and shift all points to the top
         if(y == -1) {
             //System.out.println("Extend map to top");
-            ObjectPerceptType[][] newMap = new ObjectPerceptType[currentMap.length +50][currentMap[0].length];
-            shiftInY = 50;
+            ObjectPerceptType[][] newMap = new ObjectPerceptType[currentMap.length * 2][currentMap[0].length];
             for(int i=0; i<currentMap.length; i++) {
                 for(int j=0; j<currentMap[0].length ;j++) {
-                    newMap[i+shiftInY][j] = currentMap[i][j];
+                    newMap[i+shiftLength][j] = currentMap[i][j];
                 }
             }
             currentMap = newMap;
         }
 
-        //Agent/ point in vision is under the current known map, extend the map to that area
+        //Point is under the current known map, extend the map to that area
         if(y == 1) {
             //System.out.println("Extend map to bottom");
-            ObjectPerceptType[][] newMap = new ObjectPerceptType[currentMap.length +50][currentMap[0].length];
+            ObjectPerceptType[][] newMap = new ObjectPerceptType[currentMap.length * 2][currentMap[0].length];
             for(int i=0; i<currentMap.length; i++) {
                 for(int j=0; j<currentMap[0].length ;j++) {
                     newMap[i][j] = currentMap[i][j];
@@ -223,10 +196,10 @@ public class GridMap {
         }
 
         currentPosition = new Point(newPosition.getX(), newPosition.getY());
-        if(x == -1) currentPosition = new Point(currentPosition.getX() + shiftInX, currentPosition.getY());
-        if(y == -1) currentPosition = new Point(currentPosition.getX(), currentPosition.getY() + shiftInY);
+        if(x == -1) currentPosition = new Point(currentPosition.getX() + shiftLength, currentPosition.getY());
+        if(y == -1) currentPosition = new Point(currentPosition.getX(), currentPosition.getY() + shiftLength);
 
-        currentMapBottomRight = new Point(currentMapBottomRight.getX() +shiftInX, currentMapBottomRight.getY()+shiftInY);
+        currentMapBottomRight = new Point(currentMapBottomRight.getX() +shiftLength, currentMapBottomRight.getY()+shiftLength);
     }
 
     public void resetParameters() {
