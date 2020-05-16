@@ -174,8 +174,8 @@ public class GridMap {
         //Agent/ point in vision is on the left of the current known map, extend the map to that area and shift all the points to the left
         if(x == -1) {
             //System.out.println("Extend map to left");
-            ObjectPerceptType[][] newMap = new ObjectPerceptType[currentMap.length][currentMap[0].length * 2];
-            shiftInX = currentMap[0].length;
+            ObjectPerceptType[][] newMap = new ObjectPerceptType[currentMap.length][currentMap[0].length +50];
+            shiftInX = 50;
             for(int i=0; i<currentMap.length; i++) {
                 for(int j=0; j<currentMap[0].length ;j++) {
                     newMap[i][j+shiftInX] = currentMap[i][j];
@@ -188,7 +188,7 @@ public class GridMap {
         //Agent/ point in vision is on the right of the current known map, extend the map to that area
         if(x == 1) {
             //System.out.println("Extend map to right");
-            ObjectPerceptType[][] newMap = new ObjectPerceptType[currentMap.length][currentMap[0].length * 2];
+            ObjectPerceptType[][] newMap = new ObjectPerceptType[currentMap.length][currentMap[0].length +50];
             for(int i=0; i<currentMap.length; i++) {
                 for(int j=0; j<currentMap[0].length ;j++) {
                     newMap[i][j] = currentMap[i][j];
@@ -200,8 +200,8 @@ public class GridMap {
         //Agent/ point in vision is above the current known map, extend the map to that area and shift all points to the top
         if(y == -1) {
             //System.out.println("Extend map to top");
-            ObjectPerceptType[][] newMap = new ObjectPerceptType[currentMap.length * 2][currentMap[0].length];
-            shiftInY = currentMap.length;
+            ObjectPerceptType[][] newMap = new ObjectPerceptType[currentMap.length +50][currentMap[0].length];
+            shiftInY = 50;
             for(int i=0; i<currentMap.length; i++) {
                 for(int j=0; j<currentMap[0].length ;j++) {
                     newMap[i+shiftInY][j] = currentMap[i][j];
@@ -213,7 +213,7 @@ public class GridMap {
         //Agent/ point in vision is under the current known map, extend the map to that area
         if(y == 1) {
             //System.out.println("Extend map to bottom");
-            ObjectPerceptType[][] newMap = new ObjectPerceptType[currentMap.length * 2][currentMap[0].length];
+            ObjectPerceptType[][] newMap = new ObjectPerceptType[currentMap.length +50][currentMap[0].length];
             for(int i=0; i<currentMap.length; i++) {
                 for(int j=0; j<currentMap[0].length ;j++) {
                     newMap[i][j] = currentMap[i][j];
