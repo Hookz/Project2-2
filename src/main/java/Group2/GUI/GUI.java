@@ -16,6 +16,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 import java.io.File;
+import java.util.ArrayList;
 
 public class GUI extends JFrame {
     public final int SCN_W = 800;
@@ -26,6 +27,14 @@ public class GUI extends JFrame {
     public GameController controller;
 
     public boolean fullscreen = false;
+
+    public static ArrayList<String> debugTexts = new ArrayList<>();
+    public static String debugInput = "";
+    public static boolean drawSounds = true;
+    public static boolean drawIntruderSmell = true;
+    public static boolean drawTeleport = true;
+    public static boolean drawTargetArea = true;
+    public static boolean drawWalls = true;
 
     public GUI(GameCanvas canvasInstance){
         super("Tom & Jerry - Loading..."); //default title has to be given
@@ -51,7 +60,6 @@ public class GUI extends JFrame {
                     scenarioName = selectedFile.getName();
                     controller = ReadFile.generateController();
                     Launcher.controller = controller;
-
                     GUI.super.remove(canvas);
                     canvas = new GameCanvas(controller);
                     GUI.super.add(canvas);
@@ -161,7 +169,7 @@ public class GUI extends JFrame {
 
             @Override
             public void keyPressed(KeyEvent e) {
-                System.out.println("Keycode: " + e.getKeyCode());
+                System.out.println(e.getKeyCode());
                 switch (e.getKeyCode()) {
                     case 114: //F3
                         //Toggle GUI Debug
@@ -178,6 +186,20 @@ public class GUI extends JFrame {
                         break;
                     case 120: //F9 - FPS += 5
                         Launcher.setFPS(Launcher.UPDATE_PER_SECOND + 5);
+                        break;
+                    default:
+                        //use to manipulate debug console user input
+                        int kc = e.getKeyCode();
+                        if (kc == 8) { //backspace
+                            if (debugInput.length() > 0)
+                                debugInput = debugInput.substring(0, debugInput.length() - 1);
+                        } else if (kc == 10) { //enter
+                            debugTexts.add("> " + debugInput + ":");
+                            processCommand();
+                            debugInput = "";
+                        } else {
+                            debugInput += (char) kc;
+                        }
                         break;
                 }
             }
@@ -218,6 +240,87 @@ public class GUI extends JFrame {
         // System.out.println("Current Text: '" + pausedCoolTextOnTitle + ", currentCapitalIndex: " + currentCapitalIndex + ", Before: '" + before + "'" + ", toCapitalize: '" + toCapitalize + "', after: '" + after + "'");
         pausedCoolTextOnTitle = before + toCapitalize + after;
         return pausedCoolTextOnTitle;
+    }
+
+    private void processCommand() {
+        String command = debugInput;
+        String[] split = command.split(" ");
+
+        switch (split[0]) {
+            case "HELP":
+                debugTexts.add("Welcome to command utilities");
+                debugTexts.add("HELP - displays these text");
+                debugTexts.add("KEYS - displays available key shortcuts");
+                debugTexts.add("TOGGLE arg - toggle on/off display of properties");
+                debugTexts.add("INTERVAL arg - change update interval 0:30");
+                debugTexts.add("CLEAR - clears history");
+                break;
+            case "KEYS":
+                debugTexts.add("F3 - Toggle debug screen on/off.");
+                debugTexts.add("F7 - Decrease FPS by 5.");
+                debugTexts.add("F9 - Increase FPS by 5.");
+                break;
+            case "CLEAR":
+                debugTexts.clear();
+                break;
+            case "TOGGLE":
+                if (split.length != 2) { //what to toggle?
+                    debugTexts.add("No parameter provided.");
+                    debugTexts.add("WALLS/TARGET/TELEPORT/SMELL/SOUND ?");
+                    break;
+                }
+                else {
+                    switch (split[1]) {
+                        case "WALLS":
+                            drawWalls = !drawWalls;
+                            debugTexts.add("Toggled walls.");
+                            break;
+                        case "TARGET":
+                            drawTargetArea = !drawTargetArea;
+                            debugTexts.add("Toggled target area.");
+                            break;
+                        case "TELEPORT":
+                            drawTeleport = !drawTeleport;
+                            debugTexts.add("Toggled teleports.");
+                            break;
+                        case "SMELL":
+                            drawIntruderSmell = !drawIntruderSmell;
+                            debugTexts.add("Toggled intruder smells.");
+                            break;
+                        case "SOUND":
+                            drawSounds = !drawSounds;
+                            debugTexts.add("Toggled sounds.");
+                            break;
+                        default:
+                            debugTexts.add("Unknown parameter provided.");
+                            debugTexts.add("WALLS/TARGET/TELEPORT/SMELL/SOUND ?");
+                            break;
+                    }
+                }
+                break;
+            case "INTERVAL":
+                if (split.length != 2) {
+                    debugTexts.add("No parameter provided.");
+                    debugTexts.add("Provide a decimal [0:30] ?");
+                    break;
+                }
+
+                int newInterval;
+                try {
+                    newInterval = Integer.parseInt(split[1]);
+                }
+                catch (Exception e) {
+                    debugTexts.add("Unknown parameter provided.");
+                    debugTexts.add("Please input a decimal.");
+                    break;
+                }
+
+                Launcher.setFPS(newInterval);
+                debugTexts.add("Set interval as " + newInterval + ".");
+                break;
+            default:
+                debugTexts.add("Command not found.");
+        }
     }
 }
 

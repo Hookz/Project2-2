@@ -12,6 +12,7 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 @SuppressWarnings("serial")
@@ -19,7 +20,6 @@ public class GameCanvas extends JPanel {
     public Color backgroundColor = Color.DARK_GRAY;
     private GameController controller = null;
     public boolean showDebug = true;
-
     //default page texts.
     public final String TEXT_MIDDLE_DEFAULT = "No Scenario Loaded";
     public String text1 = TEXT_MIDDLE_DEFAULT;
@@ -42,7 +42,7 @@ public class GameCanvas extends JPanel {
         if (controller != null) {
             multiplier = calculateMultiplier();
             //Component updates go here
-            for (Rectangle wall : controller.walls) {
+            if (GUI.drawWalls) for (Rectangle wall : controller.walls) {
                 Rectangle2D tempWall = new Rectangle2D.Double(norm(wall.x) + xCenterMargin(), norm(wall.y) + yCenterMargin(), norm(wall.width), norm(wall.height));
                 g2.setColor(Color.BLACK);
                 g2.fill(tempWall);
@@ -52,7 +52,7 @@ public class GameCanvas extends JPanel {
 
 
 
-            for(Rectangle area : controller.targetArea){
+            if (GUI.drawTargetArea) for(Rectangle area : controller.targetArea){
                 Rectangle2D tempArea = new Rectangle2D.Double(norm(area.x) + xCenterMargin(), norm(area.y) + yCenterMargin(), norm(area.width), norm(area.height));
                 g2.setColor(Color.GREEN);
                 g2.fill(tempArea);
@@ -60,7 +60,7 @@ public class GameCanvas extends JPanel {
                 g2.draw(tempArea);
             }
 
-            for(Teleport teleport: controller.teleports){
+            if (GUI.drawTeleport) for(Teleport teleport: controller.teleports){
                 Rectangle2D teleportOrigin = new Rectangle2D.Double(norm(teleport.area.x)+xCenterMargin(),norm(teleport.area.y)+yCenterMargin(),norm(teleport.area.width),norm(teleport.area.height));
                 g2.setColor(teleport.teleportColor);
                 g2.setStroke(dashed);
@@ -105,16 +105,16 @@ public class GameCanvas extends JPanel {
                 g2.draw(agentEllipse);
             }
 
-            for(Map.Entry<Smell,Ellipse2D> guardSmell: controller.guardSmellLocations.entrySet()){
+            /*for(Map.Entry<Smell,Ellipse2D> guardSmell: controller.guardSmellLocations.entrySet()){
                 Ellipse2D smellEllipse = guardSmell.getValue();
                 smellEllipse = new Ellipse2D.Double(norm(smellEllipse.getX()) + xCenterMargin(), norm(smellEllipse.getY()) + yCenterMargin(), norm(smellEllipse.getWidth()), norm(smellEllipse.getHeight()));
                 Color guardSmellColor = new Color(51, 153, 255, 127);
                 g2.setColor(guardSmellColor);
                 g2.fill(smellEllipse);
                 g2.draw(smellEllipse);
-            }
+            }*/
 
-            for(Map.Entry<Smell,Ellipse2D> intruderSmell: controller.intruderSmellLocations.entrySet()){
+            if (GUI.drawIntruderSmell) for(Map.Entry<Smell,Ellipse2D> intruderSmell: controller.intruderSmellLocations.entrySet()){
                 Ellipse2D smellEllipse = intruderSmell.getValue();
                 smellEllipse = new Ellipse2D.Double(norm(smellEllipse.getX()) + xCenterMargin(), norm(smellEllipse.getY()) + yCenterMargin(), norm(smellEllipse.getWidth()), norm(smellEllipse.getHeight()));
                 Color intruderSmellColor = new Color(255, 153, 153, 127);
@@ -123,7 +123,7 @@ public class GameCanvas extends JPanel {
                 g2.draw(smellEllipse);
             }
 
-            for(Map.Entry<Sound,Ellipse2D> sound: controller.soundLocations.entrySet()){
+            if (GUI.drawSounds) for(Map.Entry<Sound,Ellipse2D> sound: controller.soundLocations.entrySet()){
                 Ellipse2D soundEllipse = sound.getValue();
                 soundEllipse = new Ellipse2D.Double(norm(soundEllipse.getX()) + xCenterMargin(), norm(soundEllipse.getY()) + yCenterMargin(), norm(soundEllipse.getWidth()), norm(soundEllipse.getHeight()));
                 Color soundColor = new Color(255, 255, 102, 127);
@@ -158,7 +158,8 @@ public class GameCanvas extends JPanel {
         if (showDebug) {
             Color bgPanelColor = new Color(31, 31, 31, 127);
             g.setColor(bgPanelColor);
-            g.fillRect(1,1, 300,99);
+            g.fillRect(1,1, 600,99);
+            g.fillRect(300,85, 298,13);
 
             Font fontdebug = new Font("Monospace", Font.PLAIN, 11);
             g.setFont(fontdebug);
@@ -171,6 +172,12 @@ public class GameCanvas extends JPanel {
             g.drawString("FPS         : " + Launcher.fpsThisSecond, 4,15+55);
             g.drawString("Target Rate : " + Launcher.UPDATE_PER_SECOND + "per second", 4,15+66);
             g.drawString("Turn Count : " + Launcher.UPDATE_PER_SECOND, 4,15+77);
+
+            for (int i = GUI.debugTexts.size() - 1; i >= 0; i--) {
+                int currLine = GUI.debugTexts.size() - i;
+                if (currLine < 8) g.drawString(GUI.debugTexts.get(i), 305, 99 - (11 * currLine) - 10);
+            }
+            g.drawString(GUI.debugInput, 301,97);
         }
 
     }

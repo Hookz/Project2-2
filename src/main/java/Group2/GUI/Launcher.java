@@ -6,6 +6,7 @@ import Interop.GameController;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import java.io.File;
+import java.util.ArrayList;
 
 public class Launcher {
     public static boolean gameRunning = true;
@@ -40,6 +41,7 @@ public class Launcher {
             ReadFile.readFile(selectedFile);
 
             controller = ReadFile.generateController();
+            System.out.println("Target area location: (" + controller.targetArea.get(0).getX() + ", " + controller.targetArea.get(0).getY() + ").");
             canvas = new GameCanvas(controller);
         }
 
@@ -62,7 +64,7 @@ public class Launcher {
      *
      * This data will be relying upon the agents, so I'm not sure how we would bind.
      */
-    public static int UPDATE_PER_SECOND = 5; //used to final, but now I want to update it.
+    public static int UPDATE_PER_SECOND = 30; //used to final, but now I want to update it.
     public static long OPTIMAL_UPDATE_DURATION = 1000000000 / UPDATE_PER_SECOND;
     public static int fpsThisSecond = UPDATE_PER_SECOND;
     public static int fps = 0;
