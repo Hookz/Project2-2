@@ -11,6 +11,8 @@ import Interop.Percept.Percepts;
 import Interop.Percept.Vision.ObjectPercept;
 import Interop.Percept.Vision.ObjectPerceptType;
 
+import java.util.Set;
+
 public class GridMap {
 
     private Point currentPosition;
@@ -137,6 +139,7 @@ public class GridMap {
     }
 
 
+
     /**
      * Method that increases the size of the current map that the agent is keeping track of and updates the agent's position accordingly
      * @param x = -1 if the map needs to be extended on the left, = 1 if it is on the right
@@ -207,5 +210,21 @@ public class GridMap {
         this.currentPosition = new Point(0,0);
         this.currentMapBottomRight = new Point(100,100);
         this.currentAngle = Angle.fromDegrees(0);
+    }
+
+    public void setCurrentPosition(Point currentPosition) {
+        this.currentPosition = currentPosition;
+    }
+
+    public void setCurrentAngle(Angle currentAngle) {
+        this.currentAngle = currentAngle;
+    }
+
+    public ObjectPerceptType[][] getCurrentMap() {
+        return currentMap;
+    }
+
+    public Point getCurrentPosition() {
+        return currentPosition;
     }
 }
