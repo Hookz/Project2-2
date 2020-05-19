@@ -112,10 +112,7 @@ public class IntruderAgent implements Intruder{
         boolean directionIsObstructed = false;
         int rayWithoutObstacle = 0;
 
-        //Computes the angle between the target area and the y-axis (=intruder's direction)
-        Angle directionToTargetAngle = targetDirection.getDistance(Angle.fromDegrees(90));
-        if(targetDirection.getDegrees() < 90 && targetDirection.getDegrees() > 270)
-            directionToTargetAngle = Angle.fromDegrees(-directionToTargetAngle.getDegrees());
+
 
 
         //For each ray, compute its angle with the target direction and the distance to its object
@@ -129,7 +126,7 @@ public class IntruderAgent implements Intruder{
             //System.out.println("-------");
             //System.out.println("Ray angle: " +rayAngle.getDegrees());
             //System.out.println("Distance to obstacle: " +distanceToObstacle);
-            Angle objectToTargetAngle = Angle.fromDegrees(Math.abs(directionToTargetAngle.getDegrees() - rayAngle.getDegrees()));
+            Angle objectToTargetAngle = Angle.fromDegrees(Math.abs(targetDirection.getDegrees() - rayAngle.getDegrees()));
 
             //Check if there are obstacles in the rays directly surrounding the direction (between -7 and 7 degrees)
             if(rayAngle.getDegrees() < 7 && rayAngle.getDegrees() > -7) {
@@ -190,17 +187,17 @@ public class IntruderAgent implements Intruder{
 
         //Check if the target can be reached by rotating more
         //If yes, set the rotation angle to the target's direction (or to the max rotation angle if the target cannot be reached right away)
-        if(rotationAngle.getDegrees() > 22 && directionToTargetAngle.getDegrees() > 22) {
-            if(directionToTargetAngle.getDegrees() > maxRotationAngle.getDegrees()) {
+        if(rotationAngle.getDegrees() > 22 && targetDirection.getDegrees() > 22) {
+            if(targetDirection.getDegrees() > maxRotationAngle.getDegrees()) {
                 rotationAngle = maxRotationAngle;
             }
-            else rotationAngle = directionToTargetAngle;
+            else rotationAngle = targetDirection;
         }
-        else if(rotationAngle.getDegrees() < -21 && directionToTargetAngle.getDegrees() < -21) {
-            if(Math.abs(directionToTargetAngle.getDegrees()) > maxRotationAngle.getDegrees()) {
+        else if(rotationAngle.getDegrees() < -21 && targetDirection.getDegrees() < -21) {
+            if(Math.abs(targetDirection.getDegrees()) > maxRotationAngle.getDegrees()) {
                 rotationAngle = Angle.fromDegrees(-maxRotationAngle.getDegrees());
             }
-            else rotationAngle = directionToTargetAngle;
+            else rotationAngle = targetDirection;
         }
 
         //If there is a guard in front, rotate from a bigger angle to avoid him
@@ -216,15 +213,16 @@ public class IntruderAgent implements Intruder{
 
         // If the field surrounding the direction is full with obstacles (walls or guards), make the agent rotate from its maximum angle (add a small random value to avoid getting stuck in the same areas)
         if(rayWithoutObstacle == 0) {
-            //System.out.println("-----------------------------Rotate to avoid obstacles-----------------------------");
+            System.out.println("-----------------------------Rotate to avoid obstacles-----------------------------");
+            //Distance from which we force the agent to move forward to avoid an obstacle
             this.moveForward = 5;
             //Rotate to the right if the previous action was a move or a right rotation, else rotate left
             if (rotateFlag >= 0) {
                 rotateFlag++;
-                return Angle.fromDegrees(maxRotationAngle.getDegrees() + Math.random());
+                return Angle.fromDegrees(maxRotationAngle.getDegrees());
             } else {
                 rotateFlag--;
-                return Angle.fromDegrees(maxRotationAngle.getDegrees() + Math.random());
+                return Angle.fromDegrees(maxRotationAngle.getDegrees());
             }
         }
 
@@ -235,7 +233,7 @@ public class IntruderAgent implements Intruder{
         if(moveForward > 0 && !directionIsObstructed) {
             rotateFlag = 0;
             moveForward--;
-            //System.out.println("-----------------------------Move forward to stop rotating-----------------------------");
+            System.out.println("-----------------------------Move forward to stop rotating-----------------------------");
             rotationAngle = Angle.fromDegrees(0);
         }
 
@@ -247,9 +245,9 @@ public class IntruderAgent implements Intruder{
         //Set the flag to know on which side the previous rotation was made
         if(rotationAngle.getDegrees() > 0 && rotateFlag >= 0) rotateFlag++;
         else if(rotationAngle.getDegrees() < 0 && rotateFlag <= 0)rotateFlag--;
-        //Prevent opposite rotations to occur (i.e. rotating to the left then to the right)
+            //Prevent opposite rotations to occur (i.e. rotating to the left then to the right)
         else {
-            //System.out.println("-------------------------------------Avoid opposite rotation: moving forward------------------------------");
+            System.out.println("-------------------------------------Avoid opposite rotation: moving forward------------------------------");
             rotationAngle  = Angle.fromDegrees(0);
         }
 
