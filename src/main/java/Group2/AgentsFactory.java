@@ -21,7 +21,7 @@ public class AgentsFactory {
     static public List<Intruder> createIntruders(int number) {
         ArrayList<Intruder> intruders = new ArrayList<>();
         for(int i=0;i<number;i++){
-            TargetFinder intruder = new TargetFinder(i);
+            IntruderAgent intruder = new IntruderAgent(i);
             intruders.add(intruder);
         }
         return intruders;
