@@ -27,12 +27,6 @@
         <name>Maastricht University</name>
         <url>https://maastrichtuniversity.nl</url>
     </organization>
-    <scm>
-        <connection>scm:git:git@github.com/Hookz/Project2-2.git</connection>
-        <developerConnection>scm:git:git@github.com/Hookz/Project2-2.git</developerConnection>
-        <url>https://github.com/Hookz/Project2-2/tree/${project.scm.tag}</url>
-        <tag>master</tag>
-    </scm>
     <distributionManagement>
         <repository>
             <id>github</id>
@@ -40,6 +34,12 @@
             <url>https://maven.pkg.github.com/Hookz/Project2-2</url>
         </repository>
     </distributionManagement>
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
     <properties>
         <maven.compiler.target>10</maven.compiler.target>
         <maven.compiler.source>10</maven.compiler.source>
@@ -133,22 +133,12 @@
                 </executions>
             </plugin>
         </plugins>
-
     </build>
-    <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.github.Hookz</groupId>
-                <artifactId>Project2-2-GameInterop</artifactId>
-                <version>1.1</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>com.github.Hookz</groupId>
-                <artifactId>Project2-2-GameInterop</artifactId>
-                <version>1.2</version>
+                <groupId>com.github.Project-2-2</groupId>
+                <artifactId>GameInterop</artifactId>
+                <version>-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
